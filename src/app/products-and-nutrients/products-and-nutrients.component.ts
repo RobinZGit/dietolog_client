@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MainServiceService } from 'services/main-service.service';
 
 @Component({
   selector: 'app-products-and-nutrients',
@@ -6,5 +7,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./products-and-nutrients.component.css']
 })
 export class ProductsAndNutrientsComponent {
+
+textFilter?: string
 
 }
