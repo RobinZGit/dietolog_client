@@ -4,6 +4,7 @@ import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 @Injectable({
   providedIn: 'root'
 })
+
 export class DataService {
   private url = 'http://localhost:8080' //todo  в отдельный класс appConfig.ts
   constructor(private http: HttpClient) { }
