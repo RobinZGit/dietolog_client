@@ -8,8 +8,22 @@
 <p></p>
 <div>
   <p>Продукты:</p>
-  <table>
-    <tr>11111</tr>
-    <td>22222</td>
-  </table>
+  <ng-container >
+    <table>
+      <!--<th>{{products.colNames.val}}</th>
+      <th>{{products.colNames.name}}</th>
+      <th>{{products.colNames.id}}</th>
+      <tr *ngFor="let product of products.list">
+        <input value={{product.val}}>
+        <td>{{product.name}}</td>
+        <td>{{product.id}}</td>
+      </tr>
+    -->
+      <tr *ngFor="let product of products">
+        <!--<input value={{product.val}}>-->
+        <td>{{product.name}}</td>
+        <!--<td>{{product.id}}</td>-->
+      </tr>
+    </table>
+  </ng-container>
 </div>
