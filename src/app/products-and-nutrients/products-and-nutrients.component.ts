@@ -8,8 +8,6 @@ import { DataService } from '../service/data.service';
 })
 export class ProductsAndNutrientsComponent implements OnInit{
 
-//jsonProducts?: string;
-//jsonNutrients?: string;
 products?: any;
 nutrients?: any;
 
@@ -27,17 +25,6 @@ ngOnInit(): void{
 }
 
 onFindProduct(){
-  /*
-  this.products=//JSON.parse(
-                    { "colNames": {"val":"Количество(гр)", "name":"Наименование",  "id":"id"},
-                      "list":[ {"val":100, "name":"ppp1",  "id":1},
-                               {"val":50,  "name":"ppp2",  "id":2},
-                          ]
-                      }
-                     // )
-                     */
-
-  //!ВЕРНУТЬ!
   this.dataService.findProducts(this.textFilter).subscribe((v:string)=>{this.products=v})
 }
 
@@ -48,7 +35,7 @@ onFindNutrients(){
                                 ]
                               }`)
                               */
-  //!ВЕРНУТЬ!  this.dataService.findNutrients(this.textFilter).subscribe((v:string)=>{this.jsonNutrients=v})
+  this.dataService.findNutrients('').subscribe((v:string)=>{this.nutrients=v})
 }
 
 }

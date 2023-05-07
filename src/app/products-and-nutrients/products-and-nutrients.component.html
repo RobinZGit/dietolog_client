@@ -7,23 +7,33 @@
 </div>
 <p></p>
 <div>
-  <p>Продукты:</p>
   <ng-container >
-    <table>
-      <!--<th>{{products.colNames.val}}</th>
-      <th>{{products.colNames.name}}</th>
-      <th>{{products.colNames.id}}</th>
-      <tr *ngFor="let product of products.list">
-        <input value={{product.val}}>
-        <td>{{product.name}}</td>
-        <td>{{product.id}}</td>
-      </tr>
-    -->
+    <table class="table-prod">
+      <caption>Продукты</caption>
+      <th>{{'Продукт'}}</th>
+      <th>{{'id'}}</th>
       <tr *ngFor="let product of products">
         <!--<input value={{product.val}}>-->
         <td>{{product.name}}</td>
-        <!--<td>{{product.id}}</td>-->
+        <td>{{product.id}}</td>
       </tr>
     </table>
   </ng-container>
 </div>
+<p></p>
+<div>
+  <ng-container >
+    <table class="table-nutr">
+      <caption>Нутриенты</caption>
+      <th>{{'Нутриент'}}</th>
+      <th>{{'Единицы измерения'}}</th>
+      <th>{{'Суточная норма'}}</th>
+      <tr *ngFor="let nutrient of nutrients">
+        <td>{{nutrient.name}}</td>
+        <td>{{nutrient.units}}</td>
+        <td>{{nutrient.dailyrate}}</td>
+      </tr>
+    </table>
+  </ng-container>
+</div>
+
