@@ -10,12 +10,13 @@
   <ng-container >
     <table class="table-prod">
       <caption>Продукты</caption>
+      <th>{{'Количество(гр.)'}}</th>
       <th>{{'Продукт'}}</th>
       <th>{{'id'}}</th>
       <tr *ngFor="let product of products">
-        <!--<input value={{product.val}}>-->
-        <td>{{product.name}}</td>
-        <td>{{product.id}}</td>
+        <input title="{{product.hint}}" value={{product.val}}>
+        <td title="{{product.hint}}" >{{product.name}}</td>
+        <td title="{{product.hint}}" >{{product.id}}</td>
       </tr>
     </table>
   </ng-container>
@@ -28,10 +29,12 @@
       <th>{{'Нутриент'}}</th>
       <th>{{'Единицы измерения'}}</th>
       <th>{{'Суточная норма'}}</th>
+      <th>{{'Количество(гр.)'}}</th>
       <tr *ngFor="let nutrient of nutrients">
-        <td>{{nutrient.name}}</td>
-        <td>{{nutrient.units}}</td>
-        <td>{{nutrient.dailyrate}}</td>
+        <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
+        <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
+        <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
+        <td title="{{nutrient.hint}}">{{nutrient.val}}</td>
       </tr>
     </table>
   </ng-container>
