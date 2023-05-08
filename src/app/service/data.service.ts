@@ -10,8 +10,13 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
 findProducts(sFilter:string)  {
-  let params = new HttpParams().set("filter",sFilter)
-  return this.http.get<string>(this.url+'/api/products')
+  let params = new HttpParams().append("filter",'%'+sFilter+'%')
+  return this.http.get<string>(this.url+'/api/products',{params:params})
+}
+
+getProductHint(productId:number)  {
+  let params = new HttpParams().append("productId",productId)
+  return this.http.get<string>(this.url+'/api/product_hint',{params:params})
 }
 
 findNutrients(sFilter:string)  {

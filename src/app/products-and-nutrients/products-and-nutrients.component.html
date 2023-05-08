@@ -2,7 +2,8 @@
 <p></p>
 <div>
   <label>Фильтр продуктов
-    <input type="text" >
+    <input [(ngModel)]="textFilter" type="text">
+    <button (click)="findProducts()">Найти</button>
   </label>
 </div>
 <p></p>

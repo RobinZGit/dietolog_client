@@ -19,16 +19,16 @@ constructor(private dataService:DataService){
 
 
 ngOnInit(): void{
-  this.onFindProduct()
-  this.onFindNutrients()
-  //alert(JSON.stringify(this.products))
+  this.findProducts()
+  this.findNutrients()
 }
 
-onFindProduct(){
+findProducts(){
+  //this.dataService.getProductHint(1).subscribe((v:String)=>{alert(v)})
   this.dataService.findProducts(this.textFilter).subscribe((v:string)=>{this.products=v})
 }
 
-onFindNutrients(){
+findNutrients(){
   /*
   this.nutrients=JSON.parse(`{v:[{norm:70,   name:"nnnutt1",  id:1},
                                  {norm:150,  name:"nnnut2",   id:2},
@@ -37,5 +37,7 @@ onFindNutrients(){
                               */
   this.dataService.findNutrients('').subscribe((v:string)=>{this.nutrients=v})
 }
+
+
 
 }
