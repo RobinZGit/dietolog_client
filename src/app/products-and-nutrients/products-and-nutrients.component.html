@@ -21,9 +21,9 @@
       <th>{{'Продукт'}}</th>
       <th>{{'id'}}</th>
       <tr *ngFor="let product of products">
-        <input title="{{product.hint}}" value={{product.val}}>
+        <input title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="onCangeProductVal(product)">
         <td title="{{product.hint}}" >{{product.name}}</td>
-        <td title="{{product.hint}}" >{{product.id}}</td>
+        <td title="{{product.hint}}" >{{product._id}}</td>
       </tr>
     </table>
   </ng-container>

@@ -23,4 +23,9 @@ findNutrients(sFilter:string)  {
   let params = new HttpParams().set("filter",sFilter)
   return this.http.get<string>(this.url+'/api/nutrients')
 }
+
+findInfoByProductId(productId:number)  {
+  let params = new HttpParams().append("productId",productId)
+  return this.http.get<string>(this.url+'/api/info',{params:params})
+}
 }

@@ -41,9 +41,36 @@ findNutrients(){
 }
 
 onSelectSorting(event:any){
-  //alert(JSON.stringify(event.target.value))
   this.sorting = event.target.value
 }
+
+
+//пересчет кодичества нутриентов при зменении кол-ва текущего продукта
+onCangeProductVal(product : any){
+  let pVal = Number(product.val)
+  if(isNaN(pVal)){
+    alert('Количество продукта должно быть числом!')
+    product.val = 0
+  }else{
+    this.dataService.findInfoByProductId(product._id).subscribe((v:any)=>
+                                                               {
+                                                                 this.nutrients.map((nutr:any)=> v.forEach((vv:any)=>{if(vv.nutrient==nutr._id) nutr.val= Number(nutr.val)+pVal*Number(vv.value)/100}))
+                                                               })
+  }
+}
+
+/*
+TODO -----------------------------------------------
+сортировка нутриентов?
+СРАВНЕНИЕ С НОРМАМИ И ПОДСВЕТКА
+ПРОВЕРКА ЦИФР
+в фильтр - галка Поместить выбранные вверху
+ограничение размеров таблиц и стилим
+Пайпы в количества нутриентов и продуктов (+авто ввод только чисел)
+...
+...
+...пересчет по нормам, колонка для собств норм...
+*/
 
 
 }
