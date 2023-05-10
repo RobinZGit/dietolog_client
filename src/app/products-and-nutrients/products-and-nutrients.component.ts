@@ -20,6 +20,7 @@ constructor(private dataService:DataService){
 
 ngOnInit(): void{
   this.findProducts()
+
   this.findNutrients()
 }
 
