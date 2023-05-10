@@ -1,10 +1,16 @@
 <p>ДИЕТОЛОГ</p>
 <p></p>
-<div>
-  <label>Фильтр продуктов
-    <input [(ngModel)]="textFilter" type="text">
+<div class="filter-prod">
+    <div>
+    Наименование продукта содержит подстроку: <input [(ngModel)]="textFilter" type="text">
+    <p>  Сортировать по содержанию нутриента:
+    <select (change)="onSelectSorting($event)">
+      <option value = -1> </option>
+      <option *ngFor="let nutrient of nutrients" [value] = "nutrient.id"> {{nutrient.name}}</option>
+    </select>
+    </p>
+    </div>
     <button (click)="findProducts()">Найти</button>
-  </label>
 </div>
 <p></p>
 <div>

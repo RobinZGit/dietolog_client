@@ -9,8 +9,8 @@ export class DataService {
   private url = 'http://localhost:8080' //todo  в отдельный класс appConfig.ts
   constructor(private http: HttpClient) { }
 
-findProducts(sFilter:string)  {
-  let params = new HttpParams().append("filter",'%'+sFilter+'%')
+findProducts(sFilter:string, sorting:number)  {
+  let params = new HttpParams().append("filter",'%'+sFilter+'%').append("sorting",sorting)
   return this.http.get<string>(this.url+'/api/products',{params:params})
 }
 

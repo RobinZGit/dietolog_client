@@ -12,21 +12,22 @@ products?: any;
 nutrients?: any;
 
 textFilter: string
+sorting: number
 
 constructor(private dataService:DataService){
   this.textFilter=''
+  this.sorting = -1
 }
 
 
 ngOnInit(): void{
   this.findProducts()
-
   this.findNutrients()
 }
 
 findProducts(){
   //this.dataService.getProductHint(1).subscribe((v:String)=>{alert(v)})
-  this.dataService.findProducts(this.textFilter).subscribe((v:string)=>{this.products=v})
+  this.dataService.findProducts(this.textFilter, this.sorting).subscribe((v:string)=>{this.products=v})
 }
 
 findNutrients(){
@@ -39,6 +40,10 @@ findNutrients(){
   this.dataService.findNutrients('').subscribe((v:string)=>{this.nutrients=v})
 }
 
+onSelectSorting(event:any){
+  //alert(JSON.stringify(event.target.value))
+  this.sorting = event.target.value
+}
 
 
 }
