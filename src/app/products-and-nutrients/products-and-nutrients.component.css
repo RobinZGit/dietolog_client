@@ -19,5 +19,13 @@
   width: 80% ;
   height: 10px;
   border: 1px solid #fff; /*for older IE*/
-  background: rgb(114, 233, 132);
+  background: rgb(188, 190, 189);
+}
+
+.below-norm {
+  background: rgb(244, 168, 241);
+}
+
+.above-norm {
+  background: rgb(152, 239, 196);
 }

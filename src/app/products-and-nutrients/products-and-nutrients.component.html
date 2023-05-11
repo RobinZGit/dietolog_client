@@ -21,7 +21,7 @@
       <th>{{'Продукт'}}</th>
       <th>{{'id'}}</th>
       <tr *ngFor="let product of products">
-        <input title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="onCangeProductVal(product)">
+        <input type="number" title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="recalcNutrients()">
         <td title="{{product.hint}}" >{{product.name}}</td>
         <td title="{{product.hint}}" >{{product._id}}</td>
       </tr>
@@ -37,7 +37,7 @@
       <th>{{'Единицы измерения'}}</th>
       <th>{{'Суточная норма'}}</th>
       <th>{{'Количество(гр.)'}}</th>
-      <tr *ngFor="let nutrient of nutrients">
+      <tr *ngFor="let nutrient of nutrients" [ngClass]="getClass(nutrient)">
         <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
         <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
         <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
