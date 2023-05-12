@@ -8,16 +8,24 @@ import { DataService } from '../service/data.service';
 })
 export class ProductsAndNutrientsComponent implements OnInit{
 
-products?: any;
-nutrients?: any;
-currentInfo?: any;
+products?: any
+nutrients?: any
+currentInfo?: any
+pcopy: any[] = [] //вспомогательный
 
-textFilter: string
-sorting: number
+textFilter: string  //!не использовать! фильтрация ломает пересчет. убрал с формы
+textSort: string
+sortByNutrient: number  //сортировка по нутриенту
+valued_ontop: boolean //поместить выбранные количества сверху(в остальном сохранить сортировку по нутриенту)
+sortBySubstr: boolean //поместить сверху содержащие  textSort
+
 
 constructor(private dataService:DataService){
   this.textFilter=''
-  this.sorting = -1
+  this.textSort=''
+  this.sortByNutrient = -1
+  this.valued_ontop = false
+  this.sortBySubstr = false
 }
 
 
@@ -27,9 +35,27 @@ ngOnInit(): void{
 }
 
 findProducts(){
-  //this.dataService.getProductHint(1).subscribe((v:String)=>{alert(v)})
-  this.dataService.findProducts(this.textFilter, this.sorting).subscribe((v:string)=>{this.products=v})
-  this.recalcNutrients()
+  this.dataService.findProducts(this.textFilter, this.sortByNutrient).subscribe((v:string[])=>{
+                                                                                        if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
+                                                                                        this.products=v
+                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
+                                                                                        this.finalSorting()
+                                                                                        })
+
+}
+
+finalSorting(){
+  this.products.sort((u:any,v:any)=>{return ((u.rownumber>=v.rownumber)?1:-1)}) //"обнуление" сортировки!
+  this.products.sort((u:any,v:any)=>{return (((u.val<=v.val)?100:-100)*(this.valued_ontop?1:0)
+                                             +((u.name.toUpperCase().indexOf(this.textSort.toUpperCase())<=v.name.toUpperCase().indexOf(this.textSort.toUpperCase()))?10:-10)*(this.sortBySubstr?1:0)
+                                             +((u.rownumber>=v.rownumber)?1:-1)
+                                             )
+                                    })
+}
+
+onSelectSorting(event:any){
+  this.sortByNutrient = event.target.value
+  this.findProducts()
 }
 
 findNutrients(){
@@ -42,12 +68,7 @@ findNutrients(){
   this.dataService.findNutrients('').subscribe((v:string)=>{this.nutrients=v})
 }
 
-onSelectSorting(event:any){
-  this.sorting = event.target.value
-}
-
-
-//пересчет кодичества нутриентов при зменении кол-ва текущего продукта
+//пересчет количества нутриентов при зменении кол-ва текущего продукта
 recalcNutrients(){
   try{
     //обнуляем все нутриенты
@@ -79,10 +100,8 @@ getClass(nutrient:any){
 
 /*
 TODO -----------------------------------------------
+НЕ РАБОТАЕТ СОВМЕСТНАЯ СОРТИРОВКА ПО ДВУМ ГАЛКАМ
 ПРОВЕРИТЬ ЗЕФИР 300 - косяки в подсветке
-в фильтр - ПЕРЕЙТИ К ПРОДУКТУ
-ФИЛЬТР ПО ПОДСТРОКЕ СБИВАЕТ КОЛ-ВО - УБРАТЬ???
-в фильтр - галка Поместить выбранные вверху
 ограничение размеров таблиц и стилим
 Пайпы в количества нутриентов и продуктов (+авто ввод только чисел)
 ЭКСЕЛЬ

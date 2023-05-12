@@ -1,49 +1,62 @@
-<p>ДИЕТОЛОГ</p>
+<h1 class="header-main">ДИЕТОЛОГ</h1>
 <p></p>
-<div class="filter-prod">
-    <div>
-    Наименование продукта содержит подстроку: <input [(ngModel)]="textFilter" type="text">
-    <p>  Сортировать по содержанию нутриента:
-    <select (change)="onSelectSorting($event)">
-      <option value = -1> </option>
-      <option *ngFor="let nutrient of nutrients" [value] = "nutrient.id"> {{nutrient.name}}</option>
-    </select>
-    </p>
+<div class="row">
+  <div class="column">
+
+    <div class="filter-prod">
+        <p>&nbsp;</p>
+        <div>
+          &nbsp; &nbsp; 1. Поместить продукты с выбранными ненулевыми количествами вверху списка <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">
+          <p>&nbsp; &nbsp; 2. Затем поместить верху списка продукты, содержащие подстроку:
+             <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">
+             <input [(ngModel)]="textSort" type="text" ></p>
+          <p>&nbsp; &nbsp; 3. Затем сортировать продукты по содержанию нутриента:
+          <select (change)="onSelectSorting($event)">
+            <option value = -1> </option>
+            <option *ngFor="let nutrient of nutrients" [value] = "nutrient.id"> {{nutrient.name}}</option>
+          </select>
+          </p>
+
+          <p></p>
+        </div>
+        &nbsp;&nbsp;
     </div>
-    <button (click)="findProducts()">Найти</button>
+    <p></p>
+
+    <div>
+      <ng-container >
+        <table class="table-prod">
+          <caption class="header-tables">Продукты</caption>
+          <th>{{'Количество(гр.)'}}</th>
+          <th>{{'Продукт'}}</th>
+          <tr *ngFor="let product of products">
+            <input type="number" title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="recalcNutrients()">
+            <td title="{{product.hint}}" >{{product.name}}</td>
+          </tr>
+        </table>
+      </ng-container>
+    </div>
+  </div>
+
+  <p></p>
+
+  <div class="column">
+    <ng-container >
+      <table class="table-nutr">
+        <caption class="header-tables">Нутриенты</caption>
+        <th>{{'Нутриент'}}</th>
+        <th>{{'Единицы измерения'}}</th>
+        <th>{{'Суточная норма'}}</th>
+        <th>{{'Количество(гр.)'}}</th>
+        <tr *ngFor="let nutrient of nutrients" [ngClass]="getClass(nutrient)">
+          <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
+          <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
+          <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
+          <td title="{{nutrient.hint}}">{{nutrient.val}}</td>
+        </tr>
+      </table>
+    </ng-container>
+  </div>
 </div>
-<p></p>
-<div>
-  <ng-container >
-    <table class="table-prod">
-      <caption>Продукты</caption>
-      <th>{{'Количество(гр.)'}}</th>
-      <th>{{'Продукт'}}</th>
-      <th>{{'id'}}</th>
-      <tr *ngFor="let product of products">
-        <input type="number" title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="recalcNutrients()">
-        <td title="{{product.hint}}" >{{product.name}}</td>
-        <td title="{{product.hint}}" >{{product._id}}</td>
-      </tr>
-    </table>
-  </ng-container>
-</div>
-<p></p>
-<div>
-  <ng-container >
-    <table class="table-nutr">
-      <caption>Нутриенты</caption>
-      <th>{{'Нутриент'}}</th>
-      <th>{{'Единицы измерения'}}</th>
-      <th>{{'Суточная норма'}}</th>
-      <th>{{'Количество(гр.)'}}</th>
-      <tr *ngFor="let nutrient of nutrients" [ngClass]="getClass(nutrient)">
-        <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
-        <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
-        <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
-        <td title="{{nutrient.hint}}">{{nutrient.val}}</td>
-      </tr>
-    </table>
-  </ng-container>
-</div>
+
 

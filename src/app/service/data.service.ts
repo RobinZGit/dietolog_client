@@ -11,7 +11,7 @@ export class DataService {
 
 findProducts(sFilter:string, sorting:number)  {
   let params = new HttpParams().append("filter",'%'+sFilter+'%').append("sorting",sorting)
-  return this.http.get<string>(this.url+'/api/products',{params:params})
+  return this.http.get<string[]>(this.url+'/api/products',{params:params})
 }
 
 getProductHint(productId:number)  {

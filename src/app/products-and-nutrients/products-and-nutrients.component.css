@@ -1,25 +1,39 @@
+.header-main {
+  text-align: center;
+}
+
+.header-tables{
+  font-weight: bold;
+}
+
+.column {
+  float: left;
+  width: 50%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
 .filter-prod {
-  padding: 8px;
-  width: 80% ;
-  height: 100px;
-  border: 1px solid #fff; /*for older IE*/
-  background: rgb(123, 180, 205);
+  background: rgb(240, 246, 229);
+  border-radius: 20px;
 }
 .table-prod {
   padding: 8px;
-  width: 80% ;
-  height: 100px;
+  width: 100% ;
   border: 1px solid #fff; /*for older IE*/
   background: #ffa;
 }
 
 .table-nutr {
   padding: 8px;
-  width: 80% ;
-  height: 10px;
+  width: 100% ;
   border: 1px solid #fff; /*for older IE*/
-  background: rgb(188, 190, 189);
+  background: rgb(209, 230, 242);
 }
 
 .below-norm {
@@ -29,3 +43,5 @@
 .above-norm {
   background: rgb(152, 239, 196);
 }
+
+
