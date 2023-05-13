@@ -1,22 +1,28 @@
+
 <h1 class="header-main">ДИЕТОЛОГ</h1>
-<p></p>
 <div class="row">
   <div class="column">
 
     <div class="filter-prod">
         <p>&nbsp;</p>
         <div>
-          &nbsp; &nbsp; 1. Поместить продукты с выбранными ненулевыми количествами вверху списка <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">
-          <p>&nbsp; &nbsp; 2. Затем поместить верху списка продукты, содержащие подстроку:
-             <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">
-             <input [(ngModel)]="textSort" type="text" ></p>
-          <p>&nbsp; &nbsp; 3. Затем сортировать продукты по содержанию нутриента:
-          <select (change)="onSelectSorting($event)">
-            <option value = -1> </option>
-            <option *ngFor="let nutrient of nutrients" [value] = "nutrient.id"> {{nutrient.name}}</option>
-          </select>
-          </p>
-
+          <label>
+            &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
+          </label>
+          <p><label>
+            &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
+             <input [(ngModel)]="textSort" type="text" >
+           </label></p>
+          <p><label>
+            &nbsp; &nbsp;3. Затем сортировать продукты по содержанию нутриента:
+            <select (change)="onSelectSorting($event)">
+              <option value = -1> </option>
+              <option *ngFor="let nutrient of nutrients" [value] = "nutrient.id"> {{nutrient.name}}</option>
+            </select>
+          </label></p>
+          <label>
+            &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
+          </label>
           <p></p>
         </div>
         &nbsp;&nbsp;
@@ -29,7 +35,7 @@
           <caption class="header-tables">Продукты</caption>
           <th>{{'Количество(гр.)'}}</th>
           <th>{{'Продукт'}}</th>
-          <tr *ngFor="let product of products">
+          <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
             <input type="number" title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="recalcNutrients()">
             <td title="{{product.hint}}" >{{product.name}}</td>
           </tr>
@@ -48,7 +54,7 @@
         <th>{{'Единицы измерения'}}</th>
         <th>{{'Суточная норма'}}</th>
         <th>{{'Количество(гр.)'}}</th>
-        <tr *ngFor="let nutrient of nutrients" [ngClass]="getClass(nutrient)">
+        <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
           <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
           <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
           <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
@@ -58,5 +64,6 @@
     </ng-container>
   </div>
 </div>
+<p>version 1.1</p>
 
 
