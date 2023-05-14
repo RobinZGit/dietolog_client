@@ -59,15 +59,19 @@
           <th class="th-nutr">{{'Нутриент'}}</th>
           <th class="th-nutr">{{'Единицы измерения'}}</th>
           <th class="th-nutr">{{'Суточная норма'}}</th>
+          <!--
           <th class="th-nutr">{{'n_dailyrate'}}</th>
           <th class="th-nutr">{{'nutrientIsNeeded()'}}</th>
+          -->
           <th class="th-nutr">{{'Количество(гр.)'}}</th>
           <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
             <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
+            <!--
             <td title="{{nutrient.hint}}">{{nutrient.n_dailyrate}}</td>
             <td title="{{nutrient.hint}}">{{nutrientIsNeeded(nutrient)}}</td>
+            -->
             <td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>
           </tr>
         </table>
