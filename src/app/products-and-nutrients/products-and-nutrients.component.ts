@@ -96,7 +96,9 @@ recalcNutrients(){
                                   this.products.forEach((pp:any)=> {
                                                                      ai.filter((i:any)=>i.nutrient==nutr._id)
                                                                        .forEach((i:any)=>{
-                                                                                            if((pp._id==i.product)&&(nutr._id==i.nutrient)) nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                            if((pp._id==i.product)&&(nutr._id==i.nutrient))
+                                                                                              try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                                 }catch(e){}
                                                                                           })
                                                                                    }))
               this.finalSorting()
@@ -108,7 +110,7 @@ recalcNutrients(){
 lightRecommendedProducts(){
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
-  this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(v.nutrient)).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
   let excludedProductstList =','
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
   this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.topCountRecommendedProducts)
@@ -126,11 +128,7 @@ setZeroAndRecalcNutrients(product:any){
 
 //больше или меньше (true) содержание nutrient в текущей раскладке
 nutrientIsNeeded(nutrient:any){
-  let norm = 999999
-  try{
-    norm = Number(this.currentInfo.filter((i:any)=>i.nutrient==nutrient._id)[0].perc1on100gr)*Number(this.currentInfo.filter((i:any)=>i.nutrient==nutrient._id)[0].value)/100
-  }catch(e){}
-  return !(nutrient.val>=norm)
+  return (nutrient.val<nutrient.n_dailyrate)
 }
 
 getClassNutrient(nutrient:any){
@@ -143,7 +141,7 @@ getClassProduct(product: any){
 
 improveProductValues(plusVal:number){
   try{
-    let newProduct = this.products.filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.perc1on100gr-u.perc1on100gr)[0].product)[0]
+    let newProduct = this.products.filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.value-u.value)[0].product)[0]
     this.products.map((p:any)=> {if(p._id==newProduct._id) p.val+=plusVal})
     this.findProducts()
     alert('Добавлено ' + plusVal +' гр. "'+newProduct.name+'"')
@@ -176,6 +174,7 @@ TODO -----------------------------------------------
 ...пересчет по нормам,
 колонка для собств норм - добавить perc1on100gr в ngModel, и переориентировать пересчет на него
 колонка "исключить продукт"- по выбору зачеркнутый шрифт, обнуление и запрет редактировать количество, пересчет. в пересчет и пр добавить неиспользование исключенных - передавать в сервисы как отд. строку список ид исключенных
+колонка "степенб постности"
 лэйбл - Степень отклонения раскладки от нормы
 кнопка "Улучшить раскладку (1 шаг)" - выбирает один из рекомендованных продуктов и добавляет его чтобы его нутриент вышел в норму. Идея в том чтобы кликать и смотреть постепенно, мб выбрасывая продукты
 

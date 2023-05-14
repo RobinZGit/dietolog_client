@@ -8,8 +8,8 @@
           <label>
             &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
           </label>
-          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+100 гр.)" (click)="improveProductValues(100)">&nbsp;+100</button>
-          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+1000 гр.)" (click)="improveProductValues(1000)">+1000</button>
+          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+100 гр.)" (click)="improveProductValues(100)">+100</button>
+          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+500 гр.)" (click)="improveProductValues(500)">+500</button>
           <p><label>
             &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
              <input [(ngModel)]="textSort" type="text" >
@@ -59,11 +59,15 @@
           <th class="th-nutr">{{'Нутриент'}}</th>
           <th class="th-nutr">{{'Единицы измерения'}}</th>
           <th class="th-nutr">{{'Суточная норма'}}</th>
+          <th class="th-nutr">{{'n_dailyrate'}}</th>
+          <th class="th-nutr">{{'nutrientIsNeeded()'}}</th>
           <th class="th-nutr">{{'Количество(гр.)'}}</th>
           <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
             <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
+            <td title="{{nutrient.hint}}">{{nutrient.n_dailyrate}}</td>
+            <td title="{{nutrient.hint}}">{{nutrientIsNeeded(nutrient)}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>
           </tr>
         </table>
