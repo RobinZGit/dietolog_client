@@ -20,7 +20,7 @@
 }
 
 .heiht-table-prod {
-  height: 570px;
+  height: 620px;
   overflow: auto;
   border-radius: 20px;
 }
@@ -98,6 +98,16 @@
   height: 44px;
   float: right;
   background: rgb(56, 202, 129);
+  color: white;
+  border-radius: 30px;
+  margin: 4px;
+  border:none;
+}
+
+.improve-button{
+  height: 44px;
+  float: right;
+  background: rgb(240, 143, 152);
   color: white;
   border-radius: 30px;
   margin: 4px;

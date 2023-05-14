@@ -4,29 +4,29 @@
   <div class="column">
 
     <div class="filter-prod">
-        <p>&nbsp;</p>
         <div>
           <label>
-            &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
+            &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
           </label>
+          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+100 гр.)" (click)="improveProductValues(100)">&nbsp;+100</button>
+          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+1000 гр.)" (click)="improveProductValues(1000)">+1000</button>
           <p><label>
-            &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
+            &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
              <input [(ngModel)]="textSort" type="text" >
            </label></p>
           <p><label>
-            &nbsp; &nbsp;3. Затем сортировать продукты по содержанию нутриента:
+            &nbsp; &nbsp; &nbsp;3. Затем сортировать продукты по содержанию нутриента:
             <select (change)="onSelectSorting($event)">
               <option value = -1> </option>
               <option *ngFor="let nutrient of nutrients" [value] = "nutrient.id"> {{nutrient.name}}</option>
             </select>
           </label></p>
           <label>
-            &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
+            &nbsp; &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
           </label>
           <button class="xls-button" (click)="toExcel()">Excel</button>
-          <p></p>
+          <p> &nbsp;</p>
         </div>
-        &nbsp;&nbsp;
     </div>
     <p></p>
 
@@ -41,7 +41,7 @@
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
               <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
               <td title="{{product.hint}}" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
-              <input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndrecalcNutrients(product)">
+              <input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)">
             </tr>
           </table>
         </div>

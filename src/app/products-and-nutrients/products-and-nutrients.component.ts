@@ -12,6 +12,7 @@ export class ProductsAndNutrientsComponent implements OnInit{
 products?: any
 nutrients?: any
 currentInfo?: any
+recommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
 topCountRecommendedProducts: number //для подсветки рекомендованных продуктов. отбирать столько рекомендованных продуктов на каждый нутриент
 
@@ -42,7 +43,9 @@ findProducts(){
                                                                                         if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
                                                                                         this.products=v
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
+                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
                                                                                         this.finalSorting()
+                                                                                        this.lightRecommendedProducts()
                                                                                         })
 }
 
@@ -96,22 +99,27 @@ recalcNutrients(){
                                                                                             if((pp._id==i.product)&&(nutr._id==i.nutrient)) nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
                                                                                           })
                                                                                    }))
-              //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
-              let sNutrientsNeeded = ','
-              this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(v.nutrient)).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
-              let excludedProductstList =','
-              this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
-              this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.topCountRecommendedProducts)
-                  .subscribe((np:any)=>
-                    {
-                      this.products.map((p:any)=>{p.isrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
-                    }
-                  )
-
+              this.finalSorting()
+              this.lightRecommendedProducts()
             })
   }catch(e){}
 }
-setZeroAndrecalcNutrients(product:any){
+
+lightRecommendedProducts(){
+  //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
+  let sNutrientsNeeded = ','
+  this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(v.nutrient)).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  let excludedProductstList =','
+  this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
+  this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.topCountRecommendedProducts)
+                    .subscribe((np:any)=>
+                      { this.recommendedProducts = np
+                        this.products.map((p:any)=>{p.isrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                      }
+                    )
+}
+
+setZeroAndRecalcNutrients(product:any){
    product.val = 0
    this.recalcNutrients()
 }
@@ -131,6 +139,15 @@ getClassNutrient(nutrient:any){
 
 getClassProduct(product: any){
   return (product.isrecommended==0)?"":"recommended-product"
+}
+
+improveProductValues(plusVal:number){
+  try{
+    let newProduct = this.products.filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.perc1on100gr-u.perc1on100gr)[0].product)[0]
+    this.products.map((p:any)=> {if(p._id==newProduct._id) p.val+=plusVal})
+    this.findProducts()
+    alert('Добавлено ' + plusVal +' гр. "'+newProduct.name+'"')
+  }catch(e){ alert('Не удалось подобрать продукт')}
 }
 
 toExcel(){
