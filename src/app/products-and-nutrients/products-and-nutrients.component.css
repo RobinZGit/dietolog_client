@@ -1,3 +1,5 @@
+
+
 .header-main {
   text-align: center;
 }
@@ -9,6 +11,18 @@
 .column {
   float: left;
   width: 50%;
+}
+
+.heiht-table-nutr {
+  height: 800px;
+  overflow: auto;
+  border-radius: 20px;
+}
+
+.heiht-table-prod {
+  height: 570px;
+  overflow: auto;
+  border-radius: 20px;
 }
 
 /* Clear floats after the columns */
@@ -26,18 +40,34 @@
   padding: 8px;
   width: 100% ;
   border: 1px solid #fff; /*for older IE*/
+  border-radius: 20px;
   background: #ffa;
+}
+
+.th-prod{
+  position: sticky;
+  top: 0px;
+  background-color: #ffa;
+  color:black;
 }
 
 .table-nutr {
   padding: 8px;
   width: 100% ;
   border: 1px solid #fff; /*for older IE*/
+  border-radius: 20px;
   background: rgb(209, 230, 242);
 }
 
+.th-nutrt{
+  position: sticky;
+  top: 0px;
+  background-color:rgb(209, 230, 242);
+  color:black;
+}
+
 .below-norm {
-  background: rgb(244, 168, 241);
+ /* background: rgb(244, 168, 241);  не плдсвечивать нутриенты с недостатком, подсвечиваит только с нормой или выше*/
 }
 
 .above-norm {
@@ -46,6 +76,16 @@
 
 .recommended-product{
   background: rgb(152, 239, 196);
+}
+
+.xls-button{
+  height: 44px;
+  float: right;
+  background: rgb(56, 202, 129);
+  color: white;
+  border-radius: 30px;
+  margin: 4px;
+  border:none;
 }
 
 

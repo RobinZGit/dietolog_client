@@ -23,6 +23,7 @@
           <label>
             &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
           </label>
+          <button class="xls-button" (click)="toExcel()">Excel</button>
           <p></p>
         </div>
         &nbsp;&nbsp;
@@ -31,15 +32,17 @@
 
     <div>
       <ng-container >
-        <table class="table-prod">
-          <caption class="header-tables">Продукты</caption>
-          <th>{{'Количество(гр.)'}}</th>
-          <th>{{'Продукт'}}</th>
-          <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
-            <input type="number" title="{{product.hint}}" [(ngModel)]="product.val"  #inputVal (change)="recalcNutrients()">
-            <td title="{{product.hint}}" >{{product.name}}</td>
-          </tr>
-        </table>
+        <div class="heiht-table-prod">
+          <table class="table-prod">
+            <caption class="header-tables">Продукты</caption>
+            <th class="th-prod">{{'Количество(гр.)'}}</th>
+            <th class="th-prod">{{'Продукт'}}</th>
+            <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
+              <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()">
+              <td title="{{product.hint}}" >{{product.name}}</td>
+            </tr>
+          </table>
+        </div>
       </ng-container>
     </div>
   </div>
@@ -48,19 +51,21 @@
 
   <div class="column">
     <ng-container >
-      <table class="table-nutr">
-        <caption class="header-tables">Нутриенты</caption>
-        <th>{{'Нутриент'}}</th>
-        <th>{{'Единицы измерения'}}</th>
-        <th>{{'Суточная норма'}}</th>
-        <th>{{'Количество(гр.)'}}</th>
-        <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
-          <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
-          <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
-          <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
-          <td title="{{nutrient.hint}}">{{nutrient.val}}</td>
-        </tr>
-      </table>
+      <div class="heiht-table-nutr">
+        <table class="table-nutr">
+          <caption class="header-tables">Нутриенты</caption>
+          <th class="th-nutr">{{'Нутриент'}}</th>
+          <th class="th-nutr">{{'Единицы измерения'}}</th>
+          <th class="th-nutr">{{'Суточная норма'}}</th>
+          <th class="th-nutr">{{'Количество(гр.)'}}</th>
+          <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
+            <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
+            <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
+            <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
+            <td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>
+          </tr>
+        </table>
+      </div>
     </ng-container>
   </div>
 </div>
