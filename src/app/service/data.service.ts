@@ -37,8 +37,8 @@ findInfoByProductList(productList:string)  {
 
 //возвращает массив продуктов, в корторых максимальное содержание какого-либо нутриента из sNutrientsNeeded.
 //Отбирает по topCount продукта для каждого нутриента
-findRecommendedProducts(sNutrientsNeeded:string, topCountRecommendedProducts:number)  {
-  let params = new HttpParams().append("nutrientList",sNutrientsNeeded).append("topCountRecommendedProducts",topCountRecommendedProducts)
+findRecommendedProducts(sNutrientsNeeded:string, excludedProductstList:string, topCountRecommendedProducts:number)  {
+  let params = new HttpParams().append("nutrientList",sNutrientsNeeded).append("excludedProductstList",excludedProductstList).append("topCountRecommendedProducts",topCountRecommendedProducts)
   return this.http.get<string>(this.url+'/api/recommended_products',{params:params})
 }
 }

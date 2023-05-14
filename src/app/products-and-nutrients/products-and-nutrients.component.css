@@ -36,11 +36,17 @@
   background: rgb(240, 246, 229);
   border-radius: 20px;
 }
+
+.header-table-prod{
+  font-weight: bold;
+  background: #ffa;
+}
+
 .table-prod {
   padding: 8px;
   width: 100% ;
-  border: 1px solid #fff; /*for older IE*/
-  border-radius: 20px;
+  /*border: 1px solid #fff; */
+  /*border-radius: 20px;*/
   background: #ffa;
 }
 
@@ -51,11 +57,16 @@
   color:black;
 }
 
+.header-table-nutr{
+  font-weight: bold;
+  background: rgb(209, 230, 242);
+}
+
 .table-nutr {
   padding: 8px;
   width: 100% ;
-  border: 1px solid #fff; /*for older IE*/
-  border-radius: 20px;
+  /*border: 1px solid #fff; */
+  /*border-radius: 20px;*/
   background: rgb(209, 230, 242);
 }
 
@@ -76,6 +87,11 @@
 
 .recommended-product{
   background: rgb(152, 239, 196);
+}
+
+.excluded-product{
+  font-style: italic;
+  color:rgb(237, 31, 96);
 }
 
 .xls-button{

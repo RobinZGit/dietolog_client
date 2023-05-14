@@ -34,12 +34,14 @@
       <ng-container >
         <div class="heiht-table-prod">
           <table class="table-prod">
-            <caption class="header-tables">Продукты</caption>
+            <caption class="header-table-prod">Продукты</caption>
             <th class="th-prod">{{'Количество(гр.)'}}</th>
             <th class="th-prod">{{'Продукт'}}</th>
+            <th class="th-prod">{{'Исключен'}}</th>
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
-              <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()">
-              <td title="{{product.hint}}" >{{product.name}}</td>
+              <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
+              <td title="{{product.hint}}" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
+              <input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndrecalcNutrients(product)">
             </tr>
           </table>
         </div>
@@ -53,7 +55,7 @@
     <ng-container >
       <div class="heiht-table-nutr">
         <table class="table-nutr">
-          <caption class="header-tables">Нутриенты</caption>
+          <caption class="header-table-nutr">Нутриенты</caption>
           <th class="th-nutr">{{'Нутриент'}}</th>
           <th class="th-nutr">{{'Единицы измерения'}}</th>
           <th class="th-nutr">{{'Суточная норма'}}</th>
@@ -69,6 +71,6 @@
     </ng-container>
   </div>
 </div>
-<p>version 1.1</p>
+<p style="font-style: italic;">version 1.1</p>
 
 
