@@ -42,6 +42,8 @@
               <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
               <td title="{{product.hint}}" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
               <input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)">
+              <!--<td>{{product.isrecommended}}</td>
+              <td>{{product.isnotrecommended}}</td>-->
             </tr>
           </table>
         </div>
@@ -59,20 +61,21 @@
           <th class="th-nutr">{{'Нутриент'}}</th>
           <th class="th-nutr">{{'Единицы измерения'}}</th>
           <th class="th-nutr">{{'Суточная норма'}}</th>
-          <!--
-          <th class="th-nutr">{{'n_dailyrate'}}</th>
-          <th class="th-nutr">{{'nutrientIsNeeded()'}}</th>
-          -->
           <th class="th-nutr">{{'Количество(гр.)'}}</th>
+          <th class="th-nutr">{{'min_dailyrate'}}</th>
+          <th class="th-nutr">{{'max_dailyrate'}}</th>
+          <th class="th-nutr">{{'nutrientIsNeeded()'}}</th>
+          <th class="th-nutr">{{'nutrientIsExceeded()'}}</th>
           <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
             <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.dailyrate}}</td>
-            <!--
-            <td title="{{nutrient.hint}}">{{nutrient.n_dailyrate}}</td>
-            <td title="{{nutrient.hint}}">{{nutrientIsNeeded(nutrient)}}</td>
-            -->
+
             <td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>
+            <td>{{nutrient.min_dailyrate}}</td>
+            <td>{{nutrient.max_dailyrate}}</td>
+            <td>{{nutrientIsNeeded(nutrient)}}</td>
+            <td>{{nutrientIsExceeded(nutrient)}}</td>
           </tr>
         </table>
       </div>

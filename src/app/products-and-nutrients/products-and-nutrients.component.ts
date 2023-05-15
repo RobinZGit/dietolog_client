@@ -13,8 +13,9 @@ products?: any
 nutrients?: any
 currentInfo?: any
 recommendedProducts?: any
+notRecommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
-topCountRecommendedProducts: number //для подсветки рекомендованных продуктов. отбирать столько рекомендованных продуктов на каждый нутриент
+topCountRecommendedProducts: number //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
 
 //textFilter: string  //!не использовать! фильтрация ломает пересчет. убрал с формы
 textSort: string
@@ -29,7 +30,7 @@ constructor(private dataService:DataService){
   this.sortByNutrient = -1
   this.valued_ontop = false
   this.sortBySubstr = false
-  this.topCountRecommendedProducts = 5 // #######   //для подсветки рекомендованных продуктов. отбирать столько рекомендованных продуктов на каждый нутриент
+  this.topCountRecommendedProducts = 5 // #######   //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
 }
 
 
@@ -119,6 +120,17 @@ lightRecommendedProducts(){
                         this.products.map((p:any)=>{p.isrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
                       }
                     )
+
+  //подсветка НЕ рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
+  let sNutrientsExceeded = ','
+  this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.topCountRecommendedProducts) //sic! findRecommendedProducts
+                    .subscribe((np:any)=>
+                      { this.notRecommendedProducts = np
+                        this.products.map((p:any)=>{p.isnotrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                      }
+                    )
+
 }
 
 setZeroAndRecalcNutrients(product:any){
@@ -128,15 +140,23 @@ setZeroAndRecalcNutrients(product:any){
 
 //больше или меньше (true) содержание nutrient в текущей раскладке
 nutrientIsNeeded(nutrient:any){
-  return (nutrient.val<nutrient.n_dailyrate)
+  return (nutrient.val<nutrient.min_dailyrate)
+}
+
+nutrientIsExceeded(nutrient:any){
+  return (nutrient.val>nutrient.max_dailyrate)
 }
 
 getClassNutrient(nutrient:any){
-  return !this.nutrientIsNeeded(nutrient)?'above-norm':'below-norm'
+  let sRet = this.nutrientIsNeeded(nutrient)?'below-norm':'within-norm'
+  sRet = this.nutrientIsExceeded(nutrient)?"above-norm":sRet
+  return sRet
 }
 
 getClassProduct(product: any){
-  return (product.isrecommended==0)?"":"recommended-product"
+  let sRet = (product.isrecommended==0)?"":"recommended-product"
+  if (sRet.length == 0) sRet = (product.isnotrecommended==0)?"":"notrecommended-product"
+  return sRet
 }
 
 improveProductValues(plusVal:number){
