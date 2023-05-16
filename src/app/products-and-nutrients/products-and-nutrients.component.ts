@@ -16,6 +16,8 @@ recommendedProducts?: any
 notRecommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
 topCountRecommendedProducts: number //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
+keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
+keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
 
 //textFilter: string  //!не использовать! фильтрация ломает пересчет. убрал с формы
 textSort: string
@@ -35,8 +37,15 @@ constructor(private dataService:DataService){
 
 
 ngOnInit(): void{
-  this.findProducts()
-  this.findNutrients()
+    this.findProducts()
+    this.findNutrients()
+    try{//загружаем сохраненную в браузере конфигурацию
+      if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)&&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)){
+        this.products = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageProducts)))
+        this.nutrients = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageNutrients)))
+        this.recalcNutrients()
+      }
+    }catch(e){}
 }
 
 findProducts(){
@@ -104,6 +113,8 @@ recalcNutrients(){
                                                                                    }))
               this.finalSorting()
               this.lightRecommendedProducts()
+              localStorage.setItem(this.keyForLocalStorageProducts,JSON.stringify(this.products))
+              localStorage.setItem(this.keyForLocalStorageNutrients,JSON.stringify(this.nutrients))
             })
   }catch(e){}
 }
@@ -154,8 +165,10 @@ getClassNutrient(nutrient:any){
 }
 
 getClassProduct(product: any){
-  let sRet = (product.isrecommended==0)?"":"recommended-product"
-  if (sRet.length == 0) sRet = (product.isnotrecommended==0)?"":"notrecommended-product"
+  let sRet = ''
+  if ((product.isrecommended==1)&&(product.isnotrecommended==0)) sRet ="recommended-product"
+  if ((product.isrecommended==0)&&(product.isnotrecommended==1)) sRet ="notrecommended-product"
+  if ((product.isrecommended==1)&&(product.isnotrecommended==1)) sRet ="recommended-and-not-product"
   return sRet
 }
 
@@ -166,6 +179,10 @@ improveProductValues(plusVal:number){
     this.findProducts()
     alert('Добавлено ' + plusVal +' гр. "'+newProduct.name+'"')
   }catch(e){ alert('Не удалось подобрать продукт')}
+}
+
+excludeAll(checked:boolean){
+  this.products.map((p:any)=>{if(p.val==0) p.excluded=checked})
 }
 
 toExcel(){
@@ -186,19 +203,14 @@ toExcel(){
 /*
 TODO -----------------------------------------------
 ПРОВЕРИТЬ ЗЕФИР 300    Вино полудесертное 66 - косяки в подсветке - ГЛОБАЛЬНО ПОТЕСТИТь ПОПРАВИТЬ БД И ЗАПИХАТЬ ЕЕ В СЕРВИС
-ограничение размеров таблиц и стилим
-ЭКСЕЛЬ - единицы мизмерения, нормальные имена колонок, колонка избыток-недостаток ыв нутриенты и сортировка по ней
+фильтры и сортировки загнать в один объект и сохранять\подгружать в onInit
+ЭКСЕЛЬ - единицы измерения, нормальные имена колонок, колонка избыток-недостаток ыв нутриенты и сортировка по ней
 
 ...
 ...
-...пересчет по нормам,
-колонка для собств норм - добавить perc1on100gr в ngModel, и переориентировать пересчет на него
-колонка "исключить продукт"- по выбору зачеркнутый шрифт, обнуление и запрет редактировать количество, пересчет. в пересчет и пр добавить неиспользование исключенных - передавать в сервисы как отд. строку список ид исключенных
-колонка "степенб постности"
-лэйбл - Степень отклонения раскладки от нормы
-кнопка "Улучшить раскладку (1 шаг)" - выбирает один из рекомендованных продуктов и добавляет его чтобы его нутриент вышел в норму. Идея в том чтобы кликать и смотреть постепенно, мб выбрасывая продукты
+...пересчет по нормам - сервис оптимизации (перебор 0 - 2000гр крупным шагом 10-50 гр),
 
-мб добавить свисок симптомов избытка и недостатка - и в таблицу ниже. по выбору симптома подсветка нутриентов и продуктов
+мб добавить сgисок симптомов избытка и недостатка - и в таблицу ниже. по выбору симптома подсветка нутриентов и продуктов
 */
 
 

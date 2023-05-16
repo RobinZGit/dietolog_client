@@ -97,6 +97,10 @@
   background: rgb(241, 200, 231);
 }
 
+.recommended-and-not-product{
+  background: rgb(239, 191, 47);
+}
+
 .excluded-product{
   font-style: italic;
   color:rgb(237, 31, 96);
