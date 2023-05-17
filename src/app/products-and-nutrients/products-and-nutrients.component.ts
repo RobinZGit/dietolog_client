@@ -15,24 +15,28 @@ currentInfo?: any
 recommendedProducts?: any
 notRecommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
-topCountRecommendedProducts: number //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
+//topCountRecommendedProducts: number //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
 keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
 keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
+keyForLocalStorageParams: string = 'rz_dietolog_configuration_params'
 
 //textFilter: string  //!не использовать! фильтрация ломает пересчет. убрал с формы
+/*
 textSort: string
 sortByNutrient: number  //сортировка по нутриенту
 valued_ontop: boolean //поместить выбранные количества сверху(в остальном сохранить сортировку по нутриенту)
 sortBySubstr: boolean //поместить сверху содержащие  textSort
+*/
+params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 
 
 constructor(private dataService:DataService){
   //this.textFilter=''
-  this.textSort=''
-  this.sortByNutrient = -1
-  this.valued_ontop = false
-  this.sortBySubstr = false
-  this.topCountRecommendedProducts = 5 // #######   //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
+  this.params.textSort=''
+  this.params.sortByNutrient = -1
+  this.params.valued_ontop = false
+  this.params.sortBySubstr = false
+  this.params.topCountRecommendedProducts = 5 // #######   //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
 }
 
 
@@ -40,16 +44,19 @@ ngOnInit(): void{
     this.findProducts()
     this.findNutrients()
     try{//загружаем сохраненную в браузере конфигурацию
-      if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)&&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)){
+      if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)
+         &&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)
+         &&(localStorage.getItem(this.keyForLocalStorageParams)!==null)){
         this.products = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageProducts)))
         this.nutrients = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageNutrients)))
+        this.params = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageParams)))
         this.recalcNutrients()
       }
     }catch(e){}
 }
 
 findProducts(){
-  this.dataService.findProducts('', this.sortByNutrient).subscribe((v:string[])=>{
+  this.dataService.findProducts('', this.params.sortByNutrient).subscribe((v:string[])=>{
                                                                                         if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
                                                                                         this.products=v
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
@@ -69,15 +76,17 @@ a1MoreA2(a1:number[],a2:number[]){
 }
 
 finalSorting(){
-  this.products.sort((u:any,v:any)=>{ let a1 = [v.val*(this.valued_ontop?1:0),v.name.toUpperCase().indexOf(this.textSort.toUpperCase())*(this.sortBySubstr?1:0),-v.rownumber]
-                                      let a2 = [u.val*(this.valued_ontop?1:0),u.name.toUpperCase().indexOf(this.textSort.toUpperCase())*(this.sortBySubstr?1:0),-u.rownumber]
+  this.products.sort((u:any,v:any)=>{ let a1 = [v.val*(this.params.valued_ontop?1:0),v.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),-v.rownumber]
+                                      let a2 = [u.val*(this.params.valued_ontop?1:0),u.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),-u.rownumber]
                                       return this.a1MoreA2(a1,a2)
                                      })
+  this.saveSettings()
 }
 
 onSelectSorting(event:any){
-  this.sortByNutrient = event.target.value
+  this.params.sortByNutrient = event.target.value
   this.findProducts()
+  this.saveSettings()
 }
 
 findNutrients(){
@@ -113,8 +122,7 @@ recalcNutrients(){
                                                                                    }))
               this.finalSorting()
               this.lightRecommendedProducts()
-              localStorage.setItem(this.keyForLocalStorageProducts,JSON.stringify(this.products))
-              localStorage.setItem(this.keyForLocalStorageNutrients,JSON.stringify(this.nutrients))
+              this.saveSettings()
             })
   }catch(e){}
 }
@@ -125,7 +133,7 @@ lightRecommendedProducts(){
   this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
   let excludedProductstList =','
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
-  this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.topCountRecommendedProducts)
+  this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
                     .subscribe((np:any)=>
                       { this.recommendedProducts = np
                         this.products.map((p:any)=>{p.isrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
@@ -135,7 +143,7 @@ lightRecommendedProducts(){
   //подсветка НЕ рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsExceeded = ','
   this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
-  this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.topCountRecommendedProducts) //sic! findRecommendedProducts
+  this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
                     .subscribe((np:any)=>
                       { this.notRecommendedProducts = np
                         this.products.map((p:any)=>{p.isnotrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
@@ -183,6 +191,13 @@ improveProductValues(plusVal:number){
 
 excludeAll(checked:boolean){
   this.products.map((p:any)=>{if(p.val==0) p.excluded=checked})
+  this.saveSettings()
+}
+
+saveSettings(){
+  localStorage.setItem(this.keyForLocalStorageProducts,JSON.stringify(this.products))
+  localStorage.setItem(this.keyForLocalStorageNutrients,JSON.stringify(this.nutrients))
+  localStorage.setItem(this.keyForLocalStorageParams,JSON.stringify(this.params))
 }
 
 toExcel(){
@@ -203,7 +218,7 @@ toExcel(){
 /*
 TODO -----------------------------------------------
 ПРОВЕРИТЬ ЗЕФИР 300    Вино полудесертное 66 - косяки в подсветке - ГЛОБАЛЬНО ПОТЕСТИТь ПОПРАВИТЬ БД И ЗАПИХАТЬ ЕЕ В СЕРВИС
-фильтры и сортировки загнать в один объект и сохранять\подгружать в onInit
+фильтры и сортировки загнать в один объект и сохранять\подгружать в onInit  - не сортирует  и не сохраняет сортировку по нутриенту - ngModel не сортирует
 ЭКСЕЛЬ - единицы измерения, нормальные имена колонок, колонка избыток-недостаток ыв нутриенты и сортировка по ней
 
 ...

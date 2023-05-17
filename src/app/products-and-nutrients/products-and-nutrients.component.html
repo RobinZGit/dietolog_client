@@ -6,13 +6,13 @@
     <div class="filter-prod">
         <div>
           <label>
-            &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
+            &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="params.valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
           </label>
           <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+100 гр.)" (click)="improveProductValues(100)">+100</button>
           <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+500 гр.)" (click)="improveProductValues(500)">+500</button>
           <p><label>
-            &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
-             <input [(ngModel)]="textSort" type="text" >
+            &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="params.sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
+             <input [(ngModel)]="params.textSort" type="text" >
            </label></p>
           <p><label>
             &nbsp; &nbsp; &nbsp;3. Затем сортировать продукты по содержанию нутриента:
@@ -22,7 +22,7 @@
             </select>
           </label></p>
           <label>
-            &nbsp; &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
+            &nbsp; &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="params.topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
           </label>
           <button class="xls-button" (click)="toExcel()">Excel</button>
           <p> &nbsp;</p>
