@@ -1,6 +1,7 @@
 import { Component, OnInit} from '@angular/core';
 import { DataService } from '../service/data.service';
 import * as XLSX from 'xlsx';
+import { OptimisationService } from '../service/optimisation.service';
 
 @Component({
   selector: 'app-products-and-nutrients',
@@ -30,7 +31,7 @@ sortBySubstr: boolean //поместить сверху содержащие  te
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 
 
-constructor(private dataService:DataService){
+constructor(private dataService:DataService, private optimisationServise:OptimisationService){
   //this.textFilter=''
   this.params.textSort=''
   this.params.sortByNutrient = -1
@@ -213,6 +214,10 @@ toExcel(){
   XLSX.utils.book_append_sheet(workbook, wsProducts, 'Продукты');
   XLSX.utils.book_append_sheet(workbook, wsNutrients, 'Нутриенты в данной раскладке');
   XLSX.writeFile(workbook,'dietolog.xlsx');
+}
+
+optimize(){
+  this.optimisationServise.generate(this.products,this.nutrients) //todo   сделать асинхронным !!!!
 }
 
 /*

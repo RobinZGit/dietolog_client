@@ -11,27 +11,32 @@ export class OptimisationService {
   NN  : number = 10    //точек разбиения
 
   currVector: any[]=[] //
+  optimumVector: any[]=[] //
   currNorma: number = 0
-  currDelta: number= Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
+  currDelta: number= 0//Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
 
 
 
   //==============================================================
   //==   ОСНОВНАЯ ПРОЦЕДУРА, ВЫХОД - ОПТИМАЛЬНЫЙ ВЕКТОР     ======
-  generate() : any[] {
+  generate(products:any,nutrients:any) : any[] {
+    alert('optimisation will start here'); return[];
+    this.NN = nutrients.length
+    this.currDelta = Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
     let normPrev = 0
     let norm = 0
     let i = 0
-    while (i<10000){ //.................!!!! criteria ????  -- мб передавать в параметр процедуры тип критерия
+    while (i<(products.length*this.NN)){ //.................!!!! criteria ????  -- мб передавать в параметр процедуры тип критерия
       i++
       this.oneStep()
       norm = this.norm2(this.currVector)  //..........this.norm2( НАЙТИ НУТРИЕНТЫ(this.currVector))
-      if (norm<normPrev){   //norm<normPrev   - это первай локальный оптимум
-        return this.currVector
+      if (norm<this.norm2(this.optimumVector)){   //
+        this.optimumVector = this.currVector.slice()
+        //return this.currVector
       }
       normPrev = norm
     }
-    return this.currVector
+    return this.optimumVector
   }
   //..... сделать асинх!!!!
   //===========================================================
