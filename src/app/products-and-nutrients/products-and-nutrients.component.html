@@ -6,13 +6,13 @@
     <div class="filter-prod">
         <div>
           <label>
-            &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="params.valued_ontop" (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
+            &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="params.valued_ontop"  (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
           </label>
           <button class="improve-button" title="Рассчитать оптимальную раскладку" (click)="optimize()">&nbsp;GO!&nbsp;</button>
           <!--<button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+500 гр.)" (click)="improveProductValues(500)">+500</button>-->
           <p><label>
             &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="params.sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
-             <input [(ngModel)]="params.textSort" type="text" >
+             <input [(ngModel)]="params.textSort" type="text" (change)="params.sortBySubstr=true" >
            </label></p>
           <p><label>
             &nbsp; &nbsp; &nbsp;3. Затем сортировать продукты по содержанию нутриента:

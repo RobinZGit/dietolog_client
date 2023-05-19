@@ -1,42 +1,71 @@
 import { Injectable } from '@angular/core';
+import { DataService } from './data.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OptimisationService {
 
-  constructor() { }
+  constructor(private dataService: DataService) { }
 
   maxL: number = 2000  //грамм, граница поиска для одного продукта
   NN  : number = 10    //точек разбиения
 
+  matrix: any[][]=[]
   currVector: any[]=[] //
   optimumVector: any[]=[] //
   currNorma: number = 0
-  currDelta: number= 0//Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
+  currDelta: any= 0n//Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
 
 
 
   //==============================================================
   //==   ОСНОВНАЯ ПРОЦЕДУРА, ВЫХОД - ОПТИМАЛЬНЫЙ ВЕКТОР     ======
-  generate(products:any,nutrients:any) : any[] {
-    alert('optimisation will start here'); return[];
+  generate(products:any,nutrients:any)  {
+    alert('optimisation will start here');
     this.NN = nutrients.length
-    this.currDelta = Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
+    this.currDelta = BigInt(Math.pow(2,this.NN+1))  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
+    products.forEach((p:any)=>this.currVector.push(p))
+    this.currVector.forEach((p:any)=>p.val=0)
+    //alert(JSON.stringify(this.currVector))
     let normPrev = 0
     let norm = 0
     let i = 0
-    while (i<(products.length*this.NN)){ //.................!!!! criteria ????  -- мб передавать в параметр процедуры тип критерия
-      i++
-      this.oneStep()
-      norm = this.norm2(this.currVector)  //..........this.norm2( НАЙТИ НУТРИЕНТЫ(this.currVector))
-      if (norm<this.norm2(this.optimumVector)){   //
-        this.optimumVector = this.currVector.slice()
-        //return this.currVector
-      }
-      normPrev = norm
-    }
-    return this.optimumVector
+    let sProducts = ','
+    products.forEach((p:any) => {sProducts+=p._id+','})
+    this.dataService.findInfoByProductList(sProducts+',')
+       .subscribe({
+        next:
+           (ai:any)=>{
+            //alert(JSON.stringify(ai.length))
+            this.matrix=ai
+            this.optimumVector = this.currVector
+            //alert(JSON.stringify(this.optimumVector))
+            while (i<(products.length*this.NN)){ //.................!!!! criteria ????  -- мб передавать в параметр процедуры тип критерия
+              i++
+              this.oneStep()
+              if(i>5){alert(JSON.stringify(this.optimumVector.filter((p)=>p.val>0)));return this.optimumVector}; //########################### COUNT LIM ############################
+              norm = this.norm2(this.currVector,nutrients)  //..........this.norm2( НАЙТИ НУТРИЕНТЫ(this.currVector))
+              if (norm<this.norm2(this.optimumVector,nutrients)){   //
+                this.optimumVector = this.currVector
+                //alert(JSON.stringify(this.optimumVector))
+                //return this.currVector
+              }
+              normPrev = norm
+            }
+            //alert(JSON.stringify(this.optimumVector.map((p:any)=>{p=p})))
+            return this.optimumVector
+           },
+        error:(e)=>{return 0}
+
+        }
+
+       )
+
+    //alert(this.currDelta+1n)
+    //alert((this.currDelta+1).toString())
+
+
   }
   //..... сделать асинх!!!!
   //===========================================================
@@ -46,28 +75,43 @@ export class OptimisationService {
 
 
   //евклидова норма
-  norm2(vec:any[]){
-    let n = 0
-    vec.forEach(v=>n+=(v.val*v.val))
-    return Math.sqrt(n)
+  norm2(vecP:any[],vecN:any[]): number|any{
+    let nRet = 0
+    let vecNorm: any=[] //массив количеств  нутриентов
+    vecN.forEach((n:any)=>{vecNorm.push({_id:n._id,val:0, daily_norm:(n.min_dailyrate+n.max_dailyrate)/2})}) //обнуление количеств нутриентов
+    //alert(JSON.stringify(vecNorm))
+    //умножение на матрицу
+    vecNorm.map((n:any)=>{/*alert(n._id+'  '+JSON.stringify(this.matrix));*/ this.matrix.filter((mm:any)=>{/*alert(''+mm.nutrient +'  - '+n._id);*/return mm.nutrient==n._id}).forEach((mmm:any)=>{vecP.forEach((p:any)=>{/*alert(JSON.stringify(n));*/n.val=n.val + p.val * ((mmm.product==p._id)?(mmm.value-n.daily_norm):0)      }  )})})
+    //вычисление нормы вектора количеств нутриентов
+    vecNorm.forEach((v:any)=>nRet+=(v.val*v.val))
+    //alert(Math.sqrt(nRet))
+    return Math.sqrt(nRet)
+
   }
 
   //евклидово расстояние
+  /*
   dist2(vec1:any[],vec2:any[]){
       let vec = vec1.slice()
       vec.map((v,i)=>v.val= (v.val - vec2[i].val))
       return this.norm2(vec)
   }
+*/
 
   oneStep(){
-    this.currDelta += 1
+    this.currDelta = BigInt(this.currDelta)+BigInt(1)
+    //alert(JSON.stringify(this.currVector))
+    //alert(JSON.stringify(this.optimumVector))
     this.incCurrVector(this.currDelta)
+    //alert(this.currDelta.toString(2))
+    //alert(JSON.stringify(this.currVector.map((p=>p=[p.val]))))
   }
 
   incCurrVector(delta : number){
     //..............  !!!! TODO !!!! цикл по цифрам delta%2  и приращение  ...................
     let sDelta = this.currDelta.toString(2)
     for(let i=1;i<sDelta.length;i++) this.currVector[i-1].val= this.currVector[i-1].val + Number(sDelta[i])*this.maxL/this.NN
+    //alert(JSON.stringify(this.currVector))
   }
 
 

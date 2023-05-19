@@ -217,7 +217,7 @@ toExcel(){
 }
 
 optimize(){
-  this.optimisationServise.generate(this.products,this.nutrients) //todo   сделать асинхронным !!!!
+  this.optimisationServise.generate(this.products,this.nutrients)
 }
 
 /*
