@@ -23,7 +23,7 @@ export class OptimisationService {
   //==   ОСНОВНАЯ ПРОЦЕДУРА, ВЫХОД - ОПТИМАЛЬНЫЙ ВЕКТОР     ======
   generate(products:any,nutrients:any)  {
     alert('optimisation will start here');
-    this.NN = nutrients.length
+    this.NN = nutrients.filter((n:any)=>n.excluded==0).length
     this.currDelta = BigInt(Math.pow(2,this.NN+1))  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
     products.forEach((p:any)=>this.currVector.push(p))
     this.currVector.forEach((p:any)=>p.val=0)
@@ -78,10 +78,10 @@ export class OptimisationService {
   norm2(vecP:any[],vecN:any[]): number|any{
     let nRet = 0
     let vecNorm: any=[] //массив количеств  нутриентов
-    vecN.forEach((n:any)=>{vecNorm.push({_id:n._id,val:0, daily_norm:(n.min_dailyrate+n.max_dailyrate)/2})}) //обнуление количеств нутриентов
+    vecN.filter((n:any)=>n.excluded==0).forEach((n:any)=>{vecNorm.push({_id:n._id,val:0, daily_norm:(n.min_dailyrate+n.max_dailyrate)/2})}) //обнуление количеств нутриентов
     //alert(JSON.stringify(vecNorm))
     //умножение на матрицу
-    vecNorm.map((n:any)=>{/*alert(n._id+'  '+JSON.stringify(this.matrix));*/ this.matrix.filter((mm:any)=>{/*alert(''+mm.nutrient +'  - '+n._id);*/return mm.nutrient==n._id}).forEach((mmm:any)=>{vecP.forEach((p:any)=>{/*alert(JSON.stringify(n));*/n.val=n.val + p.val * ((mmm.product==p._id)?(mmm.value-n.daily_norm):0)      }  )})})
+    vecNorm.map((n:any)=>{this.matrix.filter((mm:any)=>{return mm.nutrient==n._id}).forEach((mmm:any)=>{vecP.forEach((p:any)=>{n.val=n.val + p.val * ((mmm.product==p._id)?(mmm.value-n.daily_norm):0)      }  )})})
     //вычисление нормы вектора количеств нутриентов
     vecNorm.forEach((v:any)=>nRet+=(v.val*v.val))
     //alert(Math.sqrt(nRet))
@@ -100,11 +100,7 @@ export class OptimisationService {
 
   oneStep(){
     this.currDelta = BigInt(this.currDelta)+BigInt(1)
-    //alert(JSON.stringify(this.currVector))
-    //alert(JSON.stringify(this.optimumVector))
     this.incCurrVector(this.currDelta)
-    //alert(this.currDelta.toString(2))
-    //alert(JSON.stringify(this.currVector.map((p=>p=[p.val]))))
   }
 
   incCurrVector(delta : number){

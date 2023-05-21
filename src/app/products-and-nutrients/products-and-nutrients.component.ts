@@ -97,7 +97,14 @@ findNutrients(){
                                 ]
                               }`)
                               */
-  this.dataService.findNutrients('').subscribe((v:string)=>{this.nutrients=v})
+  this.dataService.findNutrients('').subscribe((v:string)=>{
+                              if (this.nutrients!=undefined) this.pcopy = this.nutrients.slice()//для сохранения  признака excluded
+                              this.nutrients=v
+                              if(this.pcopy.length>0) this.nutrients.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
+                              //this.finalSorting()
+                              //this.lightRecommendedProducts()
+                                    //this.nutrients=v
+                          })
 }
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
@@ -108,11 +115,13 @@ recalcNutrients(){
     //пересчет
     let sProducts = ','
     this.products.filter((v:any)=>v.val>0).forEach((p:any) => {sProducts+=p._id+','})
+    let excludedNutrientsList =','
+    this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
     this.dataService.findInfoByProductList(sProducts+',')
         .subscribe((ai:any)=>
             { //пересчет количеств нутриентов в выбранных продуктах
               this.currentInfo = ai
-              this.nutrients.map((nutr:any)=>
+              this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
                                   this.products.forEach((pp:any)=> {
                                                                      ai.filter((i:any)=>i.nutrient==nutr._id)
                                                                        .forEach((i:any)=>{
@@ -131,9 +140,11 @@ recalcNutrients(){
 lightRecommendedProducts(){
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
-  this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
   let excludedProductstList =','
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
+  //let excludedNutrientsList =','
+  //this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
   this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
                     .subscribe((np:any)=>
                       { this.recommendedProducts = np
@@ -143,7 +154,7 @@ lightRecommendedProducts(){
 
   //подсветка НЕ рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsExceeded = ','
-  this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
   this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
                     .subscribe((np:any)=>
                       { this.notRecommendedProducts = np
@@ -160,14 +171,17 @@ setZeroAndRecalcNutrients(product:any){
 
 //больше или меньше (true) содержание nutrient в текущей раскладке
 nutrientIsNeeded(nutrient:any){
+  if (nutrient==undefined) return false
   return (nutrient.val<nutrient.min_dailyrate)
 }
 
 nutrientIsExceeded(nutrient:any){
+  if (nutrient==undefined) return false
   return (nutrient.val>nutrient.max_dailyrate)
 }
 
 getClassNutrient(nutrient:any){
+  if (nutrient==undefined) return ''
   let sRet = this.nutrientIsNeeded(nutrient)?'below-norm':'within-norm'
   sRet = this.nutrientIsExceeded(nutrient)?"above-norm":sRet
   return sRet
@@ -190,8 +204,13 @@ improveProductValues(plusVal:number){
   }catch(e){ alert('Не удалось подобрать продукт')}
 }
 
-excludeAll(checked:boolean){
+excludeAllProducts(checked:boolean){
   this.products.map((p:any)=>{if(p.val==0) p.excluded=checked})
+  this.saveSettings()
+}
+
+excludeAllNutrients(checked:boolean){
+  this.nutrients.map((n:any)=>{n.excluded=checked})
   this.saveSettings()
 }
 

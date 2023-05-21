@@ -12,7 +12,7 @@
           <!--<button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+500 гр.)" (click)="improveProductValues(500)">+500</button>-->
           <p><label>
             &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="params.sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
-             <input [(ngModel)]="params.textSort" type="text" (change)="params.sortBySubstr=true" >
+             <input [(ngModel)]="params.textSort" type="text" (change)="params.sortBySubstr=true;finalSorting()" >
            </label></p>
           <p><label>
             &nbsp; &nbsp; &nbsp;3. Затем сортировать продукты по содержанию нутриента:
@@ -37,7 +37,7 @@
             <caption class="header-table-prod">Продукты</caption>
             <th class="th-prod">{{'Количество(гр.)'}}</th>
             <th class="th-prod">{{'Продукт'}}</th>
-            <th class="th-prod">{{'Исключен'}}  <input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAll(exclude_All.checked)"> </th>
+            <th class="th-prod">{{'Исключен'}}  <input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAllProducts(exclude_All.checked)"> </th>
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
               <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
               <td title="{{product.hint}}" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
@@ -61,12 +61,14 @@
           <th class="th-nutr">{{'Минимальная суточная норма'}}</th>
           <th class="th-nutr">{{'Максимальная суточная норма'}}</th>
           <th class="th-nutr">{{'Количество в текущей раскладке(гр.)'}}</th>
+          <th class="th-nutr">{{'Исключен'}}  <input #exclude_AllN type="checkbox" title="Исключить все" (change)="excludeAllNutrients(exclude_AllN.checked)"> </th>
           <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
-            <td title="{{nutrient.hint}}" >{{nutrient.name}}</td>
+            <td title="{{nutrient.hint}}" [ngClass]="nutrient.excluded?'excluded-product':''" >{{nutrient.name}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.min_dailyrate}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.max_dailyrate}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>
+            <input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()">
           </tr>
         </table>
       </div>
