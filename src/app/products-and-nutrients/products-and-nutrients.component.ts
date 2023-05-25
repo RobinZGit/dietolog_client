@@ -2,6 +2,7 @@ import { Component, OnInit} from '@angular/core';
 import { DataService } from '../service/data.service';
 import * as XLSX from 'xlsx';
 import { OptimisationService } from '../service/optimisation.service';
+import { StaticDataSource } from '../model/static.datasource';
 
 @Component({
   selector: 'app-products-and-nutrients',
@@ -13,6 +14,7 @@ export class ProductsAndNutrientsComponent implements OnInit{
 products?: any
 nutrients?: any
 currentInfo?: any
+allInfo?: any  //долго
 recommendedProducts?: any
 notRecommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
@@ -31,7 +33,7 @@ sortBySubstr: boolean //поместить сверху содержащие  te
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 
 
-constructor(private dataService:DataService, private optimisationServise:OptimisationService){
+constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService){
   //this.textFilter=''
   this.params.textSort=''
   this.params.sortByNutrient = -1
@@ -44,6 +46,7 @@ constructor(private dataService:DataService, private optimisationServise:Optimis
 ngOnInit(): void{
     this.findProducts()
     this.findNutrients()
+    //долго this.findInfo()
     try{//загружаем сохраненную в браузере конфигурацию
       if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)
          &&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)
@@ -56,7 +59,36 @@ ngOnInit(): void{
     }catch(e){}
 }
 
+//долго..
+findInfo(){
+  try{
+    this.dataService.findInfo()
+    .subscribe((ai:any)=>
+        { //пересчет количеств нутриентов в выбранных продуктах
+          this.allInfo = ai
+          this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
+                              this.products.forEach((pp:any)=> {
+                                                                ai.filter((i:any)=>i.nutrient==nutr._id)
+                                                                  .forEach((i:any)=>{
+                                                                                        if((pp._id==i.product)&&(nutr._id==i.nutrient))
+                                                                                          try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                            }catch(e){}
+                                                                                      })
+                                                                              }))
+        })
+  }catch(e){alert('angular findInfo() error')}
+}
+
 findProducts(){
+/*
+  if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
+                                                                                        this.products=this.staticDataSource.getProducts()
+                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
+                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
+                                                                                        this.finalSorting()
+                                                                                        this.lightRecommendedProducts()
+*/
+
   this.dataService.findProducts('', this.params.sortByNutrient).subscribe((v:string[])=>{
                                                                                         if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
                                                                                         this.products=v
@@ -65,6 +97,8 @@ findProducts(){
                                                                                         this.finalSorting()
                                                                                         this.lightRecommendedProducts()
                                                                                         })
+
+
 }
 
 //вспомогат для сортировки. сравнивает массивы как числа, эл-ты массива как разряды. return 1/-1/0 - a1><=a2
@@ -117,6 +151,7 @@ recalcNutrients(){
     this.products.filter((v:any)=>v.val>0).forEach((p:any) => {sProducts+=p._id+','})
     let excludedNutrientsList =','
     this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
+
     this.dataService.findInfoByProductList(sProducts+',')
         .subscribe((ai:any)=>
             { //пересчет количеств нутриентов в выбранных продуктах
@@ -134,6 +169,23 @@ recalcNutrients(){
               this.lightRecommendedProducts()
               this.saveSettings()
             })
+
+
+    /* //долго
+    //пересчет количеств нутриентов в выбранных продуктах
+    this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
+                        this.products.forEach((pp:any)=> {
+                                                            this.allInfo.filter((i:any)=>i.nutrient==nutr._id)
+                                                              .forEach((i:any)=>{
+                                                                                  if((pp._id==i.product)&&(nutr._id==i.nutrient))
+                                                                                    try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                        }catch(e){}
+                                                                                })
+                                                                          }))
+    this.finalSorting()
+    this.lightRecommendedProducts()
+    this.saveSettings()
+    */
   }catch(e){}
 }
 
@@ -141,6 +193,7 @@ lightRecommendedProducts(){
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
   this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  //долго this.allInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
   let excludedProductstList =','
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
   //let excludedNutrientsList =','
@@ -155,6 +208,7 @@ lightRecommendedProducts(){
   //подсветка НЕ рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsExceeded = ','
   this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  //долго this.allInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
   this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
                     .subscribe((np:any)=>
                       { this.notRecommendedProducts = np
@@ -227,7 +281,7 @@ toExcel(){
   }
   //
   const wsProducts: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.products.filter((p:any)=>p.val>0));
-  const wsNutrients: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.nutrients);
+  const wsNutrients: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.nutrients.filter((n:any)=>n.excluded==0));
   const workbook: XLSX.WorkBook = XLSX.utils.book_new();
   //
   XLSX.utils.book_append_sheet(workbook, wsProducts, 'Продукты');
@@ -236,6 +290,19 @@ toExcel(){
 }
 
 optimize(){
+  alert(0)
+  try{//загружаем сохраненную в браузере конфигурацию
+    if((localStorage.getItem(this.optimisationServise.keyForLocalStorageProducts)!==null)
+       &&(localStorage.getItem(this.optimisationServise.keyForLocalStorageNutrients)!==null)
+       //&&(localStorage.getItem(this.optimisationServise.keyForLocalStorageParams)!==null)
+       ){
+      alert(11)
+      this.products = JSON.parse(String(localStorage.getItem(this.optimisationServise.keyForLocalStorageProducts)))
+      this.nutrients = JSON.parse(String(localStorage.getItem(this.optimisationServise.keyForLocalStorageNutrients)))
+      //this.params = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageParams)))
+      this.recalcNutrients()
+    }
+  }catch(e){}
   this.optimisationServise.generate(this.products,this.nutrients)
 }
 

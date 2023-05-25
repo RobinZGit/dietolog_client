@@ -34,6 +34,11 @@ findInfoByProductList(productList:string)  {
   return this.http.get<string>(this.url+'/api/info',{params:params})
 }
 
+findInfo()  {
+  //let params = new HttpParams()
+  return this.http.get<string>(this.url+'/api/info_all')//,{params:params})
+}
+
 
 //возвращает массив продуктов, в корторых максимальное содержание какого-либо нутриента из sNutrientsNeeded.
 //Отбирает по topCount продукта для каждого нутриента

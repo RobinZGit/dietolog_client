@@ -17,7 +17,10 @@ export class OptimisationService {
   currNorma: number = 0
   currDelta: any= 0n//Math.pow(2,this.NN+1)  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
 
-
+  keyForLocalStorageProductsOptimum: string = 'rz_dietolog_configuration_products_optimum_opt'
+  keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products_opt'
+  keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients_opt'
+  keyForLocalStorageIteration: string = 'rz_dietolog_configuration_iteration_opt'
 
   //==============================================================
   //==   ОСНОВНАЯ ПРОЦЕДУРА, ВЫХОД - ОПТИМАЛЬНЫЙ ВЕКТОР     ======
@@ -48,9 +51,13 @@ export class OptimisationService {
               norm = this.norm2(this.currVector,nutrients)  //..........this.norm2( НАЙТИ НУТРИЕНТЫ(this.currVector))
               if (norm<this.norm2(this.optimumVector,nutrients)){   //
                 this.optimumVector = this.currVector
+                localStorage.setItem(this.keyForLocalStorageProductsOptimum,JSON.stringify(this.optimumVector))
                 //alert(JSON.stringify(this.optimumVector))
                 //return this.currVector
               }
+              localStorage.setItem(this.keyForLocalStorageProducts,JSON.stringify(this.currVector))
+              localStorage.setItem(this.keyForLocalStorageNutrients,JSON.stringify(nutrients))
+              localStorage.setItem(this.keyForLocalStorageIteration,JSON.stringify(i))
               normPrev = norm
             }
             //alert(JSON.stringify(this.optimumVector.map((p:any)=>{p=p})))
@@ -109,6 +116,7 @@ export class OptimisationService {
     for(let i=1;i<sDelta.length;i++) this.currVector[i-1].val= this.currVector[i-1].val + Number(sDelta[i])*this.maxL/this.NN
     //alert(JSON.stringify(this.currVector))
   }
+
 
 
 

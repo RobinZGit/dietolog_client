@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { ProductsAndNutrientsComponent } from './products-and-nutrients/products-and-nutrients.component';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { StaticDataSource } from './model/static.datasource';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,7 @@ import { FormsModule } from '@angular/forms';
     AppRoutingModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [StaticDataSource],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
