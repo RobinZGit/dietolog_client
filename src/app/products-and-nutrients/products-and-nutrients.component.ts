@@ -1,8 +1,8 @@
-import { Component, OnInit} from '@angular/core';
-import { DataService } from '../service/data.service';
+import { Component, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
-import { OptimisationService } from '../service/optimisation.service';
 import { StaticDataSource } from '../model/static.datasource';
+import { DataService } from '../service/data.service';
+import { OptimisationService } from '../service/optimisation.service';
 
 @Component({
   selector: 'app-products-and-nutrients',
@@ -290,7 +290,8 @@ toExcel(){
 }
 
 optimize(){
-  alert(0)
+  //this.dataService.norm2('{vv: testnorm2}').subscribe((ai:any)=>alert(ai))
+  //alert(0)
   try{//загружаем сохраненную в браузере конфигурацию
     if((localStorage.getItem(this.optimisationServise.keyForLocalStorageProducts)!==null)
        &&(localStorage.getItem(this.optimisationServise.keyForLocalStorageNutrients)!==null)

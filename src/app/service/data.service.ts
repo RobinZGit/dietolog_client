@@ -1,5 +1,5 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +39,10 @@ findInfo()  {
   return this.http.get<string>(this.url+'/api/info_all')//,{params:params})
 }
 
+norm2(str: String)  {
+  //let params = new HttpParams()
+  return this.http.post<string>(this.url+'/api/norm2',str)//,{params:params})
+}
 
 //возвращает массив продуктов, в корторых максимальное содержание какого-либо нутриента из sNutrientsNeeded.
 //Отбирает по topCount продукта для каждого нутриента

@@ -6,10 +6,18 @@ import { DataService } from './data.service';
 })
 export class OptimisationService {
 
-  constructor(private dataService: DataService) { }
+  constructor(private dataService: DataService) {
+    //his.findProducts()
+    //this.findNutrients()
+    this.findInfo()
+   }
 
   maxL: number = 2000  //грамм, граница поиска для одного продукта
   NN  : number = 10    //точек разбиения
+
+  allInfo?: any
+  shortProducts?: any
+  shortNutrients?: any
 
   matrix: any[][]=[]
   currVector: any[]=[] //
@@ -26,16 +34,48 @@ export class OptimisationService {
   //==   ОСНОВНАЯ ПРОЦЕДУРА, ВЫХОД - ОПТИМАЛЬНЫЙ ВЕКТОР     ======
   generate(products:any,nutrients:any)  {
     alert('optimisation will start here');
-    this.NN = nutrients.filter((n:any)=>n.excluded==0).length
+    //оставляем только неисключенные
+    products.forEach((p:any)=>{if(p.excluded==0) this.shortProducts.push(p); else this.allInfo = this.allInfo.filter((ai:any)=>{return p._id!=ai.product})})
+    nutrients.forEach((n:any)=>{if(n.excluded==0) this.shortNutrients.push(n); else this.allInfo = this.allInfo.filter((ai:any)=>{return n._id!=ai.nutrient})})
+    //
+    this.NN = this.shortNutrients.length
     this.currDelta = BigInt(Math.pow(2,this.NN+1))  //число в 2-ичном предст вида 1001010011 - длины NN+1, первая цифра всегда 1. Используется для генерации приращений currVector ++== (currDelta**(maxL/NN))
-    products.forEach((p:any)=>this.currVector.push(p))
+    this.shortProducts.forEach((p:any)=>this.currVector.push(p))
     this.currVector.forEach((p:any)=>p.val=0)
     //alert(JSON.stringify(this.currVector))
     let normPrev = 0
     let norm = 0
     let i = 0
+
+    this.matrix=this.allInfo
+    this.optimumVector = this.currVector
+    //alert(JSON.stringify(this.optimumVector))
+    while (i<(products.length*this.NN)){ //.................!!!! criteria ????  -- мб передавать в параметр процедуры тип критерия
+      i++
+      this.oneStep()
+      if(i>5){alert(JSON.stringify(this.optimumVector.filter((p)=>p.val>0)));return this.optimumVector}; //########################### COUNT LIM ############################
+      norm = this.norm2(this.currVector,nutrients)  //..........this.norm2( НАЙТИ НУТРИЕНТЫ(this.currVector))
+      alert('norm='+norm)
+      if (norm<this.norm2(this.optimumVector,nutrients)){   //
+        this.optimumVector = this.currVector
+        localStorage.setItem(this.keyForLocalStorageProductsOptimum,JSON.stringify(this.optimumVector))
+        //alert(JSON.stringify(this.optimumVector))
+        //return this.currVector
+      }
+      /* ! too large!
+      localStorage.setItem(this.keyForLocalStorageProducts,JSON.stringify(this.currVector))
+      localStorage.setItem(this.keyForLocalStorageNutrients,JSON.stringify(nutrients))
+      localStorage.setItem(this.keyForLocalStorageIteration,JSON.stringify(i))
+      */
+      normPrev = norm
+    }
+    //alert(JSON.stringify(this.optimumVector.map((p:any)=>{p=p})))
+    return this.optimumVector
+
+
+/*
     let sProducts = ','
-    products.forEach((p:any) => {sProducts+=p._id+','})
+    this.shortProducts.forEach((p:any) => {sProducts+=p._id+','})
     this.dataService.findInfoByProductList(sProducts+',')
        .subscribe({
         next:
@@ -68,6 +108,7 @@ export class OptimisationService {
         }
 
        )
+       */
 
     //alert(this.currDelta+1n)
     //alert((this.currDelta+1).toString())
@@ -115,6 +156,26 @@ export class OptimisationService {
     let sDelta = this.currDelta.toString(2)
     for(let i=1;i<sDelta.length;i++) this.currVector[i-1].val= this.currVector[i-1].val + Number(sDelta[i])*this.maxL/this.NN
     //alert(JSON.stringify(this.currVector))
+  }
+
+  findInfo(){
+    try{
+      this.dataService.findInfo()
+      .subscribe((ai:any)=>
+          { //пересчет количеств нутриентов в выбранных продуктах
+            this.allInfo = ai
+            /*
+            this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
+                                this.products.forEach((pp:any)=> {
+                                                                  ai.filter((i:any)=>i.nutrient==nutr._id)
+                                                                    .forEach((i:any)=>{
+                                                                                          if((pp._id==i.product)&&(nutr._id==i.nutrient))
+                                                                                            try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                              }catch(e){}
+                                                                                        })
+                                                                                }))*/
+          })
+    }catch(e){alert('angular findInfo() error')}
   }
 
 
