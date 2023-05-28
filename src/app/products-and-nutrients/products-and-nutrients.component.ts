@@ -11,6 +11,10 @@ import { OptimisationService } from '../service/optimisation.service';
 })
 export class ProductsAndNutrientsComponent implements OnInit{
 
+//----------------
+localData: boolean =false //==false - берем данные из БД сервисом java.  ==true - берем из локального класса StaticDataSource
+//----------------
+
 products?: any
 nutrients?: any
 currentInfo?: any
@@ -44,8 +48,8 @@ constructor(private dataService:DataService,private staticDataSource:StaticDataS
 
 
 ngOnInit(): void{
-    this.findProducts()
-    this.findNutrients()
+    try{this.findProducts()}catch(e){}
+    try{this.findNutrients()}catch(e){}
     //долго this.findInfo()
     try{//загружаем сохраненную в браузере конфигурацию
       if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)
@@ -80,14 +84,14 @@ findInfo(){
 }
 
 findProducts(){
-/*
+if (this.localData){
   if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
                                                                                         this.products=this.staticDataSource.getProducts()
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
                                                                                         this.finalSorting()
                                                                                         this.lightRecommendedProducts()
-*/
+}else{
 
   this.dataService.findProducts('', this.params.sortByNutrient).subscribe((v:string[])=>{
                                                                                         if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
@@ -97,6 +101,7 @@ findProducts(){
                                                                                         this.finalSorting()
                                                                                         this.lightRecommendedProducts()
                                                                                         })
+}
 
 
 }
@@ -131,14 +136,17 @@ findNutrients(){
                                 ]
                               }`)
                               */
-  this.dataService.findNutrients('').subscribe((v:string)=>{
+  if (this.localData){
+    if (this.nutrients!=undefined) this.pcopy = this.nutrients.slice()//для сохранения  признака excluded
+    this.nutrients=this.staticDataSource.getNutrients()
+    if(this.pcopy.length>0) this.nutrients.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
+  }else{
+    this.dataService.findNutrients('').subscribe((v:string)=>{
                               if (this.nutrients!=undefined) this.pcopy = this.nutrients.slice()//для сохранения  признака excluded
                               this.nutrients=v
                               if(this.pcopy.length>0) this.nutrients.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
-                              //this.finalSorting()
-                              //this.lightRecommendedProducts()
-                                    //this.nutrients=v
                           })
+ }
 }
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
@@ -309,6 +317,15 @@ optimize(){
 
 /*
 TODO -----------------------------------------------
+localData - перенести в конфмг (вместе с урл)
+в режиме localData падает findProd вначале - понять и убрать try
+в режиме localData использ-то AllInfo()->getInfo() (мб будет быстро)
+режим localData - на форму(? не в конфиг) и опубликовать на гите => "media"
+
+Сохранение настроек - только ненули в кол-ве а мб только ИД-кол-excl, и досчет при инициализации
+
+Матрицы и оптим по обратной матрице
+
 ПРОВЕРИТЬ ЗЕФИР 300    Вино полудесертное 66 - косяки в подсветке - ГЛОБАЛЬНО ПОТЕСТИТь ПОПРАВИТЬ БД И ЗАПИХАТЬ ЕЕ В СЕРВИС
 фильтры и сортировки загнать в один объект и сохранять\подгружать в onInit  - не сортирует  и не сохраняет сортировку по нутриенту - ngModel не сортирует
 ЭКСЕЛЬ - единицы измерения, нормальные имена колонок, колонка избыток-недостаток ыв нутриенты и сортировка по ней
