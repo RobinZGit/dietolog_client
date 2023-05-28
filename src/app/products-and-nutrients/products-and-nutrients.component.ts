@@ -18,7 +18,7 @@ localData: boolean =false //==false - берем данные из БД серв
 products?: any
 nutrients?: any
 currentInfo?: any
-allInfo?: any  //долго
+allInfo?: any
 recommendedProducts?: any
 notRecommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
@@ -51,6 +51,10 @@ ngOnInit(): void{
     try{this.findProducts()}catch(e){}
     try{this.findNutrients()}catch(e){}
     //долго this.findInfo()
+    if (this.localData)
+       try{
+          this.allInfo = this.staticDataSource.getInfo()
+       }catch(e){}
     try{//загружаем сохраненную в браузере конфигурацию
       if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)
          &&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)
@@ -160,48 +164,53 @@ recalcNutrients(){
     let excludedNutrientsList =','
     this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
 
-    this.dataService.findInfoByProductList(sProducts+',')
-        .subscribe((ai:any)=>
-            { //пересчет количеств нутриентов в выбранных продуктах
-              this.currentInfo = ai
-              this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
-                                  this.products.forEach((pp:any)=> {
-                                                                     ai.filter((i:any)=>i.nutrient==nutr._id)
-                                                                       .forEach((i:any)=>{
-                                                                                            if((pp._id==i.product)&&(nutr._id==i.nutrient))
-                                                                                              try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
-                                                                                                 }catch(e){}
-                                                                                          })
-                                                                                   }))
-              this.finalSorting()
-              this.lightRecommendedProducts()
-              this.saveSettings()
-            })
 
 
-    /* //долго
-    //пересчет количеств нутриентов в выбранных продуктах
-    this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
-                        this.products.forEach((pp:any)=> {
-                                                            this.allInfo.filter((i:any)=>i.nutrient==nutr._id)
-                                                              .forEach((i:any)=>{
-                                                                                  if((pp._id==i.product)&&(nutr._id==i.nutrient))
-                                                                                    try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
-                                                                                        }catch(e){}
-                                                                                })
-                                                                          }))
-    this.finalSorting()
-    this.lightRecommendedProducts()
-    this.saveSettings()
-    */
+
+    if (this.localData){
+      //пересчет количеств нутриентов в выбранных продуктах
+      this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
+                          this.products.forEach((pp:any)=> {
+                                                              this.allInfo.filter((i:any)=>i.nutrient==nutr._id)
+                                                                .forEach((i:any)=>{
+                                                                                    if((pp._id==i.product)&&(nutr._id==i.nutrient))
+                                                                                      try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                          }catch(e){}
+                                                                                  })
+                                                                            }))
+      this.finalSorting()
+      this.lightRecommendedProducts()
+      this.saveSettings()
+    }else{
+      this.dataService.findInfoByProductList(sProducts+',')
+      .subscribe((ai:any)=>
+          { //пересчет количеств нутриентов в выбранных продуктах
+            this.currentInfo = ai
+            this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
+                                this.products.forEach((pp:any)=> {
+                                                                   ai.filter((i:any)=>i.nutrient==nutr._id)
+                                                                     .forEach((i:any)=>{
+                                                                                          if((pp._id==i.product)&&(nutr._id==i.nutrient))
+                                                                                            try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                               }catch(e){}
+                                                                                        })
+                                                                                 }))
+            this.finalSorting()
+            this.lightRecommendedProducts()
+            this.saveSettings()
+          })
+    }
   }catch(e){}
 }
 
 lightRecommendedProducts(){
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
-  this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
-  //долго this.allInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  if(this.localData){
+    this.allInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  }else{
+    this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  }
   let excludedProductstList =','
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
   //let excludedNutrientsList =','
@@ -215,8 +224,12 @@ lightRecommendedProducts(){
 
   //подсветка НЕ рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsExceeded = ','
-  this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
-  //долго this.allInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  if(this.localData){
+    this.allInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  }else{
+    this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  }
+
   this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
                     .subscribe((np:any)=>
                       { this.notRecommendedProducts = np
@@ -305,7 +318,6 @@ optimize(){
        &&(localStorage.getItem(this.optimisationServise.keyForLocalStorageNutrients)!==null)
        //&&(localStorage.getItem(this.optimisationServise.keyForLocalStorageParams)!==null)
        ){
-      alert(11)
       this.products = JSON.parse(String(localStorage.getItem(this.optimisationServise.keyForLocalStorageProducts)))
       this.nutrients = JSON.parse(String(localStorage.getItem(this.optimisationServise.keyForLocalStorageNutrients)))
       //this.params = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageParams)))
@@ -319,8 +331,10 @@ optimize(){
 TODO -----------------------------------------------
 localData - перенести в конфмг (вместе с урл)
 в режиме localData падает findProd вначале - понять и убрать try
-в режиме localData использ-то AllInfo()->getInfo() (мб будет быстро)
+в режиме localData  доделать lightrecommended...
 режим localData - на форму(? не в конфиг) и опубликовать на гите => "media"
+
+добавить собщение о пересчете и какой-нибудь бледный стиль\disabled в этот момент
 
 Сохранение настроек - только ненули в кол-ве а мб только ИД-кол-excl, и досчет при инициализации
 
