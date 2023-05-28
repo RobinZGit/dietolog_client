@@ -68,6 +68,7 @@ ngOnInit(): void{
 }
 
 //долго..
+/*
 findInfo(){
   try{
     this.dataService.findInfo()
@@ -86,6 +87,7 @@ findInfo(){
         })
   }catch(e){alert('angular findInfo() error')}
 }
+*/
 
 findProducts(){
 if (this.localData){
@@ -215,13 +217,18 @@ lightRecommendedProducts(){
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
   //let excludedNutrientsList =','
   //this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
-  this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
+  if (this.localData){
+    this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProduct)
+    alert(JSON.stringify(this.recommendedProducts))
+    this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+  }else{
+    this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
                     .subscribe((np:any)=>
                       { this.recommendedProducts = np
-                        this.products.map((p:any)=>{p.isrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                        this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
                       }
                     )
-
+  }
   //подсветка НЕ рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsExceeded = ','
   if(this.localData){
@@ -229,13 +236,17 @@ lightRecommendedProducts(){
   }else{
     this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
   }
-
-  this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
+  if (this.localData){
+    this.notRecommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProduct)
+    this.products.map((p:any)=>{p.isnotrecommended = (this.notRecommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+  }else{
+    this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
                     .subscribe((np:any)=>
                       { this.notRecommendedProducts = np
-                        this.products.map((p:any)=>{p.isnotrecommended = (np.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                        this.products.map((p:any)=>{p.isnotrecommended = (this.notRecommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
                       }
                     )
+  }
 
 }
 

@@ -9,7 +9,7 @@ export class OptimisationService {
   constructor(private dataService: DataService) {
     //his.findProducts()
     //this.findNutrients()
-    this.findInfo()
+    /*!!!!!!! ВЕРНУТЬ !!!!!!this.findInfo() */
    }
 
   maxL: number = 2000  //грамм, граница поиска для одного продукта
