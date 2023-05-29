@@ -12,7 +12,7 @@ import { OptimisationService } from '../service/optimisation.service';
 export class ProductsAndNutrientsComponent implements OnInit{
 
 //----------------
-localData: boolean =false //==false - берем данные из БД сервисом java.  ==true - берем из локального класса StaticDataSource
+localData: boolean =true //==false - берем данные из БД сервисом java.  ==true - берем из локального класса StaticDataSource
 //----------------
 
 products?: any
@@ -219,7 +219,7 @@ lightRecommendedProducts(){
   //this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
   if (this.localData){
     this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProduct)
-    alert(JSON.stringify(this.recommendedProducts))
+    //alert(JSON.stringify(this.recommendedProducts))
     this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
   }else{
     this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
@@ -338,6 +338,10 @@ optimize(){
   this.optimisationServise.generate(this.products,this.nutrients)
 }
 
+clear(){
+  localStorage.clear
+  this.ngOnInit()
+}
 /*
 TODO -----------------------------------------------
 localData - перенести в конфмг (вместе с урл)
