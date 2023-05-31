@@ -342,6 +342,21 @@ clear(){
   localStorage.clear
   this.ngOnInit()
 }
+
+verticalOrientation():boolean{
+  return window.screen.orientation.type.toLowerCase().indexOf('portrait')>=0
+}
+
+getMainClass(classname: string):string{
+  if (this.verticalOrientation()) return ''; else return classname
+}
+
+/*деплой
+разово: npm install -g angular-cli-ghpages
+?? ng build --base-href //dietolog_client
+ng build --base-href https://robinzgit.github.io/dietolog_client/
+ngh --dir dist\dietolog_client
+*/
 /*
 TODO -----------------------------------------------
 localData - перенести в конфмг (вместе с урл)

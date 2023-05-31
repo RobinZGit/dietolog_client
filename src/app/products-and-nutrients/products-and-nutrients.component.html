@@ -1,8 +1,8 @@
 
 <h1 class="header-main">ДИЕТОЛОГ</h1>
 <!--div media="orientation:portrait"-->
-<div class="row">
-  <div class="column">
+<div [ngClass]="getMainClass('row')">
+  <div [ngClass]="getMainClass('column')" >
 
     <div class="filter-prod">
         <div>
@@ -51,10 +51,12 @@
       </ng-container>
     </div>
   </div>
+  <p *ngIf="this.verticalOrientation()"></p>
+  <p *ngIf="this.verticalOrientation()"></p>
+  <p *ngIf="this.verticalOrientation()"></p>
 
 
-
-  <div class="column">
+  <div [ngClass]="getMainClass('column')">
     <ng-container >
       <div class="heiht-table-nutr">
         <table class="table-nutr">
