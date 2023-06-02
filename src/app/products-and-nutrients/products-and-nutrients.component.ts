@@ -22,6 +22,9 @@ allInfo?: any
 recommendedProducts?: any
 notRecommendedProducts?: any
 pcopy: any[] = [] //вспомогательный
+pHist:any[] =[] //для навигации
+nHist:any[] =[] //для навигации
+indHist: number = -1
 //topCountRecommendedProducts: number //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
 keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
 keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
@@ -156,8 +159,14 @@ findNutrients(){
 }
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
-recalcNutrients(){
+recalcNutrients(doNotSaveHist:boolean=false){
   try{
+    if(!doNotSaveHist){
+      this.pHist.push(JSON.parse(JSON.stringify(this.products)))
+      this.nHist.push(JSON.parse(JSON.stringify(this.nutrients)))
+      //if (this.indHist==this.nHist.length-2) 
+      this.indHist = this.nHist.length-1
+    }  
     //обнуляем все нутриенты
     this.nutrients.map((nutr:any)=>  nutr.val= 0)
     //пересчет
@@ -218,7 +227,7 @@ lightRecommendedProducts(){
   //let excludedNutrientsList =','
   //this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
   if (this.localData){
-    this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProduct)
+    this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
     //alert(JSON.stringify(this.recommendedProducts))
     this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
   }else{
@@ -237,7 +246,7 @@ lightRecommendedProducts(){
     this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
   }
   if (this.localData){
-    this.notRecommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProduct)
+    this.notRecommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts)
     this.products.map((p:any)=>{p.isnotrecommended = (this.notRecommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
   }else{
     this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
@@ -349,6 +358,34 @@ verticalOrientation():boolean{
 
 getMainClass(classname: string):string{
   if (this.verticalOrientation()) return ''; else return classname
+}
+
+showHint(hint:any){
+  alert(hint)
+}
+
+btnNextDisabled():boolean{
+  return !((this.indHist>=0)&&(this.indHist<this.pHist.length-1))
+}
+clickNext(){
+  if (!this.btnNextDisabled()){
+    this.products = this.pHist[this.indHist+1]
+    this.nutrients = this.nHist[this.indHist+1]
+    this.recalcNutrients(true)
+    this.indHist +=1
+  }  
+}
+
+btnPrevDisabled():boolean{
+  return !(this.indHist>0)
+}
+clickPrev(){
+  if (!this.btnPrevDisabled()){
+    this.products = this.pHist[this.indHist-1]
+    this.nutrients = this.nHist[this.indHist-1]
+    this.recalcNutrients(true)
+    this.indHist -=1
+  }  
 }
 
 /*деплой
