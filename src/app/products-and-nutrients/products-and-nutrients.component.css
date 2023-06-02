@@ -126,4 +126,23 @@
   border:none;
 }
 
+.nav-button{
+  height: 20px;
+  float: left;
+  background: rgb(193, 183, 235); 
+  color: black;
+  border-radius: 10px;
+  margin: 4px;
+  border:none;
+}
+.nav-button-disabled{
+  height: 20px;
+  float: left;
+  background:#ffa;
+  color: black;
+  border-radius: 10px;
+  margin: 4px;
+ 
+}
+
 
