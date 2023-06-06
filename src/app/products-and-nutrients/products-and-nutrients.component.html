@@ -1,5 +1,5 @@
 
-<h1 class="header-main">ДИЕТОЛОГ</h1>
+<h1 class="header-main">{{mainHeader}}</h1>
 <!--div media="orientation:portrait"-->
 <div [ngClass]="getMainClass('row')">
   <div [ngClass]="getMainClass('column')" >
@@ -25,7 +25,9 @@
           <label>
             &nbsp; &nbsp; &nbsp;Подсвечивать по &nbsp; <input type="number" [(ngModel)]="params.topCountRecommendedProducts" (change)="recalcNutrients()"> &nbsp; рекомендованных продуктов на нутриент
           </label>
-          <button class="xls-button" (click)="toExcel()">Excel</button>
+          <button class="xls-button" (click)="toExcel()">Save</button>
+          <p><label>&nbsp; &nbsp; &nbsp;Загрузить из файла&nbsp;<input type="file"  accept=".dtlg"  title="Выберите файл конфигурации типа .dtlg" (change)="loadFromFile($event.target)"> &nbsp; &nbsp; &nbsp;</label></p>
+<!--button (click)="test()">!</button-->
           <p> &nbsp;</p>
         </div>
     </div>

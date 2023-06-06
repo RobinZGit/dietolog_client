@@ -11,6 +11,8 @@ import { OptimisationService } from '../service/optimisation.service';
 })
 export class ProductsAndNutrientsComponent implements OnInit{
 
+mainHeader:string='ДИЕТОЛОГ'
+
 //----------------
 localData: boolean =true //==false - берем данные из БД сервисом java.  ==true - берем из локального класса StaticDataSource
 //----------------
@@ -29,7 +31,6 @@ indHist: number = -1
 keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
 keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
 keyForLocalStorageParams: string = 'rz_dietolog_configuration_params'
-
 //textFilter: string  //!не использовать! фильтрация ломает пересчет. убрал с формы
 /*
 textSort: string
@@ -159,14 +160,23 @@ findNutrients(){
 }
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
-recalcNutrients(doNotSaveHist:boolean=false){
+recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
+  this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
+  if (sText!=''){
+    try{
+      let conf:any = JSON.parse(''+sText)
+      this.products = conf.products
+      this.nutrients = conf.nutrients
+      this.params = conf.params
+    }catch(e) {alert(e)}
+  }
   try{
     if(!doNotSaveHist){
       this.pHist.push(JSON.parse(JSON.stringify(this.products)))
       this.nHist.push(JSON.parse(JSON.stringify(this.nutrients)))
-      //if (this.indHist==this.nHist.length-2) 
+      //if (this.indHist==this.nHist.length-2)
       this.indHist = this.nHist.length-1
-    }  
+    }
     //обнуляем все нутриенты
     this.nutrients.map((nutr:any)=>  nutr.val= 0)
     //пересчет
@@ -192,6 +202,7 @@ recalcNutrients(doNotSaveHist:boolean=false){
       this.finalSorting()
       this.lightRecommendedProducts()
       this.saveSettings()
+      this.mainHeader='ДИЕТОЛОГ'
     }else{
       this.dataService.findInfoByProductList(sProducts+',')
       .subscribe((ai:any)=>
@@ -209,12 +220,14 @@ recalcNutrients(doNotSaveHist:boolean=false){
             this.finalSorting()
             this.lightRecommendedProducts()
             this.saveSettings()
+            this.mainHeader='ДИЕТОЛОГ'
           })
     }
   }catch(e){}
 }
 
 lightRecommendedProducts(){
+  //this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
   if(this.localData){
@@ -230,11 +243,13 @@ lightRecommendedProducts(){
     this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
     //alert(JSON.stringify(this.recommendedProducts))
     this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+    this.mainHeader='ДИЕТОЛОГ'
   }else{
     this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
                     .subscribe((np:any)=>
                       { this.recommendedProducts = np
                         this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                        this.mainHeader='ДИЕТОЛОГ'
                       }
                     )
   }
@@ -248,11 +263,13 @@ lightRecommendedProducts(){
   if (this.localData){
     this.notRecommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts)
     this.products.map((p:any)=>{p.isnotrecommended = (this.notRecommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+    this.mainHeader='ДИЕТОЛОГ'
   }else{
     this.dataService.findRecommendedProducts(sNutrientsExceeded,excludedProductstList, this.params.topCountRecommendedProducts) //sic! findRecommendedProducts
                     .subscribe((np:any)=>
                       { this.notRecommendedProducts = np
                         this.products.map((p:any)=>{p.isnotrecommended = (this.notRecommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                        this.mainHeader='ДИЕТОЛОГ'
                       }
                     )
   }
@@ -324,10 +341,35 @@ toExcel(){
   const wsProducts: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.products.filter((p:any)=>p.val>0));
   const wsNutrients: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.nutrients.filter((n:any)=>n.excluded==0));
   const workbook: XLSX.WorkBook = XLSX.utils.book_new();
-  //
+  let sTime = (new Date()).toISOString()
+  //saving in loadable form
+  var sConf = JSON.stringify({"params": this.params, "nutrients":this.nutrients,"products":this.products})
+  var a = document.createElement('a');
+  var file = new Blob([sConf], {type: 'text/plain'});
+  a.href = URL.createObjectURL(file);
+  a.download = 'dietolog_'+ sTime +'.dtlg';
+  a.click();
+  //saving in human-readable form
   XLSX.utils.book_append_sheet(workbook, wsProducts, 'Продукты');
   XLSX.utils.book_append_sheet(workbook, wsNutrients, 'Нутриенты в данной раскладке');
-  XLSX.writeFile(workbook,'dietolog.xlsx');
+  XLSX.writeFile(workbook,'dietolog_'+ sTime +'.xlsx');
+}
+
+ loadFromFile(input:any) {
+  //this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
+  let file = input.files[0];
+  let reader = new FileReader();
+  reader.readAsText(file);
+  reader.onloadend = (e)=> {
+    this.recalcNutrients(false,reader.result?.toString())
+  };
+  reader.onerror = function() {
+    alert(reader.error);
+  };
+}
+
+test(){
+  alert(JSON.stringify(this.products.filter((v:any)=>v.val>0)))
 }
 
 optimize(){
@@ -373,7 +415,7 @@ clickNext(){
     this.nutrients = this.nHist[this.indHist+1]
     this.recalcNutrients(true)
     this.indHist +=1
-  }  
+  }
 }
 
 btnPrevDisabled():boolean{
@@ -385,7 +427,7 @@ clickPrev(){
     this.nutrients = this.nHist[this.indHist-1]
     this.recalcNutrients(true)
     this.indHist -=1
-  }  
+  }
 }
 
 /*деплой
@@ -396,11 +438,7 @@ ngh --dir dist\dietolog_client
 */
 /*
 TODO -----------------------------------------------
-localData - перенести в конфмг (вместе с урл)
-в режиме localData падает findProd вначале - понять и убрать try
-в режиме localData  доделать lightrecommended...
-режим localData - на форму(? не в конфиг) и опубликовать на гите => "media"
-
+в фильтр строку поиска сразу по регулярке
 добавить собщение о пересчете и какой-нибудь бледный стиль\disabled в этот момент
 
 Сохранение настроек - только ненули в кол-ве а мб только ИД-кол-excl, и досчет при инициализации
