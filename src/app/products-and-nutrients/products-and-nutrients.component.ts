@@ -515,6 +515,11 @@ clickPrev(){
   }
 }
 
+excludeRecommended(){
+  this.products.forEach((p:any)=>{if(p.isrecommended){p.val=0;p.excluded=1}})
+  this.recalcNutrients()
+}
+
 testClick(){
   let m:any=[[1,1,10,234],[1,2,89,76],[1,451,10,234],[1,2,89,88]]
   alert(JSON.stringify(  this.matrix.InverseMatrix(m)) )

@@ -37,7 +37,9 @@
       <ng-container >
         <div class="heiht-table-prod">
           <table class="table-prod">
-            <caption class="header-table-prod">Продукты</caption>
+            <caption class="header-table-prod">
+              Продукты
+            </caption>
             <th class="th-prod">
               {{'Кол-во(гр.)'}}
               <button  [ngClass]="btnPrevDisabled()?'nav-button-disabled':'nav-button'" title ="Back" [disabled]="btnPrevDisabled()" (click)="clickPrev()"><</button>
@@ -46,6 +48,7 @@
             </th>
             <th class="th-prod">
               {{'Продукт'}}
+              <button class="caption-smaLL-button" (click)="excludeRecommended()">исключить рекомендованные</button>
             </th>
             <th class="th-prod">{{'Исключен'}}  <input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAllProducts(exclude_All.checked)"> </th>
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">

@@ -142,7 +142,14 @@
   color: black;
   border-radius: 10px;
   margin: 4px;
+}
 
+.caption-smaLL-button{
+  background: rgb(229, 227, 235);
+  color: black;
+  border-radius: 10px;
+  margin: 4px;
+  border:none;
 }
 
 .input-val{
