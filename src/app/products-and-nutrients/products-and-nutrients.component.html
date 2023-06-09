@@ -1,6 +1,7 @@
 
 <h1 class="header-main">{{mainHeader}}</h1>
-<!--div media="orientation:portrait"-->
+<!--button (click)="testClick()">test</button-->
+
 <div [ngClass]="getMainClass('row')">
   <div [ngClass]="getMainClass('column')" >
 
@@ -27,7 +28,6 @@
           </label>
           <button class="xls-button" (click)="toExcel()">Save</button>
           <p><label>&nbsp; &nbsp; &nbsp;Загрузить из файла&nbsp;<input type="file"  accept=".dtlg"  title="Выберите файл конфигурации типа .dtlg" (change)="loadFromFile($event.target)"> &nbsp; &nbsp; &nbsp;</label></p>
-<!--button (click)="test()">!</button-->
           <p> &nbsp;</p>
         </div>
     </div>
@@ -39,16 +39,17 @@
           <table class="table-prod">
             <caption class="header-table-prod">Продукты</caption>
             <th class="th-prod">
+              {{'Кол-во(гр.)'}}
               <button  [ngClass]="btnPrevDisabled()?'nav-button-disabled':'nav-button'" title ="Back" [disabled]="btnPrevDisabled()" (click)="clickPrev()"><</button>
               <button [ngClass]="btnNextDisabled()?'nav-button-disabled':'nav-button'" [disabled]="btnNextDisabled()" (click)="clickNext()">></button>
-              {{'Кол-во(гр.)'}}
+
             </th>
             <th class="th-prod">
               {{'Продукт'}}
             </th>
             <th class="th-prod">{{'Исключен'}}  <input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAllProducts(exclude_All.checked)"> </th>
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
-              <input type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
+              <input class="input-val"  type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
               <td title="{{product.hint}}" (dblclick)="showHint(product.hint)" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
               <input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)">
             </tr>
@@ -66,7 +67,10 @@
     <ng-container >
       <div class="heiht-table-nutr">
         <table class="table-nutr">
-          <caption class="header-table-nutr">Нутриенты</caption>
+          <caption class="header-table-nutr">
+            <!--button class="recalc-nutr-button" (click)="recalcNutrients()">Рассчитать нутриенты в текущей раскладке</button-->
+            Нутриенты
+          </caption>
           <th class="th-nutr">{{'Нутриент'}}</th>
           <th class="th-nutr">{{'Единицы измерения'}}</th>
           <th class="th-nutr">{{'Минимальная суточная норма'}}</th>
@@ -76,8 +80,11 @@
           <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
             <td title="{{nutrient.hint}}" (dblclick)="showHint(nutrient.hint)" [ngClass]="nutrient.excluded?'excluded-product':''" >{{nutrient.name}}</td>
             <td title="{{nutrient.hint}}">{{nutrient.units}}</td>
-            <td title="{{nutrient.hint}}">{{nutrient.min_dailyrate}}</td>
-            <td title="{{nutrient.hint}}">{{nutrient.max_dailyrate}}</td>
+            <td><input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.min_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded"></td>
+            <td><input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.max_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded"></td>
+
+            <!--td title="{{nutrient.hint}}">{{nutrient.min_dailyrate}}</td-->
+            <!--td title="{{nutrient.hint}}">{{nutrient.max_dailyrate}}</td-->
             <td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>
             <input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()">
           </tr>

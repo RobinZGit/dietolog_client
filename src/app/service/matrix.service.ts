@@ -27,35 +27,37 @@ TransMatrix(A:number[][])   :any    //На входе двумерный мас�
 
 SumMatrix(A:any[],B:any[])   :any     //На входе двумерные массивы одинаковой размерности
 {
-    var m = A.length, n = A[0].length, C = [];
-    for (var i = 0; i < m; i++)
-     { C[ i ] = [];
-       for (var j = 0; j < n; j++) C[ i ].push( A[ i ][j]+B[ i ][j]);
+    let m = A.length, n = A[0].length
+    let C:any[] = [];
+    for (let i = 0; i < m; i++)
+     { C.push([])// C[ i ] = [];
+       for (let j = 0; j < n; j++) C[ i ].push( A[ i ][j]+B[ i ][j]);
      }
     return C;
 }
 
 multMatrixNumber(a:number,A:any[])  // a - число, A - матрица (двумерный массив)
 {
-    var m = A.length, n = A[0].length, B = [];
-    for (var i = 0; i < m; i++)
+    let m = A.length, n = A[0].length
+    let B:any = [];
+    for (let i = 0; i < m; i++)
      { B[ i ] = [];
-       for (var j = 0; j < n; j++) B[ i ][j] = a*A[ i ][j];
+       for (let j = 0; j < n; j++) B[ i ][j] = a*A[ i ][j];
      }
     return B;
 }
 
 MultiplyMatrix(A:any[],B:any[]) :any
 {
-    var rowsA = A.length, colsA = A[0].length,
-        rowsB = B.length, colsB = B[0].length,
-        C = [];
+  let rowsA = A.length, colsA = A[0].length,
+        rowsB = B.length, colsB = B[0].length
+  let  C:any = [];
     if (colsA != rowsB) return false;
-    for (var i = 0; i < rowsA; i++) C[ i ] = [];
-    for (var k = 0; k < colsB; k++)
-     { for (var i = 0; i < rowsA; i++)
-        { var t = 0;
-          for (var j = 0; j < rowsB; j++) t += A[ i ][j]*B[j][k];
+    for (let i = 0; i < rowsA; i++) C[ i ] = [];
+    for (let k = 0; k < colsB; k++)
+     { for (let i = 0; i < rowsA; i++)
+        { let t = 0;
+          for (let j = 0; j < rowsB; j++) t += A[ i ][j]*B[j][k];
           C[ i ][k] = t;
         }
      }
@@ -71,27 +73,28 @@ MatrixPow(n:number,A:any[]) :any
 
 Determinant(A:any[]) :any   // Используется алгоритм Барейса, сложность O(n^3)
 {
-    var N = A.length, B = [], denom = 1, exchanges = 0;
-    for (var i = 0; i < N; ++i)
+  let N = A.length, denom = 1, exchanges = 0;
+    let B:any =[]
+    for (let i = 0; i < N; ++i)
      { B[ i ] = [];
-       for (var j = 0; j < N; ++j) B[ i ][j] = A[ i ][j];
+       for (let j = 0; j < N; ++j) B[ i ][j] = A[ i ][j];
      }
-    for (var i = 0; i < N-1; ++i)
-     { var maxN = i, maxValue = Math.abs(B[ i ][ i ]);
-       for (var j = i+1; j < N; ++j)
-        { var value = Math.abs(B[j][ i ]);
+    for (let i = 0; i < N-1; ++i)
+     { let maxN = i, maxValue = Math.abs(B[ i ][ i ]);
+       for (let j = i+1; j < N; ++j)
+        { let value = Math.abs(B[j][ i ]);
           if (value > maxValue){ maxN = j; maxValue = value; }
         }
        if (maxN > i)
-        { var temp = B[ i ]; B[ i ] = B[maxN]; B[maxN] = temp;
+        { let temp = B[ i ]; B[ i ] = B[maxN]; B[maxN] = temp;
           ++exchanges;
         }
        else { if (maxValue == 0) return maxValue; }
-       var value1 = B[ i ][ i ];
-       for (var j = i+1; j < N; ++j)
-        { var value2 = B[j][ i ];
+       let value1 = B[ i ][ i ];
+       for (let j = i+1; j < N; ++j)
+        { let value2 = B[j][ i ];
           B[j][ i ] = 0;
-          for (var k = i+1; k < N; ++k) B[j][k] = (B[j][k]*value1-B[ i ][k]*value2)/denom;
+          for (let k = i+1; k < N; ++k) B[j][k] = (B[j][k]*value1-B[ i ][k]*value2)/denom;
         }
        denom = value1;
      }
@@ -101,14 +104,14 @@ Determinant(A:any[]) :any   // Используется алгоритм Бар�
 
 MatrixRank(A:any[]) :any
 {
-    var m = A.length, n = A[0].length, k = (m < n ? m : n), r = 1, rank = 0;
+  let m = A.length, n = A[0].length, k = (m < n ? m : n), r = 1, rank = 0;
     while (r <= k)
-     { var B = [];
-       for (var i = 0; i < r; i++) B[ i ] = [];
-       for (var a = 0; a < m-r+1; a++)
-        { for (var b = 0; b < n-r+1; b++)
-           { for (var c = 0; c < r; c++)
-              { for (var d = 0; d < r; d++) B[c][d] = A[a+c][b+d]; }
+     { let B:any = [];
+       for (let i = 0; i < r; i++) B[ i ] = [];
+       for (let a = 0; a < m-r+1; a++)
+        { for (let b = 0; b < n-r+1; b++)
+           { for (let c = 0; c < r; c++)
+              { for (let d = 0; d < r; d++) B[c][d] = A[a+c][b+d]; }
              if (this.Determinant(B) != 0) rank = r;
            }       // Функцию Determinant см. выше
         }
@@ -119,20 +122,21 @@ MatrixRank(A:any[]) :any
 
 AdjugateMatrix(A:any[])  :any  // A - двумерный квадратный массив
 {
-    var N = A.length, adjA = [];
-    for (var i = 0; i < N; i++)
+  let N = A.length
+  let adjA:any = [];
+    for (let i = 0; i < N; i++)
      { adjA[ i ] = [];
-       for (var j = 0; j < N; j++)
-        { var B = [], sign = ((i+j)%2==0) ? 1 : -1;
-          for (var m = 0; m < j; m++)
+       for (let j = 0; j < N; j++)
+        { let B:any = [], sign = ((i+j)%2==0) ? 1 : -1;
+          for (let m = 0; m < j; m++)
            { B[m] = [];
-             for (var n = 0; n < i; n++)   B[m][n] = A[m][n];
-             for (var n = i+1; n < N; n++) B[m][n-1] = A[m][n];
+             for (let n = 0; n < i; n++)   B[m][n] = A[m][n];
+             for (let n = i+1; n < N; n++) B[m][n-1] = A[m][n];
            }
-          for (var m = j+1; m < N; m++)
+          for (let m = j+1; m < N; m++)
            { B[m-1] = [];
-             for (var n = 0; n < i; n++)   B[m-1][n] = A[m][n];
-             for (var n = i+1; n < N; n++) B[m-1][n-1] = A[m][n];
+             for (let n = 0; n < i; n++)   B[m-1][n] = A[m][n];
+             for (let n = i+1; n < N; n++) B[m-1][n-1] = A[m][n];
            }
           adjA[ i ][j] = sign*this.Determinant(B);   // Функцию Determinant см. выше
         }
@@ -140,13 +144,15 @@ AdjugateMatrix(A:any[])  :any  // A - двумерный квадратный м
     return adjA;
 }
 
-InverseMatrix(A :any[])   :any // A - двумерный квадратный массив
+
+//??? A->AA (было А)
+InverseMatrix(AA :any[])   :any // A - двумерный квадратный массив
 {
-    var det = this.Determinant(A);                // Функцию Determinant см. выше
+  let det = this.Determinant(AA);                // Функцию Determinant см. выше
     if (det == 0) return false;
-    var N = A.length, A = this.AdjugateMatrix(A); // Функцию AdjugateMatrix см. выше
-    for (var i = 0; i < N; i++)
-     { for (var j = 0; j < N; j++) A[ i ][j] /= det; }
+    let N = AA.length, A = this.AdjugateMatrix(AA); // Функцию AdjugateMatrix см. выше
+    for (let i = 0; i < N; i++)
+     { for (let j = 0; j < N; j++) A[ i ][j] /= det; }
     return A;
 }
 

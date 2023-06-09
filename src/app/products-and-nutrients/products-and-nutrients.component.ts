@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { StaticDataSource } from '../model/static.datasource';
 import { DataService } from '../service/data.service';
+import { MatrixService } from '../service/matrix.service';
 import { OptimisationService } from '../service/optimisation.service';
 
 @Component({
@@ -41,7 +42,7 @@ sortBySubstr: boolean //поместить сверху содержащие  te
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 
 
-constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService){
+constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
   //this.textFilter=''
   this.params.textSort=''
   this.params.sortByNutrient = -1
@@ -99,8 +100,9 @@ if (this.localData){
                                                                                         this.products=this.staticDataSource.getProducts()
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
-                                                                                        this.finalSorting()
+                                                                                        //this.finalSorting()
                                                                                         this.lightRecommendedProducts()
+                                                                                        this.finalSorting()
 }else{
 
   this.dataService.findProducts('', this.params.sortByNutrient).subscribe((v:string[])=>{
@@ -108,8 +110,9 @@ if (this.localData){
                                                                                         this.products=v
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
                                                                                         if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
-                                                                                        this.finalSorting()
+                                                                                        //this.finalSorting()
                                                                                         this.lightRecommendedProducts()
+                                                                                        this.finalSorting()
                                                                                         })
 }
 
@@ -126,8 +129,8 @@ a1MoreA2(a1:number[],a2:number[]){
 }
 
 finalSorting(){
-  this.products.sort((u:any,v:any)=>{ let a1 = [v.val*(this.params.valued_ontop?1:0),v.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),-v.rownumber]
-                                      let a2 = [u.val*(this.params.valued_ontop?1:0),u.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),-u.rownumber]
+  this.products.sort((u:any,v:any)=>{ let a1 = [v.val*(this.params.valued_ontop?1:0),v.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),v.isrecommended,-v.rownumber]
+                                      let a2 = [u.val*(this.params.valued_ontop?1:0),u.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),u.isrecommended,-u.rownumber]
                                       return this.a1MoreA2(a1,a2)
                                      })
   this.saveSettings()
@@ -199,8 +202,9 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
                                                                                           }catch(e){}
                                                                                   })
                                                                             }))
-      this.finalSorting()
+      //this.finalSorting()
       this.lightRecommendedProducts()
+      this.finalSorting()
       this.saveSettings()
       this.mainHeader='ДИЕТОЛОГ'
     }else{
@@ -217,8 +221,9 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
                                                                                                }catch(e){}
                                                                                         })
                                                                                  }))
-            this.finalSorting()
+            //this.finalSorting()
             this.lightRecommendedProducts()
+            this.finalSorting()
             this.saveSettings()
             this.mainHeader='ДИЕТОЛОГ'
           })
@@ -343,9 +348,9 @@ toExcel(){
   const workbook: XLSX.WorkBook = XLSX.utils.book_new();
   let sTime = (new Date()).toISOString()
   //saving in loadable form
-  var sConf = JSON.stringify({"params": this.params, "nutrients":this.nutrients,"products":this.products})
-  var a = document.createElement('a');
-  var file = new Blob([sConf], {type: 'text/plain'});
+  let sConf = JSON.stringify({"params": this.params, "nutrients":this.nutrients,"products":this.products})
+  let a = document.createElement('a');
+  let file = new Blob([sConf], {type: 'text/plain'});
   a.href = URL.createObjectURL(file);
   a.download = 'dietolog_'+ sTime +'.dtlg';
   a.click();
@@ -372,7 +377,86 @@ test(){
   alert(JSON.stringify(this.products.filter((v:any)=>v.val>0)))
 }
 
+//подбор точной раскладки по нормам нутриентов
 optimize(){
+  let aNutr=[]
+  let aRet=[]
+  let aInfo=[]
+  let aaInfo=[]
+  let sNutrientsNeeded = ','
+
+
+  this.nutrients.filter((n:any)=>n.excluded==0).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  /* ????
+  if(this.localData){
+    this.allInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  }else{
+    this.currentInfo.filter((v:any)=>this.nutrientIsNeeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsNeeded+=i.nutrient+','})
+  }
+  */
+  let excludedProductstList =','
+  this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
+  //let sNutrientsExceeded = ','
+  //if(this.localData){
+  //  this.allInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+  //}else{
+  //  this.currentInfo.filter((v:any)=>this.nutrientIsExceeded(this.nutrients.filter((n:any)=>n.excluded==0).filter((n:any)=>n._id ==  v.nutrient)[0])).forEach((i:any) => {sNutrientsExceeded+=i.nutrient+','})
+ // }
+  if (this.localData){
+    this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList,1/* this.params.topCountRecommendedProducts*/)
+    //this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+    this.mainHeader='ДИЕТОЛОГ'
+  }else{
+    this.dataService.findRecommendedProducts(sNutrientsNeeded,excludedProductstList, 1/*this.params.topCountRecommendedProducts*/)
+                    .subscribe((np:any)=>
+                      { this.recommendedProducts = np
+                        //this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
+                        this.mainHeader='ДИЕТОЛОГ'
+                      }
+                    )
+  }
+  //к-ты в одномерной матрице
+  aInfo = this.staticDataSource.getInfo().filter((i:any)=>(this.recommendedProducts.filter((rp:any)=>rp.product==i.product)).length>0)
+                                          .filter((i:any)=>this.nutrients.filter((n:any)=>n._id==i.nutrient)[0].excluded==0)
+                                          .sort((i1:any,i2:any)=>i1.product-i2.product)
+                                          .sort((i1:any,i2:any)=>i1.product==i2.product?i1.nutrient-i2.nutrient:0)
+                                          //.forEach((i:any)=>)
+  //alert(JSON.stringify(this.recommendedProducts))
+  //конвертация в двумерную
+  //обнуляем
+  let N=this.nutrients.filter((n:any)=>n.excluded==0).length
+  for(let i=0; i<N; i++){
+    let m:any=[]
+    aaInfo.push(m)
+    for(let j=0; j<N; j++) aaInfo[i].push(0)
+  }
+  //наполняем
+  let pid:any = -1// this.recommendedProducts.filter((p:any,ind:number)=>ind==0)[0]._id
+  let nid:any = -1//this.nutrients.filter((n:any)=>n.excluded==0).sort((n1:any,n2:any)=>n1._id-n2._id)[0]._id
+  for(let i=0; i<N; i++){
+    try{pid=this.recommendedProducts.filter((r:any)=>r.product>pid).sort((r1:any,r2:any)=>r1.product-r2.product)[0].product
+    }catch(e){}
+    //alert(pid)
+    for(let j=0; j<N; j++){
+      try{nid = this.nutrients.filter((n:any)=>n.excluded==0).sort((n1:any,n2:any)=>n1._id-n2._id)
+                          .filter((n:any,ind:number)=>ind==j)[0]._id}
+      catch(e){}
+      let val:any
+      try{val=this.staticDataSource.getInfoOne(pid,nid)[0].value
+      }catch(e){}
+      if (val!=undefined) aaInfo[i][j]=val
+    }
+  }
+  //тест, делаем обратимой for(var i=0;i<N;i++) aaInfo[i][i]=10
+  //обращаем
+  aaInfo = this.matrix.InverseMatrix(aaInfo)
+  //aInfo.forEach((i:any)=>{})
+  alert(JSON.stringify(aaInfo))
+  alert(this.recommendedProducts.length)
+  alert(aInfo.length)
+  alert(this.nutrients.filter((v:any)=>v.excluded==0).length)
+  //I*p = nn
+  /*
   //this.dataService.norm2('{vv: testnorm2}').subscribe((ai:any)=>alert(ai))
   //alert(0)
   try{//загружаем сохраненную в браузере конфигурацию
@@ -387,6 +471,7 @@ optimize(){
     }
   }catch(e){}
   this.optimisationServise.generate(this.products,this.nutrients)
+  */
 }
 
 clear(){
@@ -430,21 +515,29 @@ clickPrev(){
   }
 }
 
+testClick(){
+  let m:any=[[1,1,10,234],[1,2,89,76],[1,451,10,234],[1,2,89,88]]
+  alert(JSON.stringify(  this.matrix.InverseMatrix(m)) )
+  alert(JSON.stringify( this.matrix.MultiplyMatrix(m, this.matrix.InverseMatrix(m)) )  )
+}
+
 /*деплой
 разово: npm install -g angular-cli-ghpages
 ?? ng build --base-href //dietolog_client
-ng build --base-href https://robinzgit.github.io/dietolog_client/
+ng build --base-href https://robinzgit.github.io/dietolog_client/            !!!слэш в конце обязательно
 ngh --dir dist\dietolog_client
 */
 /*
 TODO -----------------------------------------------
+кнопка пересчета - и пересчет только по ней в локальном режиме
 в фильтр строку поиска сразу по регулярке
-добавить собщение о пересчете и какой-нибудь бледный стиль\disabled в этот момент
+добавить собщение о пересчете и какой-нибудь бледный стиль\disabled в этот моментngh --dir dist\dietolog_client
 
 Сохранение настроек - только ненули в кол-ве а мб только ИД-кол-excl, и досчет при инициализации
-
+{
+Вывести норму отклонения в таблицу нутриентов
 Матрицы и оптим по обратной матрице
-
+}
 ПРОВЕРИТЬ ЗЕФИР 300    Вино полудесертное 66 - косяки в подсветке - ГЛОБАЛЬНО ПОТЕСТИТь ПОПРАВИТЬ БД И ЗАПИХАТЬ ЕЕ В СЕРВИС
 фильтры и сортировки загнать в один объект и сохранять\подгружать в onInit  - не сортирует  и не сохраняет сортировку по нутриенту - ngModel не сортирует
 ЭКСЕЛЬ - единицы измерения, нормальные имена колонок, колонка избыток-недостаток ыв нутриенты и сортировка по ней
