@@ -12,7 +12,7 @@
           </label>
           <button class="improve-button" title="Рассчитать оптимальную раскладку" (click)="optimize()">&nbsp;GO!&nbsp;</button>
           <!--<button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+500 гр.)" (click)="improveProductValues(500)">+500</button>-->
-          <p><label>
+          <p><label title="Можно использовать ИЛИ-разделитель '|', например: 'кофе|сливки|сахар'" >
             &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="params.sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
              <input [(ngModel)]="params.textSort" type="text" (change)="params.sortBySubstr=true;finalSorting()" >
            </label></p>
@@ -99,6 +99,10 @@
 
 <!--/div-->
 <p style="font-style: italic;">version 1.1</p>
-<button (click)="clear()">clear cache</button>
+
+<button (click)="clear()">Очистить</button>
+<!--
+<p></p><textarea style="height: 2000px; width: 2000px;">{{sInfo}}</textarea>
+-->
 
 

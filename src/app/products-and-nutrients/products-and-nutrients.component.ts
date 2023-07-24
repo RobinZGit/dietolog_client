@@ -41,6 +41,7 @@ sortBySubstr: boolean //поместить сверху содержащие  te
 */
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 
+sInfo: any = ''
 
 constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
   //this.textFilter=''
@@ -128,9 +129,16 @@ a1MoreA2(a1:number[],a2:number[]){
   return 0
 }
 
+
+//вспом. - сумма элементов массива чисел
+arSumm(arr:number[]){
+  return arr.reduce((acc, num) => acc + num, 0);
+}
+
+//
 finalSorting(){
-  this.products.sort((u:any,v:any)=>{ let a1 = [v.val*(this.params.valued_ontop?1:0),v.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),v.isrecommended,-v.rownumber]
-                                      let a2 = [u.val*(this.params.valued_ontop?1:0),u.name.toUpperCase().indexOf(this.params.textSort.toUpperCase())*(this.params.sortBySubstr?1:0),u.isrecommended,-u.rownumber]
+  this.products.sort((u:any,v:any)=>{ let a1 = [Math.abs(v.val)*(this.params.valued_ontop?1:0),   this.arSumm(this.params.textSort.split('|').map((vv:any,ind:any)=>(10000*ind+1)*v.name.toUpperCase().indexOf(vv.trim().toUpperCase())))     *(this.params.sortBySubstr?1:0),v.isrecommended,-v.rownumber]
+                                      let a2 = [Math.abs(u.val)*(this.params.valued_ontop?1:0),   this.arSumm(this.params.textSort.split('|').map((vv:any,ind:any)=>(10000*ind+1)*u.name.toUpperCase().indexOf(vv.trim().toUpperCase())))     *(this.params.sortBySubstr?1:0),u.isrecommended,-u.rownumber]
                                       return this.a1MoreA2(a1,a2)
                                      })
   this.saveSettings()
@@ -382,7 +390,8 @@ optimize(){
   let aNutr=[]
   let aRet=[]
   let aInfo=[]
-  let aaInfo=[]
+  let aaInfo: any=[]
+  let aaInfoCut: any=[]
   let sNutrientsNeeded = ','
 
 
@@ -421,16 +430,37 @@ optimize(){
                                           .sort((i1:any,i2:any)=>i1.product-i2.product)
                                           .sort((i1:any,i2:any)=>i1.product==i2.product?i1.nutrient-i2.nutrient:0)
                                           //.forEach((i:any)=>)
-  //alert(JSON.stringify(this.recommendedProducts))
+  alert(JSON.stringify(this.recommendedProducts))
   //конвертация в двумерную
   //обнуляем
   let N=this.nutrients.filter((n:any)=>n.excluded==0).length
+
   for(let i=0; i<N; i++){
     let m:any=[]
     aaInfo.push(m)
     for(let j=0; j<N; j++) aaInfo[i].push(0)
+
   }
   //наполняем
+  let nNorms:any = []
+  let pOpt:any =[]
+  let pExcluded=''
+  this.nutrients.filter((n:any)=>n.excluded==0)
+    .forEach((n:any,ind:number)=>{
+                       nNorms.push((n.min_dailyrate+n.max_dailyrate)/2)
+                       let pmax=this.staticDataSource.getInfoProductMax(n._id,this.products,pExcluded+',').product
+                       pExcluded += ','+pmax
+                       pOpt.push({id:pmax,val: 0 /*this.products.filter((p:any)=>{return (p._id==pmax)})[0].val*/ })
+                       let fullNut = this.staticDataSource.getInfo().filter((i:any)=> {return pmax==i.product})
+                       this.nutrients.filter((n2:any)=>n2.excluded==0)
+                                    .forEach((nn:any,indd:number)=>{  try{
+                                                                        aaInfo[ind][indd]=fullNut.filter((f:any)=>{return f.nutrient==nn._id})[0].value
+                                    } catch(e){aaInfo[ind][indd]=0}
+                                                                    })
+                    })
+  alert(" aaInfo "+JSON.stringify(aaInfo))
+  alert("nNorms = "+JSON.stringify(nNorms))
+
   let pid:any = -1// this.recommendedProducts.filter((p:any,ind:number)=>ind==0)[0]._id
   let nid:any = -1//this.nutrients.filter((n:any)=>n.excluded==0).sort((n1:any,n2:any)=>n1._id-n2._id)[0]._id
   for(let i=0; i<N; i++){
@@ -447,14 +477,55 @@ optimize(){
       if (val!=undefined) aaInfo[i][j]=val
     }
   }
+
+  /*
+  //выкидываем нулевые нутриенты
+  for(let i=0; i<N; i++){
+    if (aaInfo[i].filter((v:number)=>v>0).length>0){
+      aaInfoCut.push(aaInfo[i].splice(i,i))
+    }
+  }
+  */
+  aaInfoCut=aaInfo
+
+
+  //this.sInfo = '99999'
+  for(let i=0;i<aaInfoCut.length;i++){for(let j=0;j<aaInfoCut[i].length;j++) {this.sInfo+=''+aaInfoCut[i][j]+','}this.sInfo+='\n'}
+  //aaInfoCut = aaInfo
+  alert(" DETERMINANT= "+ this.matrix.Determinant(aaInfoCut))
+
+  alert(aaInfoCut.length)
+  alert(aaInfoCut[0].length)
+  alert(" aaInfo без нулей "+JSON.stringify(aaInfoCut))
   //тест, делаем обратимой for(var i=0;i<N;i++) aaInfo[i][i]=10
+
   //обращаем
-  aaInfo = this.matrix.InverseMatrix(aaInfo)
+  aaInfoCut = this.matrix.InverseMatrix(aaInfo)
   //aInfo.forEach((i:any)=>{})
-  alert(JSON.stringify(aaInfo))
-  alert(this.recommendedProducts.length)
-  alert(aInfo.length)
-  alert(this.nutrients.filter((v:any)=>v.excluded==0).length)
+  alert(" aaInfo ОБРАТНАЯ "+JSON.stringify(aaInfoCut))
+
+  //вычисляем итоговый набор
+  if (aaInfoCut){
+    for(let i=0;i<N;i++)
+      for(let j=0;j<N;j++)
+        pOpt[i].val+=aaInfoCut[j][i]*nNorms[j]
+    //pOpt.forEach((p:any)=>{aaInfoCut.forEach((aa:any)=>{})
+    //                       nNorms.forEach((n:any)=>{p.val+=0})
+     //                     }
+      //           )
+  }
+
+  //выводим рез-т на форму
+  this.products.forEach((p:any)=>{p.val = 0
+                                 pOpt.forEach((pO:any)=>{if (p._id==pO.id) p.val = pO.val
+                                                        }
+                                             )
+                                  })
+  this.recalcNutrients()
+
+  //alert(this.recommendedProducts.length)
+  //alert(aInfo.length)
+  //alert(this.nutrients.filter((v:any)=>v.excluded==0).length)
   //I*p = nn
   /*
   //this.dataService.norm2('{vv: testnorm2}').subscribe((ai:any)=>alert(ai))
@@ -475,7 +546,9 @@ optimize(){
 }
 
 clear(){
-  localStorage.clear
+  localStorage.clear()
+  this.products.forEach((p:any)=>{p.val=0})
+  this.recalcNutrients()
   this.ngOnInit()
 }
 
