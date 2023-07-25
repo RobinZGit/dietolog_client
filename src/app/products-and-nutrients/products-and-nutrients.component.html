@@ -10,8 +10,8 @@
           <label>
             &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="params.valued_ontop"  (change)="finalSorting()">Поместить продукты с выбранными ненулевыми количествами вверху списка
           </label>
-          <button class="improve-button" title="Рассчитать оптимальную раскладку" (click)="optimize()">&nbsp;GO!&nbsp;</button>
-          <!--<button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (+500 гр.)" (click)="improveProductValues(500)">+500</button>-->
+          <!--<button class="improve-button" title="Рассчитать оптимальную раскладку" (click)="optimize()">&nbsp;GO!&nbsp;</button>-->
+          <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов (100 гр.)" (click)="improveProductValues(100)">+100</button>
           <p><label title="Можно использовать ИЛИ-разделитель '|', например: 'кофе|сливки|сахар'" >
             &nbsp; &nbsp; &nbsp;2. <input type="checkbox" [(ngModel)]="params.sortBySubstr" (change)="finalSorting()">Затем поместить верху списка продукты, содержащие подстроку:
              <input [(ngModel)]="params.textSort" type="text" (change)="params.sortBySubstr=true;finalSorting()" >

@@ -322,9 +322,10 @@ getClassProduct(product: any){
 
 improveProductValues(plusVal:number){
   try{
-    let newProduct = this.products.filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.value-u.value)[0].product)[0]
+    let newProduct = this.products.filter((p:any)=>p.val==0).filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.value-u.value)[0].product)[0]
     this.products.map((p:any)=> {if(p._id==newProduct._id) p.val+=plusVal})
     this.findProducts()
+    this.recalcNutrients()
     alert('Добавлено ' + plusVal +' гр. "'+newProduct.name+'"')
   }catch(e){ alert('Не удалось подобрать продукт')}
 }
