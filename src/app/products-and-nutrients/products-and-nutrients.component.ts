@@ -320,13 +320,23 @@ getClassProduct(product: any){
   return sRet
 }
 
-improveProductValues(plusVal:number){
+improveProductValues(){
   try{
-    let newProduct = this.products.filter((p:any)=>p.val==0).filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.value-u.value)[0].product)[0]
-    this.products.map((p:any)=> {if(p._id==newProduct._id) p.val+=plusVal})
+    let randomNum = Math.floor(Math.random()*(this.recommendedProducts.length-1))
+    let newProduct = this.recommendedProducts[randomNum].product//this.products.filter((p:any)=>p.val==0).filter((p:any)=> p._id == this.recommendedProducts.sort((u:any,v:any)=> v.value-u.value)[randomNum].product)[0]
+    let pName = this.products.filter((p:any)=>p._id==newProduct)[0].name
+    let nName = this.nutrients.filter((n:any)=>n._id==this.recommendedProducts[randomNum].nutrient)[0].name
+    let valToNorm = 0
+    try{
+      let delta = (this.nutrients[this.recommendedProducts[randomNum].nutrient].max_dailyrate  - this.nutrients[this.recommendedProducts[randomNum].nutrient].val)
+      valToNorm =  (delta>0?delta:0)  * 100/ this.recommendedProducts[randomNum].value
+      if (valToNorm>200) valToNorm=200
+    }catch(e){}
+    this.products.map((p:any)=> {if(p._id==newProduct) p.val+=valToNorm})
+    //alert(JSON.stringify(this.recommendedProducts))
     this.findProducts()
     this.recalcNutrients()
-    alert('Добавлено ' + plusVal +' гр. "'+newProduct.name+'"')
+    alert('Добавлено ' + valToNorm +' гр. "'+ pName+'" для корректировки "'+ nName +'"')
   }catch(e){ alert('Не удалось подобрать продукт')}
 }
 
