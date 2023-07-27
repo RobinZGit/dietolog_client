@@ -327,8 +327,10 @@ improveProductValues(){
     let pName = this.products.filter((p:any)=>p._id==newProduct)[0].name
     let nName = this.nutrients.filter((n:any)=>n._id==this.recommendedProducts[randomNum].nutrient)[0].name
     let valToNorm = 0
+
     try{
-      let delta = (this.nutrients[this.recommendedProducts[randomNum].nutrient].max_dailyrate  - this.nutrients[this.recommendedProducts[randomNum].nutrient].val)
+      let delta = (this.nutrients.filter((n:any)=>n._id==this.recommendedProducts[randomNum].nutrient)[0].min_dailyrate
+                   - this.nutrients.filter((n:any)=>n._id==this.recommendedProducts[randomNum].nutrient)[0].val)
       valToNorm =  (delta>0?delta:0)  * 100/ this.recommendedProducts[randomNum].value
       if (valToNorm>200) valToNorm=200
     }catch(e){}
