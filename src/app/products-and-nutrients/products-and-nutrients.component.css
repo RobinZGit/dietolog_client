@@ -153,7 +153,7 @@
 }
 
 .input-val{
-  width: 100px;
+  width: 110px;
 }
 
 .recalc-nutr-button{
@@ -161,3 +161,6 @@
   background-color: rgb(166, 104, 224);
 }
 
+.light-filter{
+  filter:saturate(20%)
+}

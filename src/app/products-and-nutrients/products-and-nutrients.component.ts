@@ -13,6 +13,7 @@ import { OptimisationService } from '../service/optimisation.service';
 export class ProductsAndNutrientsComponent implements OnInit{
 
 mainHeader:string='ДИЕТОЛОГ'
+classFilter =  ''
 
 //----------------
 localData: boolean =true //==false - берем данные из БД сервисом java.  ==true - берем из локального класса StaticDataSource
@@ -40,7 +41,7 @@ valued_ontop: boolean //поместить выбранные количеств
 sortBySubstr: boolean //поместить сверху содержащие  textSort
 */
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
-
+focusedNutrient: any = {isDirty:false,nutrientId:-1,val:0}
 sInfo: any = ''
 
 constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
@@ -173,6 +174,7 @@ findNutrients(){
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
 recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
   this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
+  //this.classFilter =  'light-filter'
   if (sText!=''){
     try{
       let conf:any = JSON.parse(''+sText)
@@ -200,6 +202,7 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
 
 
     if (this.localData){
+      //this.classFilter =  'light-filter'
       //пересчет количеств нутриентов в выбранных продуктах
       this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
                           this.products.forEach((pp:any)=> {
@@ -215,6 +218,11 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
       this.finalSorting()
       this.saveSettings()
       this.mainHeader='ДИЕТОЛОГ'
+      this.classFilter =  ''
+      if(this.focusedNutrient.nutrientId>=0){
+        this.focusedNutrient.val = this.nutrients.filter((n:any)=>n._id==this.focusedNutrient.nutrientId)[0].val
+        this.focusedNutrient.isDirty = false
+      }
     }else{
       this.dataService.findInfoByProductList(sProducts+',')
       .subscribe((ai:any)=>
@@ -234,12 +242,18 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
             this.finalSorting()
             this.saveSettings()
             this.mainHeader='ДИЕТОЛОГ'
+            if(this.focusedNutrient.nutrientId>=0){
+              this.focusedNutrient.val = this.nutrients.filter((n:any)=>n._id==this.focusedNutrient.nutrientId)[0].val
+              this.focusedNutrient.isDirty = false
+            }
           })
     }
   }catch(e){}
+
 }
 
 lightRecommendedProducts(){
+
   //this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
@@ -340,6 +354,46 @@ improveProductValues(){
     this.recalcNutrients()
     alert('Добавлено ' + valToNorm +' гр. "'+ pName+'" для корректировки "'+ nName +'"')
   }catch(e){ alert('Не удалось подобрать продукт')}
+}
+
+setFocusedNutrient(n:any){
+  if ((this.focusedNutrient.nutrientId==n._id)&&(!this.focusedNutrient.isDirty)){
+     this.focusedNutrient.val=n.val
+     this.focusedNutrient.isDirty=true
+  }
+  if (this.focusedNutrient.nutrientId<0){
+    this.focusedNutrient.nutrientId=n._id
+    this.focusedNutrient.val=n.val
+    this.focusedNutrient.isDirty=true
+  }
+  this.focusedNutrient.nutrientId=n._id
+  this.focusedNutrient.isDirty=true
+}
+
+findProductToSetNutrientValue(n:any){
+  try{
+    if ((n._id==this.focusedNutrient.nutrientId)&& (n.val>this.focusedNutrient.val)){
+      //ищем продукт с макс содержанием нутриента
+        let valToNorm = 0
+        let iAdd = this.staticDataSource.getInfo().filter((i:any)=>i.nutrient==n._id)
+                                                  .filter((i:any)=>this.products.filter((p:any)=>((p._id==i.product)&&(p.excluded==1))).length==0)
+                                                  .filter((i:any)=>this.products.filter((p:any)=>((p._id==i.product)&&(p.val==0))).length>0) //новый продукт
+                                                  .sort((i1:any,i2:any)=>i2.value-i1.value)[0]
+        if(iAdd!=null){
+          let nCurr = this.nutrients.filter((n:any)=>n._id==iAdd.nutrient)[0]
+          let delta = (n.val - this.focusedNutrient.val)
+          if (iAdd.value>0) valToNorm = 100*delta/iAdd.value
+          if (valToNorm>200) valToNorm=200
+          this.products.map((p:any)=> {if(p._id==iAdd.product) p.val+=valToNorm})
+          let pName = this.products.filter((p:any)=>p._id==iAdd.product)[0].name
+          let nName = this.nutrients.filter((n:any)=>n._id==iAdd.nutrient)[0].name
+          this.findProducts()
+          this.recalcNutrients()
+          alert('Добавлено ' + valToNorm +' гр. "'+ pName+'" для корректировки "'+ nName +'"')
+        }
+    }
+  }catch(e){alert('Не удалось подобрать продукт')}
+  this.recalcNutrients()
 }
 
 excludeAllProducts(checked:boolean){
@@ -602,7 +656,7 @@ clickPrev(){
 }
 
 excludeRecommended(){
-  this.products.forEach((p:any)=>{if(p.isrecommended){p.val=0;p.excluded=1}})
+  this.products.forEach((p:any)=>{if(p.isrecommended&&p.val==0){p.excluded=1}})
   this.recalcNutrients()
 }
 
