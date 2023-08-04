@@ -15,9 +15,9 @@ export class ProductsAndNutrientsComponent implements OnInit{
 mainHeader:string='ДИЕТОЛОГ'
 classFilter =  ''
 
-//----------------
+//------------------------------------------------------------------------------
 localData: boolean =true //==false - берем данные из БД сервисом java.  ==true - берем из локального класса StaticDataSource
-//----------------
+//------------------------------------------------------------------------------
 
 products?: any
 nutrients?: any
@@ -29,28 +29,21 @@ pcopy: any[] = [] //вспомогательный
 pHist:any[] =[] //для навигации
 nHist:any[] =[] //для навигации
 indHist: number = -1
-//topCountRecommendedProducts: number //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
+
 keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
 keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
 keyForLocalStorageParams: string = 'rz_dietolog_configuration_params'
-//textFilter: string  //!не использовать! фильтрация ломает пересчет. убрал с формы
-/*
-textSort: string
-sortByNutrient: number  //сортировка по нутриенту
-valued_ontop: boolean //поместить выбранные количества сверху(в остальном сохранить сортировку по нутриенту)
-sortBySubstr: boolean //поместить сверху содержащие  textSort
-*/
+
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 focusedNutrient: any = {isDirty:false,nutrientId:-1,val:0}
 sInfo: any = ''
 
 constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
-  //this.textFilter=''
   this.params.textSort=''
   this.params.sortByNutrient = -1
   this.params.valued_ontop = false
   this.params.sortBySubstr = false
-  this.params.topCountRecommendedProducts = 5 // #######   //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
+  this.params.topCountRecommendedProducts = 5 //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
 }
 
 
@@ -97,28 +90,26 @@ findInfo(){
 */
 
 findProducts(){
-if (this.localData){
-  if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
-                                                                                        this.products=this.staticDataSource.getProducts()
-                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
-                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
-                                                                                        //this.finalSorting()
-                                                                                        this.lightRecommendedProducts()
-                                                                                        this.finalSorting()
-}else{
+  if (this.localData){
+    if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
+                                                                                          this.products=this.staticDataSource.getProducts()
+                                                                                          if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
+                                                                                          if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
+                                                                                          //this.finalSorting()
+                                                                                          this.lightRecommendedProducts()
+                                                                                          this.finalSorting()
+  }else{
 
-  this.dataService.findProducts('', this.params.sortByNutrient).subscribe((v:string[])=>{
-                                                                                        if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
-                                                                                        this.products=v
-                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
-                                                                                        if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
-                                                                                        //this.finalSorting()
-                                                                                        this.lightRecommendedProducts()
-                                                                                        this.finalSorting()
-                                                                                        })
-}
-
-
+    this.dataService.findProducts('', this.params.sortByNutrient).subscribe((v:string[])=>{
+                                                                                          if (this.products!=undefined) this.pcopy = this.products.slice()//для сохранения введенных количеств
+                                                                                          this.products=v
+                                                                                          if(this.pcopy.length>0) this.products.map((p:any)=>{p.val = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].val})
+                                                                                          if(this.pcopy.length>0) this.products.map((p:any)=>{p.excluded = this.pcopy.filter((pp:any)=>pp._id==p._id)[0].excluded})
+                                                                                          //this.finalSorting()
+                                                                                          this.lightRecommendedProducts()
+                                                                                          this.finalSorting()
+                                                                                          })
+  }
 }
 
 //вспомогат для сортировки. сравнивает массивы как числа, эл-ты массива как разряды. return 1/-1/0 - a1><=a2
@@ -129,7 +120,6 @@ a1MoreA2(a1:number[],a2:number[]){
   }
   return 0
 }
-
 
 //вспом. - сумма элементов массива чисел
 arSumm(arr:number[]){
@@ -187,7 +177,6 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
     if(!doNotSaveHist){
       this.pHist.push(JSON.parse(JSON.stringify(this.products)))
       this.nHist.push(JSON.parse(JSON.stringify(this.nutrients)))
-      //if (this.indHist==this.nHist.length-2)
       this.indHist = this.nHist.length-1
     }
     //обнуляем все нутриенты
@@ -197,9 +186,6 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
     this.products.filter((v:any)=>v.val>0).forEach((p:any) => {sProducts+=p._id+','})
     let excludedNutrientsList =','
     this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
-
-
-
 
     if (this.localData){
       //this.classFilter =  'light-filter'
@@ -213,7 +199,6 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
                                                                                           }catch(e){}
                                                                                   })
                                                                             }))
-      //this.finalSorting()
       this.lightRecommendedProducts()
       this.finalSorting()
       this.saveSettings()
@@ -237,7 +222,6 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
                                                                                                }catch(e){}
                                                                                         })
                                                                                  }))
-            //this.finalSorting()
             this.lightRecommendedProducts()
             this.finalSorting()
             this.saveSettings()
@@ -253,7 +237,6 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
 }
 
 lightRecommendedProducts(){
-
   //this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
   //подсветка рекомендованных продуктов (исходя из недостаточного кол-ва нек-х нутриентов)
   let sNutrientsNeeded = ','
@@ -264,11 +247,8 @@ lightRecommendedProducts(){
   }
   let excludedProductstList =','
   this.products.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedProductstList+=p._id+','})
-  //let excludedNutrientsList =','
-  //this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
   if (this.localData){
     this.recommendedProducts = this.staticDataSource.findInfoByProductListStatic(sNutrientsNeeded,excludedProductstList, this.params.topCountRecommendedProducts)
-    //alert(JSON.stringify(this.recommendedProducts))
     this.products.map((p:any)=>{p.isrecommended = (this.recommendedProducts.filter((v:any)=>(v.product==p._id)).length >0)?1:0 })
     this.mainHeader='ДИЕТОЛОГ'
   }else{
@@ -357,15 +337,8 @@ improveProductValues(){
 }
 
 setFocusedNutrient(n:any){
-  if ((this.focusedNutrient.nutrientId==n._id)&&(!this.focusedNutrient.isDirty)){
-     this.focusedNutrient.val=n.val
-     this.focusedNutrient.isDirty=true
-  }
-  if (this.focusedNutrient.nutrientId<0){
-    this.focusedNutrient.nutrientId=n._id
-    this.focusedNutrient.val=n.val
-    this.focusedNutrient.isDirty=true
-  }
+  if ((this.focusedNutrient.nutrientId==n._id)&&(!this.focusedNutrient.isDirty)) this.focusedNutrient.val=n.val
+  if (this.focusedNutrient.nutrientId<0) this.focusedNutrient.val=n.val
   this.focusedNutrient.nutrientId=n._id
   this.focusedNutrient.isDirty=true
 }
@@ -380,7 +353,6 @@ findProductToSetNutrientValue(n:any){
                                                   .filter((i:any)=>this.products.filter((p:any)=>((p._id==i.product)&&(p.val==0))).length>0) //новый продукт
                                                   .sort((i1:any,i2:any)=>i2.value-i1.value)[0]
         if(iAdd!=null){
-          let nCurr = this.nutrients.filter((n:any)=>n._id==iAdd.nutrient)[0]
           let delta = (n.val - this.focusedNutrient.val)
           if (iAdd.value>0) valToNorm = 100*delta/iAdd.value
           if (valToNorm>200) valToNorm=200
@@ -391,6 +363,34 @@ findProductToSetNutrientValue(n:any){
           this.recalcNutrients()
           alert('Добавлено ' + valToNorm +' гр. "'+ pName+'" для корректировки "'+ nName +'"')
         }
+    }else{
+      if ((n._id==this.focusedNutrient.nutrientId)&& (n.val<this.focusedNutrient.val)){
+        //найти продукт в раскладке с макс содержанием данного нутриента, вычесть из него. Так в цикле, пока не уменьшим до n.val
+        let pNames = ''
+        let valToNorm = 0
+        let aDel = this.staticDataSource.getInfo().filter((i:any)=>i.nutrient==n._id)
+                                                  .filter((i:any)=>this.products.filter((p:any)=>((p._id==i.product)&&(p.excluded==1))).length==0)
+                                                  .filter((i:any)=>this.products.filter((p:any)=>((p._id==i.product)&&(p.val>0))).length>0) // продукт из раскладки
+                                                  .sort((i1:any,i2:any)=>i2.value-i1.value)
+        if(aDel!=null){
+          let delta = (-n.val + this.focusedNutrient.val)
+          aDel.forEach((d:any)=>
+            this.products.map((p:any)=> {if(p._id==d.product) {
+                                                                if (d.value>0){
+                                                                  valToNorm = 100*delta/d.value
+                                                                  if (valToNorm>p.val) valToNorm = p.val
+                                                                }
+                                                                delta = delta - valToNorm*d.value/100
+                                                                p.val-=valToNorm
+                                                                pNames += '"'+this.products.filter((p:any)=>p._id==d.product)[0].name + '" (на '+valToNorm+'  гр.) ; '
+                                                              }})
+          )
+          let nName = this.nutrients.filter((n:any)=>n._id==aDel[0].nutrient)[0].name
+          this.findProducts()
+          this.recalcNutrients()
+          alert('Уменьшены ' + pNames+' для корректировки "'+ nName +'"')
+        }
+      }
     }
   }catch(e){alert('Не удалось подобрать продукт')}
   this.recalcNutrients()
