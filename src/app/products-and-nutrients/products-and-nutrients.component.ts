@@ -396,6 +396,14 @@ findProductToSetNutrientValue(n:any){
   this.recalcNutrients()
 }
 
+setNutrientVal(nutrient:any, v:number){
+  this.focusedNutrient.nutrientId = nutrient._id
+  this.focusedNutrient.val = nutrient.val
+  this.focusedNutrient.isDirty = false
+  nutrient.val=v
+  this.findProductToSetNutrientValue(nutrient)
+}
+
 excludeAllProducts(checked:boolean){
   this.products.map((p:any)=>{if(p.val==0) p.excluded=checked})
   this.saveSettings()
