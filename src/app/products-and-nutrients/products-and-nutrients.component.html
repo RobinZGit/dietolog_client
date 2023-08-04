@@ -96,8 +96,10 @@
               <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.max_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
               {{nutrient.units}}
             </td>
-            <td><input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()"></td>
-            <td><a *ngIf="nutrient.info" href="{{nutrient.info}}" target="_blank">info</a></td>
+            <td>
+                <input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()">
+                <a *ngIf="nutrient.info" href="{{nutrient.info}}" target="_blank">info</a>
+            </td>
           </tr>
         </table>
       </div>
