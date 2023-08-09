@@ -407,11 +407,11 @@ setNutrientVal(nutrient:any, v:number){
 //Добавить оптимальное количество продукта в раскладку'
 useProduct(p:any){
   try{
-    let iOpt = this.staticDataSource.getInfo().filter((i:any)=>i.product==p._id).sort((i1:any,i2:any)=>i2.value-i1.value)[0]
+    let iOpt = this.staticDataSource.getInfo().filter((i:any)=>i.product==p._id).sort((i1:any,i2:any)=>Number(i2.perc1on100gr.replaceAll(',','.'))-Number(i1.perc1on100gr.replaceAll(',','.')))[0]
     let nOpt = this.nutrients.filter((n:any)=>n._id==iOpt.nutrient)[0]
     let deltaNutr = nOpt.max_dailyrate - nOpt.val
     if (deltaNutr<=0){
-      alert('Продукт не добавлен. Его основной элемент "'+ nOpt.name + '", который уже в достаточном коичестве в данной раскладке')
+      alert('Продукт "' + p.name + '" не добавлен. Его основной элемент "'+ nOpt.name + '", который уже в достаточном количестве в данной раскладке')
       return
     }
     let deltaProd =  100*deltaNutr/iOpt.value - p.val
