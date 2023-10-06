@@ -48,8 +48,12 @@ constructor(private dataService:DataService,private staticDataSource:StaticDataS
 
 
 ngOnInit(): void{
+    this.staticDataSource.recalcPerc1on100gr() //ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ ...????????????
+
     try{this.findProducts()}catch(e){}
     try{this.findNutrients()}catch(e){}
+    this.calcHintsAsync()
+
     //долго this.findInfo()
     if (this.localData)
        try{
@@ -63,8 +67,47 @@ ngOnInit(): void{
         this.nutrients = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageNutrients)))
         this.params = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageParams)))
         this.recalcNutrients()
+
       }
     }catch(e){}
+}
+
+calcHintsAsync(){
+  this.products.forEach((p:any)=>p.hint='')
+  this.nutrients.forEach((p:any)=>p.hint='')
+
+  this.nutrients.forEach((n:any,index:number)=>{if (n.hint.length==0){
+                                                  n.hint = n.name+' (сут. норма '+n.min_dailyrate+' - '+n.max_dailyrate + ' '+ n.units + '), основные продукты: \n'
+                                                  this.staticDataSource.getInfoProductsSortedByNutrientValue(n._id)
+                                                    .forEach((i:any, ind:number)=>{if(ind<20)
+                                                                                      try{
+                                                                                        n.hint+='\n'
+                                                                                        +this.products.filter((p:any)=>p._id==i.product)[0].name
+                                                                                        +' - '+i.value
+                                                                                        +n.units + ' ('+ i.perc1on100gr +'% сут. нормы) ' //+ i.value
+                                                                                      }catch(e){}
+                                                                                  }
+                                                            )
+                                                }
+                                                })
+
+  this.products.forEach((p:any,index:number)=>{if (p.hint.length==0){
+                                                  p.hint = p.name+', основные нутриенты: \n'
+                                                  this.staticDataSource.getInfoNutrientsSortedByPercentInProduct(p._id)
+                                                    .forEach((i:any, ind:number)=>{if(ind<20)
+                                                                                      try{
+                                                                                        let nutr = this.nutrients.filter((n:any)=>n._id==i.nutrient)[0]
+                                                                                        p.hint+='\n'
+                                                                                        +nutr.name
+                                                                                        +' - '+i.value
+                                                                                        +nutr.units + ' ('+ i.perc1on100gr +'% сут. нормы), (сут. норма '+nutr.min_dailyrate+' - '+nutr.max_dailyrate+' '+nutr.units+')'
+                                                                                      }catch(e){}
+                                                                                  }
+                                                            )
+                                                }
+                                                })
+
+
 }
 
 //долго..
@@ -407,7 +450,7 @@ setNutrientVal(nutrient:any, v:number){
 //Добавить оптимальное количество продукта в раскладку'
 useProduct(p:any){
   try{
-    let iOpt = this.staticDataSource.getInfo().filter((i:any)=>i.product==p._id).sort((i1:any,i2:any)=>Number(i2.perc1on100gr.replaceAll(',','.'))-Number(i1.perc1on100gr.replaceAll(',','.')))[0]
+    let iOpt = this.staticDataSource.getInfo().filter((i:any)=>i.product==p._id).sort((i1:any,i2:any)=>Number(i2.perc1on100gr/*.replaceAll(',','.')*/)-Number(i1.perc1on100gr/*.replaceAll(',','.')*/))[0]
     let nOpt = this.nutrients.filter((n:any)=>n._id==iOpt.nutrient)[0]
     let deltaNutr = nOpt.max_dailyrate - nOpt.val
     if (deltaNutr<=0){
@@ -699,6 +742,8 @@ ngh --dir dist\dietolog_client
 */
 /*
 TODO -----------------------------------------------
+сохранить в консоли объекты с пустыми хинтами, а инфо с нулевым процентом нормы,  и заменить ими в БД (хинты пересчитаются)
+
 кнопка пересчета - и пересчет только по ней в локальном режиме
 в фильтр строку поиска сразу по регулярке
 добавить собщение о пересчете и какой-нибудь бледный стиль\disabled в этот моментngh --dir dist\dietolog_client
