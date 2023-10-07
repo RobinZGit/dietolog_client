@@ -682,7 +682,10 @@ optimize(){
 
 clear(){
   localStorage.clear()
-  this.products.forEach((p:any)=>{p.val=0})
+  this.products.forEach((p:any)=>{p.val=0; p.hint=''})
+  this.nutrients.forEach((n:any)=>{n.hint=''})
+  //this.info.forEach((i:any)=>{i.perc1on100gr=null})
+
   this.recalcNutrients()
   this.ngOnInit()
 }
