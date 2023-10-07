@@ -59,7 +59,7 @@ ngOnInit(): void{
        try{
           this.allInfo = this.staticDataSource.getInfo()
        }catch(e){}
-    try{//загружаем сохраненную в браузере конфигурацию
+   /* try{//загружаем сохраненную в браузере конфигурацию
       if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)
          &&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)
          &&(localStorage.getItem(this.keyForLocalStorageParams)!==null)){
@@ -69,7 +69,7 @@ ngOnInit(): void{
         this.recalcNutrients()
 
       }
-    }catch(e){}
+    }catch(e){}*/
 }
 
 calcHintsAsync(){
