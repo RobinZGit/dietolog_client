@@ -33,6 +33,7 @@ indHist: number = -1
 keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
 keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
 keyForLocalStorageParams: string = 'rz_dietolog_configuration_params'
+useLocalData: boolean = true
 
 params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:false,topCountRecommendedProducts:5}
 focusedNutrient: any = {isDirty:false,nutrientId:-1,val:0}
@@ -59,7 +60,8 @@ ngOnInit(): void{
        try{
           this.allInfo = this.staticDataSource.getInfo()
        }catch(e){}
-   /* try{//загружаем сохраненную в браузере конфигурацию
+   if (this.useLocalData)
+    try{//загружаем сохраненную в браузере конфигурацию
       if((localStorage.getItem(this.keyForLocalStorageProducts)!==null)
          &&(localStorage.getItem(this.keyForLocalStorageNutrients)!==null)
          &&(localStorage.getItem(this.keyForLocalStorageParams)!==null)){
@@ -69,7 +71,7 @@ ngOnInit(): void{
         this.recalcNutrients()
 
       }
-    }catch(e){}*/
+    }catch(e){}
 }
 
 calcHintsAsync(){
@@ -681,13 +683,13 @@ optimize(){
 }
 
 clear(){
+  this.useLocalData = false
   localStorage.clear()
   this.products.forEach((p:any)=>{p.val=0; p.hint=''})
   this.nutrients.forEach((n:any)=>{n.hint=''})
-  //this.info.forEach((i:any)=>{i.perc1on100gr=null})
-
   this.recalcNutrients()
   this.ngOnInit()
+  this.useLocalData = true
 }
 
 verticalOrientation():boolean{
