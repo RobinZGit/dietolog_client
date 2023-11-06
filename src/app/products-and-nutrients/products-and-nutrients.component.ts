@@ -50,11 +50,8 @@ constructor(private dataService:DataService,private staticDataSource:StaticDataS
 
 ngOnInit(): void{
     this.staticDataSource.recalcPerc1on100gr() //ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ ...????????????
-
     try{this.findProducts()}catch(e){}
     try{this.findNutrients()}catch(e){}
-    this.calcHintsAsync()
-
     //долго this.findInfo()
     if (this.localData)
        try{
@@ -69,16 +66,17 @@ ngOnInit(): void{
         this.nutrients = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageNutrients)))
         this.params = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageParams)))
         this.recalcNutrients()
-
       }
     }catch(e){}
+    this.calcHints()
 }
 
-calcHintsAsync(){
-  this.products.forEach((p:any)=>p.hint='')
-  this.nutrients.forEach((p:any)=>p.hint='')
+//f(){
+//  console.log(this.staticDataSource.getInfo().map((v:any)=>{v.perc1on100gr='0';return v}))
+//}
 
-  this.nutrients.forEach((n:any,index:number)=>{if (n.hint.length==0){
+calcHints(){
+  this.nutrients.forEach((n:any,index:number)=>{
                                                   n.hint = n.name+' (сут. норма '+n.min_dailyrate+' - '+n.max_dailyrate + ' '+ n.units + '), основные продукты: \n'
                                                   this.staticDataSource.getInfoProductsSortedByNutrientValue(n._id)
                                                     .forEach((i:any, ind:number)=>{if(ind<20)
@@ -90,10 +88,8 @@ calcHintsAsync(){
                                                                                       }catch(e){}
                                                                                   }
                                                             )
-                                                }
                                                 })
-
-  this.products.forEach((p:any,index:number)=>{if (p.hint.length==0){
+  this.products.forEach((p:any,index:number)=>{
                                                   p.hint = p.name+', основные нутриенты: \n'
                                                   this.staticDataSource.getInfoNutrientsSortedByPercentInProduct(p._id)
                                                     .forEach((i:any, ind:number)=>{if(ind<20)
@@ -106,10 +102,7 @@ calcHintsAsync(){
                                                                                       }catch(e){}
                                                                                   }
                                                             )
-                                                }
                                                 })
-
-
 }
 
 //долго..
