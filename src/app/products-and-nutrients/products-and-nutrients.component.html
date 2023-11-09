@@ -50,14 +50,33 @@
               {{'Продукт'}}
               <button class="caption-smaLL-button" (click)="excludeRecommended()">исключить рекомендованные</button>
             </th>
-            <th class="th-prod">{{'Исключен'}}  <input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAllProducts(exclude_All.checked)"> </th>
+            <!--th class="th-prod">{{'Степень поста'}}
+               <button class="caption-smaLL-button" (click)="saveThisProducts()">save products</button>
+            </th-->
+            <th class="th-prod">{{'Исключен'}}
+              <!--input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAllProducts(exclude_All.checked)"-->
+              <select (change)="exclude(typeExcluded)" [(ngModel)]="typeExcluded">
+                <option>Включить все</option>
+                <option>Исключить все ненулевые</option>
+                <option>Исключить скоромное</option>
+                <option>Исключить до рыбы</option>
+                <option>Исключить до масла</option>
+              </select>
+            </th>
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
               <td>
                 <input class="input-val"  type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
                 <button title = 'Добавить оптимальное количество продукта в раскладку' (click)="useProduct(product)">></button>
               </td>
               <td title="{{product.hint}}" (dblclick)="showHint(product.hint)" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
-              <input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)">
+              <!--td><select type="text" title="{{product.hint}}" [(ngModel)]="product.fastdegree">
+                    <option>скоромное</option>
+                    <option>до рыбы</option>
+                    <option>до масла</option>
+                    <option>сухоядение</option>
+                 </select>
+              </td-->
+              <td><input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)"></td>
             </tr>
           </table>
         </div>

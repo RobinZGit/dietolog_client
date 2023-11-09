@@ -45,6 +45,7 @@ constructor(private dataService:DataService,private staticDataSource:StaticDataS
   this.params.valued_ontop = false
   this.params.sortBySubstr = false
   this.params.topCountRecommendedProducts = 5 //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
+  this.params.typeExcluded = this.typeExcluded
 }
 
 
@@ -65,6 +66,7 @@ ngOnInit(): void{
         this.products = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageProducts)))
         this.nutrients = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageNutrients)))
         this.params = JSON.parse(String(localStorage.getItem(this.keyForLocalStorageParams)))
+        try{this.typeExcluded = this.params.typeExcluded}catch(e){}
         this.recalcNutrients()
       }
     }catch(e){}
@@ -725,6 +727,143 @@ excludeRecommended(){
   this.products.forEach((p:any)=>{if(p.isrecommended&&p.val==0){p.excluded=1}})
   this.recalcNutrients()
 }
+
+saveThisProducts(){
+  this.products.map((p:any)=>{
+                               if (p.fastdegree.length==0){
+                                 if((p.name.toLowerCase().indexOf('масло')>=0)||
+                                    (p.name.toLowerCase().indexOf('жир')>=0)||
+                                    (p.name.toLowerCase().indexOf('пиво')>=0)||
+                                    (p.name.toLowerCase().indexOf('вино')>=0)||
+                                    (p.name.toLowerCase().indexOf('текила')>=0)||
+                                    (p.name.toLowerCase().indexOf('коньяк')>=0)||
+                                    (p.name.toLowerCase().indexOf('ликер')>=0)||
+                                    (p.name.toLowerCase().indexOf('наливка')>=0)||
+                                    (p.name.toLowerCase().indexOf('маргарин')>=0)||
+                                    (p.name.toLowerCase().indexOf('водка')>=0)
+                                 ) p.fastdegree = 'до масла'
+                                 if((p.name.toLowerCase().indexOf('палтус')>=0)||
+                                    (p.name.toLowerCase().indexOf('окунь')>=0)||
+                                    (p.name.toLowerCase().indexOf('тунец')>=0)||
+                                    (p.name.toLowerCase().indexOf('пикша')>=0)||
+                                    (p.name.toLowerCase().indexOf('мойва')>=0)||
+                                    (p.name.toLowerCase().indexOf('вобла')>=0)||
+                                    (p.name.toLowerCase().indexOf('сельдь')>=0)||
+                                    (p.name.toLowerCase().indexOf('горбуша')>=0)||
+                                    (p.name.toLowerCase().indexOf('акула')>=0)||
+                                    (p.name.toLowerCase().indexOf('навага')>=0)||
+                                    (p.name.toLowerCase().indexOf('килька')>=0)||
+                                    (p.name.toLowerCase().indexOf('лещ ')>=0)||
+                                    (p.name.toLowerCase().indexOf('сардин')>=0)||
+                                    (p.name.toLowerCase().indexOf('скумбрия')>=0)||
+                                    (p.name.toLowerCase().indexOf('треска')>=0)||
+                                    (p.name.toLowerCase().indexOf('трески')>=0)||
+                                    (p.name.toLowerCase().indexOf('шпроты')>=0)||
+                                    (p.name.toLowerCase().indexOf('зубатка')>=0)||
+                                    (p.name.toLowerCase().indexOf('камбала')>=0)||
+                                    (p.name.toLowerCase().indexOf('карп ')>=0)||
+                                    (p.name.toLowerCase().indexOf('карась')>=0)||
+                                    (p.name.toLowerCase().indexOf('кета ')>=0)||
+                                    (p.name.toLowerCase().indexOf('корюшка')>=0)||
+                                    (p.name.toLowerCase().indexOf('макрурус')>=0)||
+                                    (p.name.toLowerCase().indexOf('лосось')>=0)||
+                                    (p.name.toLowerCase().indexOf('минтай')>=0)||
+                                    (p.name.toLowerCase().indexOf('налим')>=0)||
+                                    (p.name.toLowerCase().indexOf('нерка')>=0)||
+                                    (p.name.toLowerCase().indexOf('рыба-меч')>=0)||
+                                    (p.name.toLowerCase().indexOf('сазан')>=0)||
+                                    (p.name.toLowerCase().indexOf('салака')>=0)||
+                                    (p.name.toLowerCase().indexOf('сиг ')>=0)||
+                                    (p.name.toLowerCase().indexOf('семга')>=0)||
+                                    (p.name.toLowerCase().indexOf('сом ')>=0)||
+                                    (p.name.toLowerCase().indexOf('судак')>=0)||
+                                    (p.name.toLowerCase().indexOf('угорь')>=0)||
+                                    (p.name.toLowerCase().indexOf('форель')>=0)||
+                                    (p.name.toLowerCase().indexOf('щука')>=0)||
+                                     (p.name.toLowerCase().indexOf('хек')>=0)
+                                  ) p.fastdegree = 'до рыбы'
+                                  if((p.name.toLowerCase().indexOf('говядин')>=0)||
+                                  (p.name.toLowerCase().indexOf('свинин')>=0)||
+                                  (p.name.toLowerCase().indexOf('куриц')>=0)||
+                                  (p.name.toLowerCase().indexOf('курин')>=0)||
+                                  (p.name.toLowerCase().indexOf('индейк')>=0)||
+                                  (p.name.toLowerCase().indexOf('оленин')>=0)||
+                                  (p.name.toLowerCase().indexOf('сыр ')>=0)||
+                                  (p.name.toLowerCase().indexOf('молоко')>=0)||
+                                  (p.name.toLowerCase().indexOf('сметан')>=0)||
+                                  (p.name.toLowerCase().indexOf('утка')>=0)||
+                                  (p.name.toLowerCase().indexOf('печень')>=0)||
+                                  (p.name.toLowerCase().indexOf('яйцо')>=0)||
+                                  //(p.name.toLowerCase().indexOf('печени')>=0)||
+                                  (p.name.toLowerCase().indexOf('яйцо')>=0)||
+                                  (p.name.toLowerCase().indexOf('мясо')>=0)||
+                                  (p.name.toLowerCase().indexOf('зефир')>=0)||
+                                  (p.name.toLowerCase().indexOf('горбуша')>=0)||
+                                  (p.name.toLowerCase().indexOf('почки')>=0)||
+                                  (p.name.toLowerCase().indexOf('мозги')>=0)||
+                                  (p.name.toLowerCase().indexOf('желток')>=0)||
+                                  (p.name.toLowerCase().indexOf('белок')>=0)||
+                                  (p.name.toLowerCase().indexOf('поросята')>=0)||
+                                  (p.name.toLowerCase().indexOf('омлет')>=0)||
+                                  (p.name.toLowerCase().indexOf('яичница')>=0)||
+                                  (p.name.toLowerCase().indexOf('ацидофилин')>=0)||
+                                  (p.name.toLowerCase().indexOf('йогурт')>=0)||
+                                  (p.name.toLowerCase().indexOf('кефир')>=0)||
+                                  (p.name.toLowerCase().indexOf('кумыс')>=0)||
+                                  (p.name.toLowerCase().indexOf('творог')>=0)||
+                                  (p.name.toLowerCase().indexOf('творож')>=0)||
+                                  (p.name.toLowerCase().indexOf('сливки')>=0)||
+                                  (p.name.toLowerCase().indexOf('сыр ')>=0)||
+                                  (p.name.toLowerCase().indexOf('желудок')>=0)||
+                                  (p.name.toLowerCase().indexOf('голубь')>=0)||
+                                  (p.name.toLowerCase().indexOf('гусь')>=0)||
+                                  (p.name.toLowerCase().indexOf('гуляш')>=0)||
+                                  (p.name.toLowerCase().indexOf('стейк')>=0)||
+                                  (p.name.toLowerCase().indexOf('бифштекс')>=0)||
+                                  (p.name.toLowerCase().indexOf('селезенка')>=0)||
+                                  (p.name.toLowerCase().indexOf('сердце')>=0)||
+                                  (p.name.toLowerCase().indexOf('язык')>=0)||
+                                  (p.name.toLowerCase().indexOf('потроха')>=0)||
+                                  (p.name.toLowerCase().indexOf('сало')>=0)||
+                                  (p.name.toLowerCase().indexOf('шницель')>=0)||
+                                  (p.name.toLowerCase().indexOf('котлеты')>=0)||
+                                  (p.name.toLowerCase().indexOf('рагу ')>=0)||
+                                  (p.name.toLowerCase().indexOf('конина')>=0)||
+                                  (p.name.toLowerCase().indexOf('майонез')>=0)||
+                                  (p.name.toLowerCase().indexOf('пахта ')>=0)||
+                                  (p.name.toLowerCase().indexOf('ряженка')>=0)||
+                                  (p.name.toLowerCase().indexOf('простокваша')>=0)||
+                                   (p.name.toLowerCase().indexOf('колбаса')>=0)
+                                ) p.fastdegree = 'скоромное'
+
+                               }
+                               return p
+                             })
+  this.products.map((p:any)=>{if (p.fastdegree.length==0){p.fastdegree='сухоядение'}; return p})
+
+  alert(JSON.stringify(this.products.map((p:any)=>{p.hint='';p.isnotrecommended=0;p.isrecommended=0;p.excluded=0;p.val=0;return p})))
+  let sTime = (new Date()).toISOString()
+  let sConf = JSON.stringify(JSON.stringify(this.products.map((p:any)=>{p.hint='';p.isnotrecommended=0;p.isrecommended=0;p.excluded=0;p.val=0;return p})))
+                  .replaceAll('\\"','"').replaceAll('},{"','},\n{')
+  let a = document.createElement('a');
+  let file = new Blob([sConf], {type: 'text/plain'});
+  a.href = URL.createObjectURL(file);
+  a.download = 'dietolog_products'+ sTime +'.txt';
+  a.click()
+}
+
+typeExcluded: string = 'Включить все'
+exclude(typeExcluded: string){
+  if (this.typeExcluded.indexOf('Включить все')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=false})
+  else if (this.typeExcluded.indexOf('Исключить все')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=true})
+  else if (this.typeExcluded.indexOf('скоромное')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(['скоромное'].indexOf(p.fastdegree)>=0)})
+  else if (this.typeExcluded.indexOf('до рыбы')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(['скоромное','до рыбы'].indexOf(p.fastdegree)>=0)})
+  else if (this.typeExcluded.indexOf('до масла')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(['скоромное','до рыбы','до масла'].indexOf(p.fastdegree)>=0)})
+  this.params.typeExcluded = typeExcluded
+  this.saveSettings()
+}
+
+g(){alert(2)}
 
 testClick(){
   let m:any=[[1,1,10,234],[1,2,89,76],[1,451,10,234],[1,2,89,88]]
