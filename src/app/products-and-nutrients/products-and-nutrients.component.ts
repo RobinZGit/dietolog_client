@@ -223,7 +223,7 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
     this.nutrients.map((nutr:any)=>  nutr.val= 0)
     //пересчет
     let sProducts = ','
-    this.products.filter((v:any)=>v.val>0).forEach((p:any) => {sProducts+=p._id+','})
+    this.products.filter((v:any)=>v.val>0).forEach((p:any) => {sProducts+=p._id+','; p.val=Math.round(p.val)})
     let excludedNutrientsList =','
     this.nutrients.filter((p:any)=>p.excluded>0).forEach((p:any) => {excludedNutrientsList+=p._id+','})
 
@@ -728,6 +728,13 @@ excludeRecommended(){
   this.recalcNutrients()
 }
 
+changeProductsValsToNutrientMin(nutrient:any){
+   let k=2
+   if (nutrient.min_dailyrate>0) k=nutrient.min_dailyrate/nutrient.val
+   this.products.filter((p:any)=>p.val>0).forEach((p:any)=>p.val=p.val*k)
+   this.recalcNutrients()
+}
+
 saveThisProducts(){
   this.products.map((p:any)=>{
                                if (p.fastdegree.length==0){
@@ -862,6 +869,8 @@ exclude(typeExcluded: string){
   this.params.typeExcluded = typeExcluded
   this.saveSettings()
 }
+
+//https://stackblitz.com/edit/angular-modal-html-css?file=src%2Fapp%2Fmodal%2Fmodal.component.ts
 
 g(){alert(2)}
 

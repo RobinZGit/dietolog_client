@@ -105,16 +105,18 @@
             <td title="{{nutrient.hint}}" (dblclick)="showHint(nutrient.hint)" [ngClass]="nutrient.excluded?'excluded-product':''" >{{nutrient.name}}</td>
             <td>
               <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.val" (focus)="setFocusedNutrient(nutrient)" (change)="findProductToSetNutrientValue(nutrient)" [disabled]="nutrient.excluded">
+              <button *ngIf="nutrient.val>0" title="Пропорционально изменить количества выбранных продуктов, чтобы количество стало равным минимальной норме данного нутриента" (click)="changeProductsValsToNutrientMin(nutrient)">1:N</button>
+
               {{nutrient.units}}
             </td>
             <!--<td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>-->
             <td>
-                <button title="Установить текущее количество нутриента равным минимальной норме" (click)="setNutrientVal(nutrient,nutrient.min_dailyrate)"><</button>
+                <button title="Подобрать продукт и установить текущее количество нутриента равным минимальной норме" (click)="setNutrientVal(nutrient,nutrient.min_dailyrate)"><</button>
                 <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.min_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
                 {{nutrient.units}}
             </td>
             <td>
-              <button title="Установить текущее количество нутриента равным максимальной норме" (click)="setNutrientVal(nutrient,nutrient.max_dailyrate)"><</button>
+              <button title="Подобрать продукт и установить текущее количество нутриента равным максимальной норме" (click)="setNutrientVal(nutrient,nutrient.max_dailyrate)"><</button>
               <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.max_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
               {{nutrient.units}}
             </td>
