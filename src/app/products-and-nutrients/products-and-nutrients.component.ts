@@ -42,7 +42,7 @@ sInfo: any = ''
 constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
   this.params.textSort=''
   this.params.sortByNutrient = -1
-  this.params.valued_ontop = false
+  this.params.valued_ontop = true;//false
   this.params.sortBySubstr = false
   this.params.topCountRecommendedProducts = 5 //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
   this.params.typeExcluded = this.typeExcluded
@@ -203,7 +203,7 @@ findNutrients(){
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
 recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
-  this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ  ...'
+  this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ 1  ...'
   //this.classFilter =  'light-filter'
   if (sText!=''){
     try{
@@ -213,7 +213,7 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
       this.params = conf.params
     }catch(e) {alert(e)}
   }
-  try{
+  //try{
     if(!doNotSaveHist){
       this.pHist.push(JSON.parse(JSON.stringify(this.products)))
       this.nHist.push(JSON.parse(JSON.stringify(this.nutrients)))
@@ -238,7 +238,10 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
                                                                                       try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
                                                                                           }catch(e){}
                                                                                   })
-                                                                            }))
+
+                                                            }
+                                                  ))
+                                                 .map((nutr:any)=> {try{ nutr.val = Math.round(nutr.val)}catch(e){}})
       this.lightRecommendedProducts()
       this.finalSorting()
       this.saveSettings()
@@ -272,7 +275,7 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
             }
           })
     }
-  }catch(e){}
+  //}catch(e){alert(e)}
 
 }
 
@@ -870,6 +873,12 @@ exclude(typeExcluded: string){
   this.saveSettings()
 }
 
+totalProductsWeight(): number {
+  let sum = 0
+  this.products.forEach((p:any)=>sum+=p.val)
+  return  Math.round( sum )
+
+}
 //https://stackblitz.com/edit/angular-modal-html-css?file=src%2Fapp%2Fmodal%2Fmodal.component.ts
 
 g(){alert(2)}

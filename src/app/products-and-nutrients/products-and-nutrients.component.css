@@ -78,7 +78,7 @@
 }
 
 .below-norm {
- /* background: rgb(244, 168, 241);  не плдсвечивать нутриенты с недостатком, подсвечиваит только с нормой или выше*/
+  background: rgb(244, 140, 240);
 }
 
 .within-norm {
@@ -86,7 +86,7 @@
 }
 
 .above-norm {
-  background: rgb(241, 200, 231);
+  background: rgb(1, 157, 152);
 }
 
 .recommended-product{
