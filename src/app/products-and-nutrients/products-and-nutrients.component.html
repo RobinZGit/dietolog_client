@@ -76,6 +76,7 @@
               </td>
               <td title="{{product.hint}}" (dblclick)="showHint(product.hint)" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
               <td><input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)"></td>
+              <td><button *ngIf="product.nutrientPercents?.length > 0" (click)="showSpectraP(product)" >спектр</button></td>
               <!--/ng-container-->
             </tr>
             <!--
@@ -138,8 +139,11 @@
             <td>
                 <input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()">
                 <a *ngIf="nutrient.info" href="{{nutrient.info}}" target="_blank">info</a>
+                <button *ngIf="nutrient.productPercents?.length > 0" (click)="showSpectraN(nutrient)" >спектр</button>
             </td>
+
           </tr>
+
         </table>
       </div>
     </ng-container>

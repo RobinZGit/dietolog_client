@@ -201,6 +201,9 @@ findNutrients(){
  }
 }
 
+showSpectraN = (nutrient: any)=>{alert('Спектр продуктов в "' + nutrient.name + '":\n' + nutrient.productPercents.sort((a:any,b:any)=>b.val-a.val).map((v:any)=>v=v.product+' - ' + v.val + ' ').join('\n'))}
+showSpectraP = (product: any)=>{alert('Спектр нутриентов в "' + product.name + '":\n' + product.nutrientPercents.sort((a:any,b:any)=>b.val-a.val).map((v:any)=>v=v.nutrient+' - ' + v.val ).join('\n'))}
+
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
 recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
   this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ 1  ...'
@@ -220,7 +223,11 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
       this.indHist = this.nHist.length-1
     }
     //обнуляем все нутриенты
-    this.nutrients.map((nutr:any)=>  nutr.val= 0)
+    this.nutrients.map((nutr:any)=>  {nutr.val= 0; nutr.productPercents = []})
+    this.products?.map((prod:any)=>  prod.nutrientPercents = [])
+    //nutr.productPercents - вклады выбранных продуктов в содержание данного нутриента - кол-во данного нутриента в продукте
+    //prod.nutrientPercents - кол-во каждого нутриента в продукте
+
     //пересчет
     let sProducts = ','
     this.products.filter((v:any)=>v.val>0).forEach((p:any) => {sProducts+=p._id+','; p.val=Math.round(p.val)})
@@ -231,17 +238,23 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
       //this.classFilter =  'light-filter'
       //пересчет количеств нутриентов в выбранных продуктах
       this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
-                          this.products.forEach((pp:any)=> {
+                          this.products.filter((v:any)=>v.val>0).forEach((pp:any)=> {
+                                                              let total = 0.0000001 //??????????????????????????????
                                                               this.allInfo.filter((i:any)=>i.nutrient==nutr._id)
                                                                 .forEach((i:any)=>{
                                                                                     if((pp._id==i.product)&&(nutr._id==i.nutrient))
-                                                                                      try{nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                      try{
+                                                                                          nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
+                                                                                          total += i.value
+                                                                                          nutr.productPercents.push({product: pp.name, val:i.value, perc: (i.value/total)*100, units: nutr.units})
+                                                                                          pp.nutrientPercents.push({nutrient: nutr.name, val:Math.round(i.value*i.perc1on100gr)/100, units: nutr.units})
                                                                                           }catch(e){}
                                                                                   })
 
                                                             }
                                                   ))
                                                  .map((nutr:any)=> {try{ nutr.val = Math.round(nutr.val)}catch(e){}})
+
       this.lightRecommendedProducts()
       this.finalSorting()
       this.saveSettings()
