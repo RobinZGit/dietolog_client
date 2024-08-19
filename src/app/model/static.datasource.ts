@@ -593,11 +593,11 @@ private nutrients: any = [
       "hint": "",
       "_id": 12,
       "name": "Витамин D",
-      "units": "мг",
+      "units": "мкг",
       "val": 0,
-      "min_dailyrate": 0.01,
-      "max_dailyrate": 0.015,
-      "koeff_to_miligr": 1,
+      "min_dailyrate": 10,
+      "max_dailyrate": 15,
+      "koeff_to_miligr": 0.001,
       "excluded": 0
   },
   {

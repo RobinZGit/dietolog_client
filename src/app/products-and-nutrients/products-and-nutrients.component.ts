@@ -201,8 +201,15 @@ findNutrients(){
  }
 }
 
-showSpectraN = (nutrient: any)=>{alert('Спектр продуктов в "' + nutrient.name + '":\n' + nutrient.productPercents.sort((a:any,b:any)=>b.val-a.val).map((v:any)=>v=v.product+' - ' + v.val + ' ').join('\n'))}
-showSpectraP = (product: any)=>{alert('Спектр нутриентов в "' + product.name + '":\n' + product.nutrientPercents.sort((a:any,b:any)=>b.val-a.val).map((v:any)=>v=v.nutrient+' - ' + v.val ).join('\n'))}
+valsToPersents = (arr:any) => {
+  let total = 0
+  arr.forEach((v: any) => {total += v.val})
+  total = (total>0 ? (1/total) : 0)
+  arr.map((v:any) => v.val = Math.round(v.val* total*100))
+  return arr
+}
+showSpectraN = (nutrient: any)=>{let productPercents = this.valsToPersents(nutrient.productPercents); alert('Спектр продуктов в "' + nutrient.name + '":\n' + productPercents.sort((a:any,b:any)=>b.val-a.val).map((v:any)=>v=v.product+' - ' + v.val + ' %').join('\n'))}
+showSpectraP = (product: any)=>{let nutrientPercents = this.valsToPersents(product.nutrientPercents); alert('Спектр нутриентов в "' + product.name + '":\n' + nutrientPercents.sort((a:any,b:any)=>b.val-a.val).map((v:any)=>v=v.nutrient+' - ' + v.val + ' %' ).join('\n'))}
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
 recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
@@ -239,14 +246,12 @@ recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
       //пересчет количеств нутриентов в выбранных продуктах
       this.nutrients.filter((n:any)=>n.excluded==0).map((nutr:any)=>
                           this.products.filter((v:any)=>v.val>0).forEach((pp:any)=> {
-                                                              let total = 0.0000001 //??????????????????????????????
                                                               this.allInfo.filter((i:any)=>i.nutrient==nutr._id)
                                                                 .forEach((i:any)=>{
                                                                                     if((pp._id==i.product)&&(nutr._id==i.nutrient))
                                                                                       try{
                                                                                           nutr.val= Number(nutr.val)+pp.val*Number(i.value)/100
-                                                                                          total += i.value
-                                                                                          nutr.productPercents.push({product: pp.name, val:i.value, perc: (i.value/total)*100, units: nutr.units})
+                                                                                          nutr.productPercents.push({product: pp.name, val:i.value, perc: (i.valuel)*100, units: nutr.units})
                                                                                           pp.nutrientPercents.push({nutrient: nutr.name, val:Math.round(i.value*i.perc1on100gr)/100, units: nutr.units})
                                                                                           }catch(e){}
                                                                                   })
