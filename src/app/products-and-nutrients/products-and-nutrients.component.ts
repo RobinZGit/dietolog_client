@@ -29,6 +29,7 @@ pcopy: any[] = [] //вспомогательный
 pHist:any[] =[] //для навигации
 nHist:any[] =[] //для навигации
 indHist: number = -1
+expandedNutrient: number = -1
 
 keyForLocalStorageProducts: string = 'rz_dietolog_configuration_products'
 keyForLocalStorageNutrients: string = 'rz_dietolog_configuration_nutrients'
@@ -39,7 +40,7 @@ params: any ={textSort:'',sortByNutrient:-1,valued_ontop:false,sortBySubstr:fals
 focusedNutrient: any = {isDirty:false,nutrientId:-1,val:0}
 sInfo: any = ''
 
-constructor(private dataService:DataService,private staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
+constructor(private dataService:DataService,public staticDataSource:StaticDataSource, private optimisationServise:OptimisationService, private matrix:MatrixService){
   this.params.textSort=''
   this.params.sortByNutrient = -1
   this.params.valued_ontop = true;//false
@@ -213,8 +214,12 @@ showSpectraN = (nutrient: any)=>{let productPercents = this.valsToPersents(nutri
 showSpectraP = (product: any)=>{let nutrientPercents = this.valsToPersents(product.nutrientPercents); alert('Спектр нутриентов в "' + product.name + '" (процент дневной нормы нутриента в ' + product.val + ' гр. продукта):\n\n' + nutrientPercents.map((v:any)=>v=v.nutrient+' - ' + v.val + ' %' ).join('\n'))}
 
 //пересчет количества нутриентов при зменении кол-ва текущего продукта
-recalcNutrients(doNotSaveHist:boolean=false, sText:any=''){
+recalcNutrients(doNotSaveHist:boolean=false, sText:any='',setProduct:any=null){
   this.mainHeader='...  ЖДИТЕ, ИДЕТ РАСЧЕТ ДАННЫХ 1  ...'
+  if (setProduct != null){
+    if ('val' in setProduct) this.products.find((p:any)=> p._id == setProduct._id).val = setProduct.val;
+    if ('excluded' in setProduct) this.products.find((p:any)=> p._id == setProduct._id).excluded = setProduct.excluded;
+  }
   //this.classFilter =  'light-filter'
   if (sText!=''){
     try{

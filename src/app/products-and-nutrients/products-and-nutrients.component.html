@@ -33,6 +33,8 @@
     </div>
     <p></p>
 
+
+    <!-- !!!!!!!!!!!   2 NEW COMPONENT !!!!!!!!!!!-->
     <div>
       <ng-container >
         <div class="heiht-table-prod">
@@ -71,7 +73,7 @@
             <tr *ngFor="let product of products" [ngClass]="getClassProduct(product)">
               <!--ng-container- *ngIf="product.val>0"-->
               <td>
-                <input class="input-val"  type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients()" [disabled]="product.excluded">
+                <input class="input-val"  type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients(false,'',{_id:product._id, val:product.val, excluded:product.excluded})" [disabled]="product.excluded">
                 <button title = 'Добавить оптимальное количество продукта в раскладку' (click)="useProduct(product)">></button>
               </td>
               <td title="{{product.hint}}" (dblclick)="showHint(product.hint)" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
@@ -98,6 +100,11 @@
         </div>
       </ng-container>
     </div>
+    <!-- !!!!!!!!!!!   2 NEW COMPONENT !!!!!!!!!!!-->
+
+
+
+
   </div>
   <p *ngIf="this.verticalOrientation()"></p>
   <p *ngIf="this.verticalOrientation()"></p>
@@ -107,44 +114,105 @@
   <div [ngClass]="getMainClass('column')">
     <ng-container >
       <div class="heiht-table-nutr">
-        <table class="table-nutr">
+        <!--table class="table-nutr"-->
           <caption class="header-table-nutr">
             <!--button class="recalc-nutr-button" (click)="recalcNutrients()">Рассчитать нутриенты в текущей раскладке</button-->
             Нутриенты
           </caption>
-          <th class="th-nutr">{{'Нутриент'}}</th>
-          <th class="th-nutr">{{'Кол-во'}}</th>
-          <th class="th-nutr">{{'Мин. сут. норма'}}</th>
-          <th class="th-nutr">{{'Макс. сут. норма'}}</th>
-          <th class="th-nutr">{{'Исключен'}}  <input #exclude_AllN type="checkbox" title="Исключить все" (change)="excludeAllNutrients(exclude_AllN.checked)"> </th>
-          <tr *ngFor="let nutrient of nutrients" [ngClass]="getClassNutrient(nutrient)">
-            <td title="{{nutrient.hint}}" (dblclick)="showHint(nutrient.hint)" [ngClass]="nutrient.excluded?'excluded-product':''" >{{nutrient.name}}</td>
-            <td>
-              <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.val" (focus)="setFocusedNutrient(nutrient)" (change)="findProductToSetNutrientValue(nutrient)" [disabled]="nutrient.excluded">
-              <button *ngIf="nutrient.val>0" title="Пропорционально изменить количества выбранных продуктов, чтобы количество стало равным минимальной норме данного нутриента" (click)="changeProductsValsToNutrientMin(nutrient)">1:N</button>
 
-              {{nutrient.units}}
-            </td>
-            <!--<td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>-->
-            <td>
-                <button title="Подобрать продукт и установить текущее количество нутриента равным минимальной норме" (click)="setNutrientVal(nutrient,nutrient.min_dailyrate)"><</button>
-                <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.min_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
-                {{nutrient.units}}
-            </td>
-            <td>
-              <button title="Подобрать продукт и установить текущее количество нутриента равным максимальной норме" (click)="setNutrientVal(nutrient,nutrient.max_dailyrate)"><</button>
-              <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.max_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
-              {{nutrient.units}}
-            </td>
-            <td>
-                <input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()">
-                <a *ngIf="nutrient.info" href="{{nutrient.info}}" target="_blank">info</a>
-                <button *ngIf="nutrient.productPercents?.length > 0" (click)="showSpectraN(nutrient)" >спектр</button>
-            </td>
 
-          </tr>
+          <ng-container *ngFor="let nutrient of nutrients; let num_nutr=index">
+            <table class="table-nutr">
+              <th *ngIf="num_nutr==0" class="th-nutr">{{''}}</th>
+              <th *ngIf="num_nutr==0" class="th-nutr">{{'Нутриент'}}</th>
+              <th *ngIf="num_nutr==0" class="th-nutr">{{'Кол-во'}}</th>
+              <th *ngIf="num_nutr==0" class="th-nutr">{{'Мин. сут. норма'}}</th>
+              <th *ngIf="num_nutr==0" class="th-nutr">{{'Макс. сут. норма'}}</th>
+              <th *ngIf="num_nutr==0" class="th-nutr">{{'Исключен'}}  <input #exclude_AllN type="checkbox" title="Исключить все" (change)="excludeAllNutrients(exclude_AllN.checked)"> </th>
+              <tr [ngClass]="getClassNutrient(nutrient)">
+                <td title="{{nutrient.hint}}" ><button (click)="expandedNutrient != nutrient._id ? expandedNutrient = nutrient._id : expandedNutrient = -1" >{{expandedNutrient == nutrient._id ? 'свернуть' : 'развернуть'}}</button></td>
 
-        </table>
+                <td title="{{nutrient.hint}}" (dblclick)="showHint(nutrient.hint)" [ngClass]="nutrient.excluded?'excluded-product':''" >{{nutrient.name}}</td>
+                <td>
+                  <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.val" (focus)="setFocusedNutrient(nutrient)" (change)="findProductToSetNutrientValue(nutrient)" [disabled]="nutrient.excluded">
+                  <button *ngIf="nutrient.val>0" title="Пропорционально изменить количества выбранных продуктов, чтобы количество стало равным минимальной норме данного нутриента" (click)="changeProductsValsToNutrientMin(nutrient)">1:N</button>
+
+                  {{nutrient.units}}
+                </td>
+                <!--<td title="{{nutrient.hint}}">{{nutrient.val | number : '1.0-3'}}</td>-->
+                <td>
+                    <button title="Подобрать продукт и установить текущее количество нутриента равным минимальной норме" (click)="setNutrientVal(nutrient,nutrient.min_dailyrate)"><</button>
+                    <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.min_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
+                    {{nutrient.units}}
+                </td>
+                <td>
+                  <button title="Подобрать продукт и установить текущее количество нутриента равным максимальной норме" (click)="setNutrientVal(nutrient,nutrient.max_dailyrate)"><</button>
+                  <input class="input-val" type="number" title="{{nutrient.hint}}" [(ngModel)]="nutrient.max_dailyrate" (change)="recalcNutrients()" [disabled]="nutrient.excluded">
+                  {{nutrient.units}}
+                </td>
+                <td>
+                    <input type="checkbox" title="{{nutrient.hint}}" [(ngModel)]="nutrient.excluded" (change)="recalcNutrients()">
+                    <a *ngIf="nutrient.info" href="{{nutrient.info}}" target="_blank">info</a>&nbsp;
+                    <button *ngIf="nutrient.productPercents?.length > 0" (click)="showSpectraN(nutrient)" >спектр</button>
+                </td>
+              </tr>
+            </table>
+                  <!-- !!!!!!!!!!!   2 NEW COMPONENT !!!!!!!!!!!-->
+                  <tr *ngIf="expandedNutrient == nutrient._id">
+                    <div>
+                      <ng-container >
+                        <div style="padding-left: 30px;height: 920px;overflow: auto;border-radius: 20px;" class="heiht-table-prod">
+                          <table class="table-prod">
+                            <caption class="header-table-prod">
+                              Продукты
+                            </caption>
+                            <th class="th-prod">
+                              <p>
+                              <button  [ngClass]="btnPrevDisabled()?'nav-button-disabled':'nav-button'" title ="Back" [disabled]="btnPrevDisabled()" (click)="clickPrev()"><</button>
+                              <button [ngClass]="btnNextDisabled()?'nav-button-disabled':'nav-button'" [disabled]="btnNextDisabled()" (click)="clickNext()">></button>
+                              </p>
+                              <p>
+                                 <span>{{'Кол-во(гр.), итого: ' +  totalProductsWeight()}}</span>
+
+                              </p>
+                            </th>
+                            <th class="th-prod">
+                              <button class="caption-smaLL-button" (click)="excludeRecommended()">исключить рекомендованные</button>
+                              <p>{{'Продукт'}}</p>
+                            </th>
+                            <th class="th-prod">
+                              <!--input #exclude_All type="checkbox" title="Исключить все ненулевые" (change)="excludeAllProducts(exclude_All.checked)"-->
+                              <select (change)="exclude(typeExcluded)" [(ngModel)]="typeExcluded">
+                                <option>Включить все</option>
+                                <option>Исключить все ненул</option>
+                                <option>Исключить скоромн</option>
+                                <option>Исключить до рыбы</option>
+                                <option>Исключить до масла</option>
+                              </select>
+                              <p>{{'Исключен'}}</p>
+                            </th>
+                            <th><p></p><p>% сут.норм</p></th>
+                            <tr *ngFor="let product of staticDataSource.getProductsWithNutrient(products, nutrient._id,50)" [ngClass]="getClassProduct(product)">
+                              <!--ng-container- *ngIf="product.val>0"-->
+                              <td>
+                                <input class="input-val"  type="number" title="{{product.hint}}" [(ngModel)]="product.val" (change)="recalcNutrients(false,'',{_id:product._id, val:product.val, excluded:product.excluded})" [disabled]="product.excluded">
+                                <button title = 'Добавить оптимальное количество продукта в раскладку' (click)="useProduct(product)">></button>
+                              </td>
+                              <td title="{{product.hint}}" (dblclick)="showHint(product.hint)" [ngClass]="product.excluded?'excluded-product':''" >{{product.name}}</td>
+                              <td><input type="checkbox" title="{{product.hint}}" [(ngModel)]="product.excluded" (change)="setZeroAndRecalcNutrients(product)"></td>
+                              <td>{{this.staticDataSource.getInfoOne(product._id,nutrient._id)[0]?.perc1on100gr+'%'}}</td>
+                              <td><button *ngIf="product.nutrientPercents?.length > 0" (click)="showSpectraP(product)" >спектр</button></td>
+                              <!--/ng-container-->
+                            </tr>
+                          </table>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </tr>
+                  <!-- !!!!!!!!!!!   2 NEW COMPONENT !!!!!!!!!!!-->
+          </ng-container>
+
+        <!--/table-->
       </div>
     </ng-container>
   </div>

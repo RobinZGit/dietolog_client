@@ -2,108 +2,9 @@ import { Injectable } from "@angular/core";
 //import { Observable } from "rxjs/internal/Observable";
 
 @Injectable()
-export class StaticDataSource {
+export class StaticDataSourceArrays {
 
-getNutrients(): any {
-    return this.nutrients;
-}
-
-getProducts(): any {
-  return this.products;
-}
-
-getInfo(): any {
-  return this.info.filter((i:any)=>{return this.products.filter((p:any)=>{return p._id==i.product}).length>0})
-                  .filter((i:any)=>{return this.nutrients.filter((n:any)=>{return n._id==i.nutrient}).length>0});
-}
-
-getInfoOne(productid:number,nutrientid:number): any {
-  return this.info.filter((i:any)=>{return productid==i.product})
-                  .filter((i:any)=>{return nutrientid==i.nutrient});
-}
-
-getInfoProductsSortedByNutrientValue(nutrientid:number): any {
-  return this.info.filter((i:any)=>{return nutrientid==i.nutrient})
-                  .sort((i1:any,i2:any)=>{return (i2.value - i1.value)})
-}
-
-getProductsWithNutrient(products: any, nutrientid:number, maxcount: number = 10): any {
-  let _products:any[] = [];
-  products.filter((p:any) => p.val >0).sort((a:any,b:any) => a.val > b.val).forEach((p:any)=> _products.push(p));//вначале уже ранее выбранные независимо от содеожания нутриента
-  this.getInfoProductsSortedByNutrientValue(nutrientid).forEach((info:any, ind:number) => {if((ind < maxcount) && !(_products.find( (p:any)=>{return info.product == p._id} )?._id > 0)) _products.push(products.find( (p:any)=>{return info.product == p._id} ))});
-  //return this.products
-  return _products;
-}
-
-getInfoNutrientsSortedByPercentInProduct(productid:number): any {
-  return this.info.filter((i:any)=>{return productid==i.product})
-                  .sort((i1:any,i2:any)=>{return (Number(i2.perc1on100gr/*.replaceAll(',','.')*/)-Number(i1.perc1on100gr/*.replaceAll(',','.')*/))})
-}
-
-//продукт с максимальным содержанием nutrientid, только не проверять products.excluded>0)
-getInfoProductMax(nutrientid:number, products:number[], pExcluded:string): any {
-  try{
-    return this.info.filter((i:any)=>{return nutrientid==i.nutrient})
-                    .filter((i:any)=>{ if (products.filter((p:any)=>{return (p._id==i.product)&&(p.excluded==0)&&(pExcluded.indexOf(','+p._id+',')<0)}).length>0)  return true; else return false})
-                    .sort((i1:any,i2:any)=>{return (i2.value - i1.value)})[0]
-  }catch(e){return []}
-}
-
-recalcPerc1on100gr(){
-  this.info.forEach((i:any)=>{try{
-                                   let nutr = this.nutrients.filter((n:any)=>{return n._id==i.nutrient})[0]
-                                   if (nutr != undefined) i.perc1on100gr= Math.round(100*i.value/nutr.min_dailyrate)
-                                 }catch(e){}
-                             })
-}
-
-findInfoByProductListStatic(nutrientList:string, excludedProductstList:string, topCountRecommendedProducts:number){
-  "select _id, product, nutrient, value, perc1on100gr , rn from (  \n" +
-  "    select _id, product, nutrient, cast(value as text) value, cast(perc1on100gr as text) perc1on100gr  \n" +
-  "         , row_number() OVER (PARTITION BY i.nutrient ORDER BY i.perc1on100gr DESC ) rn  \n" +
-  "    from info i  where position(','||i.nutrient||',' in :nutrientList) > 0  \n" +
-  "                       and position(','||i.product||',' in :excludedProductstList) <= 0  \n" +
-  ") ZZ where rn<=:topCountRecommendedProducts  \n"
-
-  let aRet:any =[]
-  let count=0
-  let currentNId = -1
-  this.info.filter((i:any)=>{return this.products.filter((p:any)=>{return p._id==i.product}).length>0})
-          .filter((i:any)=>{return this.nutrients.filter((n:any)=>{return n._id==i.nutrient}).length>0})
-          .filter((i:any)=>{return (nutrientList.indexOf(','+i.nutrient+',')>=0)&&(excludedProductstList.indexOf(','+i.product+',')<0) })
-          .sort((i1:any,i2:any)=>{return (i1.nutrient - i2.nutrient)})
-          .sort((i1:any,i2:any)=>{ if (i1.nutrient == i2.nutrient) return (Number(i2.perc1on100gr/*.replaceAll(',','.')*/)-Number(i1.perc1on100gr/*.replaceAll(',','.')*/)); else return (i1.nutrient - i2.nutrient) })
-          .forEach((v:any,ind:number)=>{
-                                          if(((v.nutrient==currentNId)||(currentNId<0))&&(count<topCountRecommendedProducts)){
-                                            aRet.push(v)
-                                            count++
-                                          }
-                                          if((v.nutrient!=currentNId)&&(currentNId>=0)) count = 0
-                                          currentNId = v.nutrient
-                                        })
-  //alert(JSON.stringify(aRet))
-  return aRet
-}
-/*
-select
-'{''hint'': '''
-                 ||n.name||', основные продукты:'||'\n'||'\n'||(select string_agg(name||' - '||cast(value as text)||' '||units||' на 100гр. ('||perc1on100gr||'% сут.нормы)'   ,'\n')
-																	 from (select p.name, i.value, i.perc1on100gr
-																		   from info i left join products p on p._id=i.product
-																		   where i.nutrient=n._id order by i.value desc limit 20) ZZ)  ||''''
-				 || ', ''_id'': '||n._id
-				 || ', ''name'': '''||name
-				 || ''' ,''units'': '''||units
-				 || ''', ''val'': '||0
-				 || ', ''min_dailyrate'': '||min_dailyrate
-				 || ', ''max_dailyrate'': '||max_dailyrate
-				 || ', ''koeff_to_miligr'': '||(case n.units when 'г' then 1000 when 'мг' then 1 when 'мкг' then 0.001 when 'кКал' then 100000 else 1 end)
-				 || ', ''excluded'': '||0
-				 ||'},'
-				 from nutrients n
-				 order by coalesce(n.min_dailyrate,-1)*(case n.units when 'г' then 1000 when 'мг' then 1 when 'мкг' then 0.001 when 'кКал' then 100000 else 1 end) desc,n._id
-*/
-private nutrients: any = [
+nutrients: any = [
   {
       "info": "",
       "hint": "",
@@ -627,21 +528,21 @@ private nutrients: any = [
                   '{''hint'': '''
                  || p.name||', основные нутриенты:\n\n'||(select string_agg(name||' - '||cast(value as text)||' '||units||' на 100гр. ('||perc1on100gr||'% сут.нормы)','\n')  from (select * from(select n.name,i.value, i.perc1on100gr, n.units from info i left join nutrients n on n._id=i.nutrient where i.product=p._id order by to_number(coalesce(i.perc1on100gr,'0'),'999999D99') desc limit 20)ZZZ) ZZ)
                  || ''',''rownumber'':'|| row_number() over(order by p._id )--row_number() over(order by COALESCE(ii.value,0) desc,p._id)
-				 || ', ''_id'': '||p._id
-				 || ', ''name'': '''||name
-				 || ''' ,''lowercase'': '''||lowercase
-				 || ''', ''val'': '||0
-				 || ', ''isrecommended'': '||0
-				 || ', ''isnotrecommended'': '||0
-				 || ', ''excluded'': '||0
-				 ||'},'
+         || ', ''_id'': '||p._id
+         || ', ''name'': '''||name
+         || ''' ,''lowercase'': '''||lowercase
+         || ''', ''val'': '||0
+         || ', ''isrecommended'': '||0
+         || ', ''isnotrecommended'': '||0
+         || ', ''excluded'': '||0
+         ||'},'
                  from products p
                 -- left join info ii on --ii.nutrient=sorting and
-				--                      ii.product =p._id
+        --                      ii.product =p._id
                 --where  p.name like '%пре%'
-				order by p._id
+        order by p._id
                 -- order by COALESCE(ii.value,0) desc,p._id  */
-private products: any =
+public products: any =
 [{"hint":"","rownumber":4,"_id":4,"name":"Вино столовое красное","lowercase":"вино столовое","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"до масла"},
 {"hint":"","rownumber":10,"_id":10,"name":"Пиво","lowercase":"пиво","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"до масла"},
 {"hint":"","rownumber":45,"_id":48,"name":"Кофе растворимый, без кофеина, порошок","lowercase":"кофе","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
@@ -1883,14 +1784,14 @@ private products: any =
 /*
 select
        '{''_id'': '||i._id
-		|| ', ''product'': '||product
-		|| ', ''nutrient'': '||nutrient
-		|| ', ''value'': '''||cast(value as text)||''''
-		|| ', ''perc1on100gr'': '''||cast(perc1on100gr as text) ||''''
-		||'},'
+    || ', ''product'': '||product
+    || ', ''nutrient'': '||nutrient
+    || ', ''value'': '''||cast(value as text)||''''
+    || ', ''perc1on100gr'': '''||cast(perc1on100gr as text) ||''''
+    ||'},'
 from info i -- where i._id<10
 */
-private info: any = [
+public info: any = [
   {
       "_id": 1,
       "product": 1,
