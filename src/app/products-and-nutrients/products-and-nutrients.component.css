@@ -4,6 +4,16 @@
   text-align: center;
 }
 
+.simple-dietolog-link {
+  display: inline-block;
+  margin-left: 0.75rem;
+  font-size: 0.55em;
+  font-weight: 600;
+  vertical-align: middle;
+  color: #2f5d50;
+  text-decoration: underline;
+}
+
 .header-tables{
   font-weight: bold;
 }
