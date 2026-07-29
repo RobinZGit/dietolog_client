@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Пересобрать simple/seed.json и simple/dietolog.html из static.datasource.ts.
 
-Продукты (еда): плоский список в UI; категория в fastdegree.
-БАДы: группа = fastdegree («БАД · …») → продукт → нутриенты.
+У всех продуктов поле group (пищевые группы / БАД · …).
+В UI: группа → продукт → нутриенты (ленивая подгрузка продуктов).
 """
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 8
-SOURCE = "dietolog_client · flat foods; БАД group via fastdegree"
+VERSION = 9
+SOURCE = "dietolog_client · food groups + БАД via group/fastdegree"
 CHUNK = 120000
 
 
@@ -96,16 +96,16 @@ def extract() -> dict:
     for p in raw_products:
         fd = p.get("fastdegree") or ""
         is_bad = str(fd).startswith("БАД")
-        sp = {
-            "id": int(p["_id"]),
-            "name": p["name"],
-            "section": "bad" if is_bad else "food",
-            "fastdegree": fd,
-        }
-        # Группа БАД = то же поле fastdegree, что у еды (сухоядение/скоромное/…)
-        if is_bad:
-            sp["group"] = fd
-        products.append(sp)
+        group = p.get("group") or (fd if is_bad else "Прочее")
+        products.append(
+            {
+                "id": int(p["_id"]),
+                "name": p["name"],
+                "section": "bad" if is_bad else "food",
+                "fastdegree": fd,
+                "group": group,
+            }
+        )
 
     return {
         "version": VERSION,
