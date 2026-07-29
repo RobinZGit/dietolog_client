@@ -11,6 +11,8 @@
 
 ---
 
+5. (скрин GitHub Pages https://robinzgit.github.io/dietolog_client/ — живой Angular «ДИЕТОЛОГ»; без текста запроса: выложить простой просмотр на Pages и связать со сайтом)
+
 4. Let's start doing it It will be in one file For this file, create a new folder in the project, in the repository And create a file with the name you proposed In it, in the index.db, you need to transfer this database You can look at other sources, maybe you can add some data that is not there Expand on all products If there is no particular nutrient, maybe it is in another database But maybe it will take you a long time, and if it takes a long time, then don't do it You can just analyze if there are other databases More complete, how many products are there and how many nutrients Maybe a wider composition of nutrients And you need to make the simplest initial form This program will be intended not for viewing nutrients But to make a minimum viewable For example, a product is a compiled list If we click on it, we get a list of products We expand the product and get a list of its nutrients And there is a quantity Well, how many nutrients And in principle, that's probably enough For the first time The most important thing is the actuality of the database And normal speed access This file itself A link to this file You can put in the project This is a dietitian You can add a link to the project So that it opens The file that we made now
 
 3. The rules of the project. Context files need to be uploaded to the repository. Write it down in this project, as well as in other projects in the past. Context files and user manual files too. When uploading to the repository, you need to update them and also upload to the repository.

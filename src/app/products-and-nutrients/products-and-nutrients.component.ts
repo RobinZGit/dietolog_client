@@ -13,6 +13,8 @@ import { OptimisationService } from '../service/optimisation.service';
 export class ProductsAndNutrientsComponent implements OnInit{
 
 mainHeader:string='ДИЕТОЛОГ'
+/** Ссылка на простой HTML-просмотр (учитывает base href GitHub Pages). */
+simpleDietologHref: string = 'simple/dietolog.html'
 classFilter =  ''
 
 //------------------------------------------------------------------------------
@@ -47,6 +49,11 @@ constructor(private dataService:DataService,public staticDataSource:StaticDataSo
   this.params.sortBySubstr = false
   this.params.topCountRecommendedProducts = 5 //для подсветки рекомендованных (и не) продуктов. отбирать столько рекомендованных (и не) продуктов на каждый нутриент
   this.params.typeExcluded = this.typeExcluded
+  try {
+    this.simpleDietologHref = new URL('simple/dietolog.html', document.baseURI).href
+  } catch (e) {
+    this.simpleDietologHref = 'simple/dietolog.html'
+  }
 }
 
 

@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-29 — `simple/dietolog.html` + IndexedDB; ссылка из Angular; анализ внешних БД без полного импорта
+**Последнее обновление:** 2026-07-29 — деплой на GitHub Pages: Angular + `simple/dietolog.html`; ссылка «простой просмотр» с учётом base-href
 
 ---
 
@@ -34,8 +34,13 @@
 
 **Доступ:** после первого сида продукты/нутриенты/`byProduct` читаются в память (~0.3 МБ) — раскрытие мгновенное; IDB — персистентность и версия снимка (`SEED.version`).
 
-**Открыть:** `simple/dietolog.html` или через `ng serve` → `/simple/dietolog.html`.  
-**Ссылка в Angular:** заголовок «ДИЕТОЛОГ» → «простой просмотр». Папка `simple/` подключена в `angular.json` assets.
+**Открыть:**
+- Pages: https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
+- или через Angular: заголовок «ДИЕТОЛОГ» → **«простой просмотр»**  
+- локально: `simple/dietolog.html` / `ng serve` → `/simple/dietolog.html`
+
+Папка `simple/` в `angular.json` assets. Ссылка строится от `document.baseURI` (корректно для Pages `base-href`).  
+**Деплой Pages:** `ng build --configuration production --base-href https://robinzgit.github.io/dietolog_client/` → содержимое `dist/dietolog_client` в ветку `gh-pages`.
 
 ---
 
@@ -69,6 +74,12 @@
 
 ## Что сделано
 
+### 2026-07-29 (GitHub Pages)
+
+- Сборка production с `base-href` Pages; `simple/` в артефакте; push в `gh-pages`.
+- Ссылка «простой просмотр» через `document.baseURI`.
+- Сайт: https://robinzgit.github.io/dietolog_client/ · простой: …/simple/dietolog.html
+
 ### 2026-07-29 (simple HTML + IndexedDB)
 
 - Папка `simple/`, файл `dietolog.html` с SEED (~338 КБ JSON) → IndexedDB.
@@ -98,6 +109,7 @@
 |------|------|
 | 2026-07-29 | Docs/контекст; анализ БД/IndexedDB |
 | 2026-07-29 | `simple/dietolog.html` + IDB + ссылка из Angular |
+| 2026-07-29 | Деплой GitHub Pages (`gh-pages`), `.nojekyll`, ссылка baseURI |
 
 ---
 

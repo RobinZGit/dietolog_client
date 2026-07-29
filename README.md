@@ -5,8 +5,9 @@
 ## Простой просмотр (один HTML)
 
 - Файл: [`simple/dietolog.html`](simple/dietolog.html) — список продуктов → нутриенты на 100 г, данные в **IndexedDB**.
-- Через Angular после `npm start`: [http://localhost:4200/simple/dietolog.html](http://localhost:4200/simple/dietolog.html)  
+- **GitHub Pages:** https://robinzgit.github.io/dietolog_client/ · простой просмотр: https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
   или ссылка **«простой просмотр»** в заголовке приложения.
+- Локально после `npm start`: `/simple/dietolog.html`
 - Пересборка снимка: `python3 scripts/build-simple-dietolog.py`
 
 ## Документация в репозитории
