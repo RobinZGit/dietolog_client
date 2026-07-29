@@ -15,7 +15,7 @@
 Клиент диетолога: подбор продуктов и контроль нутриентов относительно суточных норм.
 
 - **Angular 15** SPA — полный UI раскладки (`products-and-nutrients`).
-- **`simple/dietolog.html`** — один файл: продукты плоским списком; БАДы — группа → продукт → нутриенты; данные в **IndexedDB**.
+- **`simple/dietolog.html`** — один файл: группа → продукт → нутриенты; данные в **IndexedDB**.
 
 Связанный бэкенд: Spring Boot + PostgreSQL (`jdbc:postgresql://localhost:5432/dietolog`).
 

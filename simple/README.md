@@ -9,10 +9,11 @@
 или через Angular: `http://localhost:4200/simple/dietolog.html`  
 (папка подключена в `angular.json` → assets).
 
-Пересборка снимка из `static.datasource.ts`:
+Пересборка групп и снимка:
 
 ```bash
+python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI: **продукты** — плоский список → нутриенты на 100 г; **БАДы** — группы по `fastdegree` (`БАД · …`) → продукт → на 1 шт. Версия снимка в заголовке (v8+).
+UI **v9+**: группа (овощи / мясо / рыба / БАД · …) → продукт → нутриенты. Версия в заголовке.
