@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Пересобрать simple/seed.json и simple/dietolog.html из static.datasource.ts.
 
-Продукты (еда): без group, плоский список в UI.
-БАДы: group сохраняется (группа → продукт → нутриенты).
+Продукты (еда): плоский список в UI; категория в fastdegree.
+БАДы: группа = fastdegree («БАД · …») → продукт → нутриенты.
 """
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 7
-SOURCE = "dietolog_client · flat foods + БАД groups only"
+VERSION = 8
+SOURCE = "dietolog_client · flat foods; БАД group via fastdegree"
 CHUNK = 120000
 
 
@@ -94,15 +94,17 @@ def extract() -> dict:
 
     products = []
     for p in raw_products:
-        is_bad = p.get("fastdegree") == "БАД"
+        fd = p.get("fastdegree") or ""
+        is_bad = str(fd).startswith("БАД")
         sp = {
             "id": int(p["_id"]),
             "name": p["name"],
             "section": "bad" if is_bad else "food",
-            "fastdegree": p.get("fastdegree") or "",
+            "fastdegree": fd,
         }
-        if is_bad and p.get("group"):
-            sp["group"] = p["group"]
+        # Группа БАД = то же поле fastdegree, что у еды (сухоядение/скоромное/…)
+        if is_bad:
+            sp["group"] = fd
         products.append(sp)
 
     return {
