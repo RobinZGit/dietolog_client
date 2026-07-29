@@ -11,6 +11,8 @@
 
 ---
 
+15. Let all the bases be in one group, just called BAD, no need to divide them further. And remove from the form the selection of all products and BADs, if it is not necessary. Immediately after the start of the search will be, and that's it.
+
 14. Then add to all products its group. Something like fruit and vegetables. Or fruit separately, separately vegetables, separately meat, separately fish. Separately cereals and dairy products. And other similar things. What else is there? Oils. Animals, maybe plants. Sugar. Desserts, sweets. There can be sweets. In general, see how the products are divided. Scientifically. What groups there are. And do it for everyone. And the BADs will remain BADs.
 
 13. Now, let's turn it around We need a little more bugs, for example, there is no magnia Magnia B6, for example, has such a bug And when I was talking about groups Look, there are groups For example, where there is a server part, there is a column, there is a group ID or something else Groups there mean, most likely, meat, fish All sorts of fish, well, starchy, bread, something like that And it was And in the BAD, you need to add a group to the same field I mean these groups Look, if you find such a field, then do it in the BAD And in the BAD, change the group, rewrite in the field that others have

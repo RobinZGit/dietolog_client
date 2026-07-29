@@ -18,8 +18,8 @@ WORD_RULES = [('Рыба и морепродукты', ['(^|[^а-я])сом([^а
 
 
 def classify(name: str, fastdegree: str) -> str:
-    if str(fastdegree or "").startswith("БАД"):
-        return fastdegree
+    if str(fastdegree or "").startswith("БАД") or str(name or "").startswith("БАД ·"):
+        return "БАД"
     n = name.lower().replace("ё", "е")
     for group, pats in WORD_RULES:
         for pat in pats:

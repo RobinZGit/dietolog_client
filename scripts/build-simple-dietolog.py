@@ -17,8 +17,8 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 9
-SOURCE = "dietolog_client · food groups + БАД via group/fastdegree"
+VERSION = 10
+SOURCE = "dietolog_client · food groups; all BADs in group БАД"
 CHUNK = 120000
 
 
@@ -95,14 +95,14 @@ def extract() -> dict:
     products = []
     for p in raw_products:
         fd = p.get("fastdegree") or ""
-        is_bad = str(fd).startswith("БАД")
-        group = p.get("group") or (fd if is_bad else "Прочее")
+        is_bad = str(fd).startswith("БАД") or p.get("group") == "БАД"
+        group = "БАД" if is_bad else (p.get("group") or "Прочее")
         products.append(
             {
                 "id": int(p["_id"]),
                 "name": p["name"],
                 "section": "bad" if is_bad else "food",
-                "fastdegree": fd,
+                "fastdegree": "БАД" if is_bad else fd,
                 "group": group,
             }
         )

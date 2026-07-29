@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """Добавить/перезаписать секцию БАД в static.datasource.ts.
 
-Группа БАД пишется в то же поле, что и у остальных продуктов: **fastdegree**
-(например «БАД · Йод», «БАД · Магний»). Отдельного поля group нет.
+Все БАДы: fastdegree='БАД', group='БАД' (без подразделов).
 
 Конвенция для формулы Angular:
   nutr += product.val * info.value / 100
 Для БАД: product.val = число таблеток (шт.),
          info.value = доза_в_1_шт * 100.
 
-Фильтр «БАД» в UI: fastdegree.startsWith('БАД').
+Фильтр Angular: fastdegree.startsWith('БАД') / === 'БАД'.
 """
 from __future__ import annotations
 
@@ -94,7 +93,7 @@ def main() -> None:
 
     new_products = []
     new_info = []
-    for title, fd_group, nutrients in BADS:
+    for title, _fd_group, nutrients in BADS:
         pid += 1
         row += 1
         name = f"БАД · {COMPANY} · {title} · табл. (кол-во=шт.)"
@@ -110,7 +109,8 @@ def main() -> None:
                 "isrecommended": 0,
                 "isnotrecommended": 0,
                 "excluded": 0,
-                "fastdegree": fd_group,
+                "fastdegree": "БАД",
+                "group": "БАД",
             }
         )
         for nid, dose, _ulabel in nutrients:
