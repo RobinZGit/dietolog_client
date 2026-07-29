@@ -14,8 +14,10 @@
 | **Angular** (`ng serve`) | Полная раскладка рациона, нормы, спектры, сохранение `.dtlg` |
 | **Простой HTML** [`simple/dietolog.html`](../simple/dietolog.html) | Быстрый просмотр: продукты → нутриенты и количество на 100 г (IndexedDB) |
 
-Ссылка **«простой просмотр»** в заголовке Angular открывает `simple/dietolog.html` в новой вкладке  
-(при `ng serve` / сборке: `/simple/dietolog.html`).
+Ссылка **«простой просмотр»** в заголовке Angular открывает `simple/dietolog.html` в новой вкладке.
+
+- **GitHub Pages:** https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
+- Локально / `ng serve`: `/simple/dietolog.html`
 
 ---
 
