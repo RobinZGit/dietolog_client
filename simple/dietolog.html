@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Диетолог — простой просмотр</title>
+  <title>Диетолог — простой v6</title>
   <style>
     :root {
       --bg: #f3f0e8;
@@ -94,6 +94,18 @@
     .group-body .product:last-child { border-bottom: none; }
     .group-body .product-head { padding-left: 1.5rem; background: var(--panel); }
     .gname { flex: 1 1 auto; }
+    .ver {
+      display: inline-block;
+      margin-left: 0.4rem;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.7em;
+      font-weight: 700;
+      vertical-align: middle;
+      color: #fff;
+      background: var(--accent);
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+    }
     .badge-bad {
       font-size: 0.72rem; font-weight: 700; color: #fff;
       background: #8a5a2b; border-radius: 4px; padding: 0.1rem 0.35rem; margin-left: 0.35rem;
@@ -159,8 +171,8 @@
 </head>
 <body>
   <header>
-    <h1>Диетолог <span style="font-weight:500;color:var(--muted);font-size:0.75em">простой</span></h1>
-    <p class="lead">Сначала <b>группы</b> → раскрытие → <b>продукты</b> → раскрытие → нутриенты (на 100&nbsp;г; для БАД — на 1 шт.). Данные в IndexedDB.</p>
+    <h1>Диетолог <span style="font-weight:500;color:var(--muted);font-size:0.75em">простой</span> <span id="appVersion" class="ver">v6</span></h1>
+    <p class="lead">Сначала <b>группы</b> → <b>продукты</b> → нутриенты. Снимок встроен в страницу (быстрый старт); IndexedDB — в фоне.</p>
     <div class="toolbar">
       <div class="sections" id="sectionFilter" role="tablist">
         <button type="button" class="sec active" data-section="all">Все</button>
@@ -176,7 +188,7 @@
   </main>
   <script>
 const SEED = JSON.parse(
-["{\"version\":5,\"source\":\"dietolog_client + groups (group→product→nutrients)\",\"nutrients\":[{\"id\":3,\"name\":\"Калорийность\",\"units\":\"кКал\",\"min\":2500,\"max\":3000},{\"id\":2,\"name\":\"Углеводы\",\"units\":\"г\",\"min\":400,\"max\":500},{\"id\":53,\"name\":\"Крахмал\",\"units\":\"г\",\"min\":350,\"max\":450},{\"id\":1,\"name\":\"Жиры\",\"units\":\"г\",\"min\":100,\"max\":100},{\"id\":0,\"name\":\"Белки\",\"units\":\"г\",\"min\":80,\"max\":100},{\"id\":45,\"name\":\"Сахара\",\"units\":\"г\",\"min\":50,\"max\":100},{\"id\":46,\"name\":\"Пищевые волокна\",\"units\":\"г\",\"min\":25,\"max\":40},{\"id\":22,\"name\":\"Натрий (Na)\",\"units\":\"мг\",\"min\":4000,\"max\":6000},{\"id\":25,\"name\":\"Хлор (Cl)\",\"units\":\"мг\",\"min\":4000,\"max\":7000},{\"id\":18,\"name\":\"Калий (K)\",\"units\":\"мг\",\"min\":3000,\"max\":5000},{\"id\":23,\"name\":\"Сера (S)\",\"units\":\"мг\",\"min\":1000,\"max\":1000},{\"id\":24,\"name\":\"Фосфор (P)\",\"units\":\"мг\",\"min\":1000,\"max\":1200},{\"id\":19,\"name\":\"Кальций (Ca)\",\"units\":\"мг\",\"min\":800,\"max\":1000},{\"id\":16,\"name\":\"Витамин В4\",\"units\":\"мг\",\"min\":500,\"max\":1000},{\"id\":21,\"name\":\"Магний (Mg)\",\"units\":\"мг\",\"min\":400,\"max\":500},{\"id\":47,\"name\":\"Холестерин\",\"units\":\"мг\",\"min\":300,\"max\":600},{\"id\":11,\"name\":\"Витамин С\",\"units\":\"мг\",\"min\":70,\"max\":100},{\"id\":20,\"name\":\"Кремний (Si)\",\"units\":\"мг\",\"min\":20,\"max\":30},{\"id\":15,\"name\":\"Витамин РР\",\"units\":\"мг\",\"min\":16,\"max\":28},{\"id\":7,\"name\":\"Витамин В3\",\"units\":\"мг\",\"min\":15,\"max\":25},{\"id\":13,\"name\":\"Витамин Е\",\"units\":\"мг\",\"min\":15,\"max\":15},{\"id\":17,\"name\":\"Железо (Fe)\",\"units\":\"мг\",\"min\":10,\"max\":18},{\"id\":43,\"name\":\"Цинк (Zn)\",\"units\":\"мг\",\"min\":10,\"max\":15},{\"id\":32,\"name\":\"Марганец (Mn)\",\"units\":\"мкг\",\"min\":5000,\"max\":10000},{\"id\":52,\"name\":\"Витамин В5\",\"units\":\"мкг\",\"min\":5000,\"max\":10000},{\"id\":8,\"name\":\"Витамин В6\",\"units\":\"мг\",\"min\":2,\"max\":2},{\"id\":28,\"name\":\"Ванадий (V)\",\"units\":\"мкг\",\"min\":2000,\"max\":2000},{\"id\":5,\"name\":\"Витамин В1\",\"units\":\"мг\",\"min\":1.6,\"max\":2.5},{\"id\":4,\"name\":\"Витамин А\",\"units\":\"мкг\",\"min\":1500,\"max\":2000},{\"id\":6,\"name\":\"Витамин В2\",\"units\":\"мг\",\"min\":1.5,\"max\":2.5},{\"id\":14,\"name\":\"Витамин Н\",\"units\":\"мкг\",\"min\":1500,\"max\":3000},{\"id\":33,\"name\":\"Медь (Cu)\",\"units\":\"мкг\",\"min\":1500,\"max\":3000},{\"id\":41,\"name\":\"Фтор (F)\",\"units\":\"мкг\",\"min\":1500,\"max\":2000},{\"id\":27,\"name\":\"Бор (B)\",\"units\":\"мкг\",\"min\":600,\"max\":2000},{\"id\":34,\"name\":\"Молибден (Mo)\",\"units\":\"мкг\",\"min\":500,\"max\":500},{\"id\":9,\"name\":\"Витамин В9\",\"units\":\"мкг\",\"min\":400,\"max\":400},{\"id\":42,\"name\":\"Хром (Cr)\",\"units\":\"мкг\",\"min\":200,\"max\":250},{\"id\":29,\"name\":\"Йод (I)\",\"units\":\"мкг\",\"min\":100,\"max\":150},{\"id\":30,\"name\":\"Кобальт (Co)\",\"units\":\"мкг\",\"min\":100,\"max\":1200},{\"id\":38,\"name\":\"Селен (Se)\",\"units\":\"мкг\",\"min\":50,\"max\":70},{\"id\":35,\"name\":\"Никель (Ni)\",\"units\":\"мкг\",\"min\":30,\"max\":35},{\"id\":12,\"name\":\"Витамин D\",\"units\":\"мкг\",\"min\":10,\"max\":15},{\"id\":10,\"name\":\"Витамин В12\",\"units\":\"мкг\",\"min\":3,\"max\":3}],\"products\":[{\"id\":4,\"name\":\"Вино столовое красное\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":10,\"name\":\"Пиво\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":48,\"name\":\"Кофе растворимый, без кофеина, порошок\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":49,\"name\":\"Кофе растворимый, обычный, порошок\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":67,\"name\":\"Сок шиповника\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":80,\"name\":\"Говяжий жир топленый\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":81,\"name\":\"Жир гусиный\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":82,\"name\":\"Рыбий жир\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":83,\"name\":\"Жир кондитерский\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":84,\"name\":\"Жир кондитерский твердый\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":85,\"name\":\"Жир костный топленый\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\"",
+["{\"version\":6,\"source\":\"dietolog_client + groups (group→product→nutrients)\",\"nutrients\":[{\"id\":3,\"name\":\"Калорийность\",\"units\":\"кКал\",\"min\":2500,\"max\":3000},{\"id\":2,\"name\":\"Углеводы\",\"units\":\"г\",\"min\":400,\"max\":500},{\"id\":53,\"name\":\"Крахмал\",\"units\":\"г\",\"min\":350,\"max\":450},{\"id\":1,\"name\":\"Жиры\",\"units\":\"г\",\"min\":100,\"max\":100},{\"id\":0,\"name\":\"Белки\",\"units\":\"г\",\"min\":80,\"max\":100},{\"id\":45,\"name\":\"Сахара\",\"units\":\"г\",\"min\":50,\"max\":100},{\"id\":46,\"name\":\"Пищевые волокна\",\"units\":\"г\",\"min\":25,\"max\":40},{\"id\":22,\"name\":\"Натрий (Na)\",\"units\":\"мг\",\"min\":4000,\"max\":6000},{\"id\":25,\"name\":\"Хлор (Cl)\",\"units\":\"мг\",\"min\":4000,\"max\":7000},{\"id\":18,\"name\":\"Калий (K)\",\"units\":\"мг\",\"min\":3000,\"max\":5000},{\"id\":23,\"name\":\"Сера (S)\",\"units\":\"мг\",\"min\":1000,\"max\":1000},{\"id\":24,\"name\":\"Фосфор (P)\",\"units\":\"мг\",\"min\":1000,\"max\":1200},{\"id\":19,\"name\":\"Кальций (Ca)\",\"units\":\"мг\",\"min\":800,\"max\":1000},{\"id\":16,\"name\":\"Витамин В4\",\"units\":\"мг\",\"min\":500,\"max\":1000},{\"id\":21,\"name\":\"Магний (Mg)\",\"units\":\"мг\",\"min\":400,\"max\":500},{\"id\":47,\"name\":\"Холестерин\",\"units\":\"мг\",\"min\":300,\"max\":600},{\"id\":11,\"name\":\"Витамин С\",\"units\":\"мг\",\"min\":70,\"max\":100},{\"id\":20,\"name\":\"Кремний (Si)\",\"units\":\"мг\",\"min\":20,\"max\":30},{\"id\":15,\"name\":\"Витамин РР\",\"units\":\"мг\",\"min\":16,\"max\":28},{\"id\":7,\"name\":\"Витамин В3\",\"units\":\"мг\",\"min\":15,\"max\":25},{\"id\":13,\"name\":\"Витамин Е\",\"units\":\"мг\",\"min\":15,\"max\":15},{\"id\":17,\"name\":\"Железо (Fe)\",\"units\":\"мг\",\"min\":10,\"max\":18},{\"id\":43,\"name\":\"Цинк (Zn)\",\"units\":\"мг\",\"min\":10,\"max\":15},{\"id\":32,\"name\":\"Марганец (Mn)\",\"units\":\"мкг\",\"min\":5000,\"max\":10000},{\"id\":52,\"name\":\"Витамин В5\",\"units\":\"мкг\",\"min\":5000,\"max\":10000},{\"id\":8,\"name\":\"Витамин В6\",\"units\":\"мг\",\"min\":2,\"max\":2},{\"id\":28,\"name\":\"Ванадий (V)\",\"units\":\"мкг\",\"min\":2000,\"max\":2000},{\"id\":5,\"name\":\"Витамин В1\",\"units\":\"мг\",\"min\":1.6,\"max\":2.5},{\"id\":4,\"name\":\"Витамин А\",\"units\":\"мкг\",\"min\":1500,\"max\":2000},{\"id\":6,\"name\":\"Витамин В2\",\"units\":\"мг\",\"min\":1.5,\"max\":2.5},{\"id\":14,\"name\":\"Витамин Н\",\"units\":\"мкг\",\"min\":1500,\"max\":3000},{\"id\":33,\"name\":\"Медь (Cu)\",\"units\":\"мкг\",\"min\":1500,\"max\":3000},{\"id\":41,\"name\":\"Фтор (F)\",\"units\":\"мкг\",\"min\":1500,\"max\":2000},{\"id\":27,\"name\":\"Бор (B)\",\"units\":\"мкг\",\"min\":600,\"max\":2000},{\"id\":34,\"name\":\"Молибден (Mo)\",\"units\":\"мкг\",\"min\":500,\"max\":500},{\"id\":9,\"name\":\"Витамин В9\",\"units\":\"мкг\",\"min\":400,\"max\":400},{\"id\":42,\"name\":\"Хром (Cr)\",\"units\":\"мкг\",\"min\":200,\"max\":250},{\"id\":29,\"name\":\"Йод (I)\",\"units\":\"мкг\",\"min\":100,\"max\":150},{\"id\":30,\"name\":\"Кобальт (Co)\",\"units\":\"мкг\",\"min\":100,\"max\":1200},{\"id\":38,\"name\":\"Селен (Se)\",\"units\":\"мкг\",\"min\":50,\"max\":70},{\"id\":35,\"name\":\"Никель (Ni)\",\"units\":\"мкг\",\"min\":30,\"max\":35},{\"id\":12,\"name\":\"Витамин D\",\"units\":\"мкг\",\"min\":10,\"max\":15},{\"id\":10,\"name\":\"Витамин В12\",\"units\":\"мкг\",\"min\":3,\"max\":3}],\"products\":[{\"id\":4,\"name\":\"Вино столовое красное\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":10,\"name\":\"Пиво\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":48,\"name\":\"Кофе растворимый, без кофеина, порошок\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":49,\"name\":\"Кофе растворимый, обычный, порошок\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":67,\"name\":\"Сок шиповника\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":80,\"name\":\"Говяжий жир топленый\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":81,\"name\":\"Жир гусиный\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":82,\"name\":\"Рыбий жир\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":83,\"name\":\"Жир кондитерский\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":84,\"name\":\"Жир кондитерский твердый\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":85,\"name\":\"Жир костный топленый\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\"",
 ":\"Продукты · скоромное\"},{\"id\":91,\"name\":\"Маргарин «Здоровье»\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":108,\"name\":\"Пальмовое масло\",\"section\":\"food\",\"fastdegree\":\"до масла\",\"group\":\"Продукты · до масла\"},{\"id\":135,\"name\":\"Дрожжи прессованные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":162,\"name\":\"Хлеб формовой из обойной муки\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":175,\"name\":\"Хлеб пшеничный из муки высшего сорта\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":185,\"name\":\"Сухой белок\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":187,\"name\":\"Желток сухой\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":188,\"name\":\"Яйцо куриное, желток\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":191,\"name\":\"Яичный порошок\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":193,\"name\":\"Яйцо куриное, целое\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":194,\"name\":\"Яйцо перепелиное, целое\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":251,\"name\":\"Молоко сухое, 1%\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":252,\"name\":\"Молоко сухое цельное, 25%\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":400,\"name\":\"Топпинг обезжиренный, 5%\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":405,\"name\":\"Жир из печени трески\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":415,\"name\":\"Индейка, 1 категории\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":416,\"name\":\"Индейка, 2 категории\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":432,\"name\":\"Печень гусиная\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":433,\"name\":\"Печень индейка\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":434,\"name\":\"Печень куриная\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":435,\"name\":\"Печень, утка домашняя\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":474,\"name\":\"Паштет из печени, говядина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":476,\"name\":\"Печень говяжья, сырая\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":477,\"name\":\"Печень говяжья, тушеная\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":478,\"name\":\"Почки говядина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":490,\"name\":\"Печень, телятина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":498,\"name\":\"Вырезка свинина, только мясо\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":500,\"name\":\"Мозги, свинина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":505,\"name\":\"Печень, свинина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":514,\"name\":\"Мозги, баранина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":518,\"name\":\"Почки, баранина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":527,\"name\":\"Печень тушеная, баранина\",\"section\":\"food\",\"fastdegree\":\"скоромное\",\"group\":\"Продукты · скоромное\"},{\"id\":533,\"name\":\"Акула, мороженая\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":534,\"name\":\"Катран, мороженый\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":535,\"name\":\"Анчоус, атлантический\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":539,\"name\":\"Горбуша\",\"se",
 "ction\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":543,\"name\":\"Горбуша соленая\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":576,\"name\":\"Килька балтийская, соленая\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":585,\"name\":\"Лещ вяленый\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":599,\"name\":\"Навага беломорская\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":624,\"name\":\"Палтус гренландский\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":629,\"name\":\"Печень трески, консервы\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":630,\"name\":\"Пикша\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":633,\"name\":\"Путассу\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":645,\"name\":\"Сельдь атлантическая, жирная\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":649,\"name\":\"Сельдь атлантическая, нежирная\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":658,\"name\":\"Сельдь тихоокеанская, среднесоленая\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":670,\"name\":\"Скумбрия соленая\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":689,\"name\":\"Треска\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":695,\"name\":\"Треска соленая\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":699,\"name\":\"Тунец желтоперый\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":700,\"name\":\"Тунец желтоперый, запеченный\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":702,\"name\":\"Тунец полосатый запеченный\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":703,\"name\":\"Тунец\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":715,\"name\":\"Хек серебристый\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":716,\"name\":\"Шпроты в масле, консервы\",\"section\":\"food\",\"fastdegree\":\"до рыбы\",\"group\":\"Продукты · до рыбы\"},{\"id\":721,\"name\":\"Кальмар, филе\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":729,\"name\":\"Медуза сушеная, соленая\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":745,\"name\":\"Трубач вареный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":747,\"name\":\"Устрицы восточные, вареные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":748,\"name\":\"Устрицы восточные запеченные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":749,\"name\":\"Устрицы восточные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":751,\"name\":\"Устрицы тихоокеанские, вареные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":848,\"name\":\"Фейхоа\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":857,\"name\":\"Шиповник\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":891,\"name\":\"Грибы белые сушеные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":895,\"name\":\"Митаки\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":919,\"name\":\"Капуста кале сырая\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":944,\"name\":\"Картофельное пюре обезвоженное, хлопья без молока\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":955,\"name\":\"Крахмал картофельный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":977,\"name\":\"Агар-агар, морские водоросли, сухие\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":998,\"nam",
 "e\":\"Перец чили острый, зеленый\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1006,\"name\":\"Петрушка замороженная, обезвоженная\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1013,\"name\":\"Редис\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1016,\"name\":\"Салат\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1064,\"name\":\"Горох\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1067,\"name\":\"Соя, бобы\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1068,\"name\":\"Фасоль, зерно\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1069,\"name\":\"Чечевица, зерно\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1070,\"name\":\"Кунжут, семена\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1079,\"name\":\"Грецкий орех\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1084,\"name\":\"Миндаль\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1089,\"name\":\"Семена подсолнечника, высушенные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1090,\"name\":\"Семена подсолнечника, поджаренные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1092,\"name\":\"Семена тыква, жаренные с солью\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1101,\"name\":\"Базилик, сушеный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1103,\"name\":\"Имбирь, молотый\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1104,\"name\":\"Кардамон\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1106,\"name\":\"Кориандр, листья сушеные\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1107,\"name\":\"Кориандр, семена\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1112,\"name\":\"Майоран сушеный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1113,\"name\":\"Мак, семена\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1114,\"name\":\"Гвоздика молотая\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1117,\"name\":\"Мята сушеная\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1118,\"name\":\"Орегано сушеный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1119,\"name\":\"Паприка, стручковый перец\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1120,\"name\":\"Перец чили, порошок\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1122,\"name\":\"Перец красный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1124,\"name\":\"Петрушка сушеная\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1125,\"name\":\"Розмарин сушеный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1126,\"name\":\"Тимьян сушеный\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1128,\"name\":\"Укроп, зелень сушеная\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1132,\"name\":\"Шалфей молотый\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1133,\"name\":\"Мука из гречихи, диетическая\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1134,\"name\":\"Гречиха, зерно\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1135,\"name\":\"Кукуруза, зерно продовольственное\",\"section\":\"food\",\"fastdegree\":\"сухоядение\",\"group\":\"Продукты · сухоядение\"},{\"id\":1136,\"name\":",
@@ -281,7 +293,7 @@ const SEED = JSON.parse(
 ].join("")
 );
 const DB_NAME = 'dietolog_simple';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 /** @type {IDBDatabase} */
 let db;
@@ -333,7 +345,7 @@ async function seedIfNeeded() {
 
   const status = document.getElementById('status');
   const list = document.getElementById('list');
-  if (list) list.innerHTML = '<div class="loading">Готовим базу… один раз после обновления (не зависло)</div>';
+  /* UI уже показан из SEED — не затираем список */
 
   const yieldUI = () => new Promise((r) => setTimeout(r, 0));
 
@@ -405,12 +417,37 @@ function getAll(storeName) {
   });
 }
 
+function loadCachesFromSeed() {
+  nutrientById = new Map(SEED.nutrients.map((n) => [n.id, n]));
+  infoCache = new Map(
+    Object.entries(SEED.info).map(([pid, items]) => [Number(pid), items || []])
+  );
+  productsCache = SEED.products
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      nameLower: String(p.name).toLowerCase(),
+      section: p.section || (p.fastdegree === 'БАД' ? 'bad' : 'food'),
+      group: p.group || 'Прочее',
+      count: (infoCache.get(p.id) || []).length,
+    }))
+    .sort((a, b) => {
+      const g = a.group.localeCompare(b.group, 'ru');
+      if (g) return g;
+      return a.name.localeCompare(b.name, 'ru');
+    });
+}
+
 async function loadCaches() {
   const [nutrients, products, byProduct] = await Promise.all([
     getAll('nutrients'),
     getAll('products'),
     getAll('byProduct'),
   ]);
+  if (!products || products.length === 0) {
+    loadCachesFromSeed();
+    return;
+  }
   nutrientById = new Map(nutrients.map((n) => [n.id, n]));
   infoCache = new Map(byProduct.map((row) => [row.id, row.items || []]));
   productsCache = products
@@ -429,183 +466,62 @@ async function loadCaches() {
     });
 }
 
-function formatValue(v, units) {
-  const n = Number(v);
-  const s = Number.isInteger(n) ? String(n) : String(Math.round(n * 1000) / 1000);
-  return units ? s + ' ' + units : s;
+function setVersionLabel() {
+  const v = 'v' + SEED.version;
+  const el = document.getElementById('appVersion');
+  if (el) el.textContent = v;
+  document.title = 'Диетолог — простой ' + v;
 }
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function filteredProducts(filterText) {
-  const q = (filterText || '').trim().toLowerCase();
-  const parts = q ? q.split('|').map((s) => s.trim()).filter(Boolean) : [];
-  let items = productsCache;
-  if (currentSection !== 'all') items = items.filter((p) => p.section === currentSection);
-  if (parts.length) items = items.filter((p) => parts.some((part) => p.nameLower.includes(part) || p.group.toLowerCase().includes(part)));
-  return items;
-}
-
-function renderList(filterText) {
-  const root = document.getElementById('list');
-  const items = filteredProducts(filterText);
-  const byGroup = new Map();
-  for (const p of items) {
-    if (!byGroup.has(p.group)) byGroup.set(p.group, []);
-    byGroup.get(p.group).push(p);
-  }
-  const groupNames = Array.from(byGroup.keys()).sort((a, b) => a.localeCompare(b, 'ru'));
-
-  document.getElementById('status').textContent =
-    groupNames.length + ' групп · ' + items.length + ' продуктов · ' +
-    nutrientById.size + ' нутриентов · IDB v' + SEED.version;
-
-  if (!groupNames.length) {
-    root.innerHTML = '<div class="empty">Ничего не найдено</div>';
-    return;
-  }
-
-  const frag = document.createDocumentFragment();
-  for (const gName of groupNames) {
-    const prods = byGroup.get(gName);
-    const gWrap = document.createElement('div');
-    gWrap.className = 'group';
-
-    const gBtn = document.createElement('button');
-    gBtn.type = 'button';
-    gBtn.className = 'group-head';
-    gBtn.innerHTML =
-      '<span class="chev">▸</span>' +
-      '<span class="gname"></span>' +
-      '<span class="pmeta"></span>';
-    gBtn.querySelector('.gname').textContent = gName;
-    gBtn.querySelector('.pmeta').textContent = prods.length + ' прод.';
-    gBtn.addEventListener('click', () => {
-      const opening = !gWrap.classList.contains('open');
-      gWrap.classList.toggle('open', opening);
-      if (opening) ensureGroupProducts(gWrap, prods);
+function wireUi() {
+  const q = document.getElementById('q');
+  let t = null;
+  q.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => renderList(q.value), 80);
+  });
+  document.querySelectorAll('#sectionFilter .sec').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#sectionFilter .sec').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSection = btn.getAttribute('data-section') || 'all';
+      renderList(q.value);
     });
-
-    const gBody = document.createElement('div');
-    gBody.className = 'group-body';
-    gBody.dataset.filled = '0';
-
-    gWrap.appendChild(gBtn);
-    gWrap.appendChild(gBody);
-    frag.appendChild(gWrap);
-  }
-
-  root.innerHTML = '';
-  root.appendChild(frag);
-}
-
-function ensureGroupProducts(gWrap, prods) {
-  const gBody = gWrap.querySelector('.group-body');
-  if (!gBody || gBody.dataset.filled === '1') return;
-  const frag = document.createDocumentFragment();
-  for (const p of prods) {
-    const wrap = document.createElement('div');
-    wrap.className = 'product';
-    wrap.dataset.id = String(p.id);
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'product-head';
-    btn.innerHTML =
-      '<span class="chev">▸</span>' +
-      '<span class="pname"></span>' +
-      '<span class="pmeta"></span>';
-    btn.querySelector('.pname').textContent = p.name;
-    if (p.section === 'bad') {
-      const b = document.createElement('span');
-      b.className = 'badge-bad';
-      b.textContent = 'БАД';
-      btn.querySelector('.pname').appendChild(document.createTextNode(' '));
-      btn.querySelector('.pname').appendChild(b);
-    }
-    btn.querySelector('.pmeta').textContent = (p.section === 'bad' ? 'шт. · ' : '') + p.count + ' нутр.';
-    btn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      toggleProduct(wrap, p.id);
-    });
-
-    const detail = document.createElement('div');
-    detail.className = 'nutrients';
-    detail.dataset.loaded = '0';
-
-    wrap.appendChild(btn);
-    wrap.appendChild(detail);
-    frag.appendChild(wrap);
-  }
-  gBody.appendChild(frag);
-  gBody.dataset.filled = '1';
-}
-
-function toggleProduct(wrap, productId) {
-  const open = wrap.classList.toggle('open');
-  if (!open) return;
-  const detail = wrap.querySelector('.nutrients');
-  if (detail.dataset.loaded === '1') return;
-
-  const items = infoCache.get(productId) || [];
-  if (!items.length) {
-    detail.innerHTML = '<div class="empty">Нет данных по нутриентам</div>';
-    detail.dataset.loaded = '1';
-    return;
-  }
-
-  const isBad = (productsCache.find((p) => p.id === productId) || {}).section === 'bad';
-  let html = '<table><thead><tr><th>Нутриент</th><th>' +
-    (isBad ? 'На 1 шт.' : 'На 100 г') + '</th></tr></thead><tbody>';
-  for (const [nid, val] of items) {
-    const n = nutrientById.get(nid);
-    const name = n ? n.name : ('#' + nid);
-    const units = n ? n.units : '';
-    // БАД: value stored as dose*100 for Angular formula → show dose
-    const show = isBad ? (Number(val) / 100) : val;
-    html += '<tr><td>' + escapeHtml(name) + '</td><td class="num">' +
-      escapeHtml(formatValue(show, units)) + '</td></tr>';
-  }
-  html += '</tbody></table>';
-  detail.innerHTML = html;
-  detail.dataset.loaded = '1';
+  });
+  q.focus();
 }
 
 async function main() {
   const status = document.getElementById('status');
+  const list = document.getElementById('list');
   try {
-    db = await openDb();
-    status.textContent = 'Проверка IndexedDB…';
-    const seeded = await seedIfNeeded();
-    status.textContent = seeded ? 'Запись в IndexedDB…' : 'Чтение IndexedDB…';
-    await loadCaches();
+    setVersionLabel();
+    // Быстрый путь: сразу из SEED в памяти — страница не ждёт IndexedDB
+    status.textContent = 'Загрузка из снимка v' + SEED.version + '…';
+    loadCachesFromSeed();
     renderList('');
-    const q = document.getElementById('q');
-    let t = null;
-    q.addEventListener('input', () => {
-      clearTimeout(t);
-      t = setTimeout(() => renderList(q.value), 80);
-    });
-    document.querySelectorAll('#sectionFilter .sec').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#sectionFilter .sec').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentSection = btn.getAttribute('data-section') || 'all';
-        renderList(q.value);
+    wireUi();
+    status.textContent =
+      document.getElementById('status').textContent; // renderList already set counts
+    // Фоном пишем в IndexedDB (не блокируем UI)
+    status.title = 'IndexedDB обновляется в фоне';
+    Promise.resolve()
+      .then(async () => {
+        try {
+          db = await openDb();
+          const seeded = await seedIfNeeded();
+          if (seeded) {
+            const st = document.getElementById('status');
+            if (st) st.title = 'IndexedDB обновлена (v' + SEED.version + ')';
+          }
+        } catch (e) {
+          console.warn('IndexedDB optional failed', e);
+        }
       });
-    });
-    q.focus();
   } catch (e) {
     console.error(e);
-    document.getElementById('list').innerHTML =
-      '<div class="err">Ошибка: ' + escapeHtml(e && e.message ? e.message : e) + '</div>';
-    status.textContent = 'Ошибка';
+    if (list) list.innerHTML = '<div class="err">Ошибка: ' + escapeHtml(e && e.message ? e.message : e) + '</div>';
+    if (status) status.textContent = 'Ошибка';
   }
 }
 

@@ -11,6 +11,8 @@
 
 ---
 
+11. Anyway, it's convenient, nothing happens on this base And at the same time, add the version number to the name, so that it can be seen
+
 10. Now there is a freeze, we are preparing the base. Why is it taking so long, friend? It was all quick, and now it took a long time. Did I add so much new information?
 
 9. I'll give you a list of all the fields Do it And don't remember the product right away First, the group of products And then, when you expand the group, its product
