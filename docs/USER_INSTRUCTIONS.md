@@ -11,6 +11,8 @@
 
 ---
 
+12. I see in S6 that the version has changed, but we're still preparing the database. Let's remove these groups then. Make the group of the previous form, but only on the new ones. Well, on all those that you added to the products. And change the database. Change the content of the database. Roll back what you did in the form. Change the list of products.
+
 11. Anyway, it's convenient, nothing happens on this base And at the same time, add the version number to the name, so that it can be seen
 
 10. Now there is a freeze, we are preparing the base. Why is it taking so long, friend? It was all quick, and now it took a long time. Did I add so much new information?

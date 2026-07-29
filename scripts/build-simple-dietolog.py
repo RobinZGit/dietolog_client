@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Пересобрать simple/seed.json и simple/dietolog.html из static.datasource.ts."""
+"""Пересобрать simple/seed.json и simple/dietolog.html из static.datasource.ts.
+
+Продукты (еда): без group, плоский список в UI.
+БАДы: group сохраняется (группа → продукт → нутриенты).
+"""
 from __future__ import annotations
 
 import json
@@ -13,42 +17,72 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-TEMPLATE_MARK = "/*__SEED__*/"
+VERSION = 7
+SOURCE = "dietolog_client · flat foods + БАД groups only"
+CHUNK = 120000
+
+
+def bracket_slice(text: str, start: int) -> tuple[str, int]:
+    """Return JSON array text starting at text[start]=='[' and end index of ']'."""
+    assert text[start] == "["
+    depth = 0
+    in_str = False
+    esc = False
+    for i, c in enumerate(text[start:], start):
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+            continue
+        if c == '"':
+            in_str = True
+            continue
+        if c == "[":
+            depth += 1
+        elif c == "]":
+            depth -= 1
+            if depth == 0:
+                return text[start : i + 1], i
+    raise ValueError("unclosed array")
 
 
 def extract() -> dict:
-    lines = SRC.read_text(encoding="utf-8").readlines()
-    nutr_text = "".join(lines[105:643])
-    prod_text = "".join(lines[643:1892])
-    info_text = "".join(lines[1892:])
+    text = SRC.read_text(encoding="utf-8")
 
+    nutr_start = text.find("private nutrients")
+    nutr_arr = text.find("[", nutr_start)
+    prod_decl = text.find("private products: any =")
+    nutr_text = text[nutr_arr:prod_decl]
     nutrients = []
-    for m in re.finditer(r"\{[\s\S]*?\}", nutr_text):
+    for m in re.finditer(r"\{[^{}]*\}", nutr_text):
         try:
             o = json.loads(m.group(0))
-            nutrients.append(
-                {
-                    "id": int(o["_id"]),
-                    "name": o["name"],
-                    "units": o.get("units", ""),
-                    "min": o.get("min_dailyrate"),
-                    "max": o.get("max_dailyrate"),
-                }
-            )
+            if "_id" in o and "name" in o:
+                nutrients.append(
+                    {
+                        "id": int(o["_id"]),
+                        "name": o["name"],
+                        "units": o.get("units", ""),
+                        "min": o.get("min_dailyrate"),
+                        "max": o.get("max_dailyrate"),
+                    }
+                )
         except Exception:
             pass
 
-    products = []
-    for m in re.finditer(r"\{[^}]+\}", prod_text):
-        try:
-            o = json.loads(m.group(0))
-            products.append({"id": int(o["_id"]), "name": o["name"]})
-        except Exception:
-            pass
+    prod_eq = text.find("private products: any =\n")
+    prod_arr = prod_eq + len("private products: any =\n")
+    prod_json, _ = bracket_slice(text, prod_arr)
+    raw_products = json.loads(prod_json)
 
-    arr = info_text[info_text.find("[") :]
-    arr = arr[: arr.rfind("]") + 1]
-    info_rows = json.loads(arr)
+    info_start = text.find("private info: any =")
+    info_arr = text.find("[", info_start)
+    info_json, _ = bracket_slice(text, info_arr)
+    info_rows = json.loads(info_json)
+
     by_prod: dict[int, list] = defaultdict(list)
     for r in info_rows:
         v = float(r["value"])
@@ -58,13 +92,55 @@ def extract() -> dict:
     for pid in by_prod:
         by_prod[pid].sort(key=lambda x: -x[1])
 
+    products = []
+    for p in raw_products:
+        is_bad = p.get("fastdegree") == "БАД"
+        sp = {
+            "id": int(p["_id"]),
+            "name": p["name"],
+            "section": "bad" if is_bad else "food",
+            "fastdegree": p.get("fastdegree") or "",
+        }
+        if is_bad and p.get("group"):
+            sp["group"] = p["group"]
+        products.append(sp)
+
     return {
-        "version": 1,
-        "source": "dietolog_client static.datasource.ts",
+        "version": VERSION,
+        "source": SOURCE,
         "nutrients": nutrients,
         "products": products,
         "info": {str(k): v for k, v in by_prod.items()},
     }
+
+
+def inject_seed_into_html(seed: dict) -> None:
+    if not HTML_PATH.exists():
+        raise SystemExit(f"HTML missing: {HTML_PATH}")
+    html = HTML_PATH.read_text(encoding="utf-8")
+    seed_json = json.dumps(seed, ensure_ascii=False, separators=(",", ":"))
+    chunks = [seed_json[i : i + CHUNK] for i in range(0, len(seed_json), CHUNK)]
+    chunks_js = ",\n".join(json.dumps(c, ensure_ascii=False) for c in chunks)
+    new_block = "const SEED = JSON.parse(\n[\n" + chunks_js + '\n].join("")\n);'
+    m = re.search(
+        r"const SEED = JSON\.parse\(\s*\[[\s\S]*?\]\.join\(\"\"\)\s*\);",
+        html,
+    )
+    if not m:
+        raise SystemExit("SEED block not found in HTML")
+    html = html[: m.start()] + new_block + html[m.end() :]
+    html = re.sub(
+        r"(Диетолог — простой )v\d+",
+        rf"\g<1>v{VERSION}",
+        html,
+    )
+    html = re.sub(
+        r'(id="appVersion" class="ver">)v\d+',
+        rf"\g<1>v{VERSION}",
+        html,
+    )
+    html = re.sub(r"const DB_VERSION = \d+;", f"const DB_VERSION = {VERSION};", html)
+    HTML_PATH.write_text(html, encoding="utf-8")
 
 
 def main() -> int:
@@ -77,19 +153,15 @@ def main() -> int:
         json.dumps(seed, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
     print("wrote", SEED_PATH, "bytes", SEED_PATH.stat().st_size)
-
-    if not HTML_PATH.exists():
-        print("HTML missing; generate dietolog.html first", file=sys.stderr)
-        return 1
-
-    html = HTML_PATH.read_text(encoding="utf-8")
-    # Replace const SEED = {...};
-    m = re.search(r"const SEED = \{.*?\n\};", html, flags=re.S)
-    if not m:
-        print("SEED block not found in HTML", file=sys.stderr)
-        return 1
-    new_block = "const SEED = " + json.dumps(seed, ensure_ascii=False, separators=(",", ":")) + ";"
-    HTML_PATH.write_text(html[: m.start()] + new_block + html[m.end() :], encoding="utf-8")
+    print(
+        "nutrients",
+        len(seed["nutrients"]),
+        "products",
+        len(seed["products"]),
+        "bad",
+        sum(1 for p in seed["products"] if p.get("section") == "bad"),
+    )
+    inject_seed_into_html(seed)
     print("updated", HTML_PATH, "bytes", HTML_PATH.stat().st_size)
     return 0
 
