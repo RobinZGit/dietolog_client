@@ -1872,7 +1872,9 @@ private products: any =
 {"hint":"","rownumber":1228,"_id":1245,"name":"Сорго","lowercase":"сорго","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
 {"hint":"","rownumber":1229,"_id":1246,"name":"Маш","lowercase":"маш мунг","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
 {"hint":"","rownumber":1230,"_id":1247,"name":"Нут","lowercase":"нут нагут","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
-{"hint":"","rownumber":1231,"_id":1248,"name":"Гречневая крупа, продел","lowercase":"гречневая крупа, продел","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"}]
+{"hint":"","rownumber":1231,"_id":1248,"name":"Гречневая крупа, продел","lowercase":"гречневая крупа, продел","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
+{"hint":"","rownumber":1232,"_id":1249,"name":"Соль поваренная йодированная","lowercase":"соль поваренная йодированная","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
+{"hint":"","rownumber":1233,"_id":1250,"name":"Нори, морские водоросли сушёные","lowercase":"нори водоросли сушеные","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"}]
 ;
 
 
@@ -22545,8 +22547,8 @@ private info: any = [
       "_id": 3277,
       "product": 187,
       "nutrient": 29,
-      "value": "115",
-      "perc1on100gr": "0"
+      "value": "349.3",
+      "perc1on100gr": "349"
   },
   {
       "_id": 3278,
@@ -23210,8 +23212,8 @@ private info: any = [
       "_id": 3380,
       "product": 191,
       "nutrient": 29,
-      "value": "64",
-      "perc1on100gr": "0"
+      "value": "274.4",
+      "perc1on100gr": "274"
   },
   {
       "_id": 3381,
@@ -186144,6 +186146,685 @@ private info: any = [
       "nutrient": 34,
       "value": "32",
       "perc1on100gr": "0"
+  },
+  {
+      "_id": 29074,
+      "product": 1097,
+      "nutrient": 29,
+      "value": "4000",
+      "perc1on100gr": "4000"
+  },
+  {
+      "_id": 29075,
+      "product": 982,
+      "nutrient": 29,
+      "value": "2316.7",
+      "perc1on100gr": "2317"
+  },
+  {
+      "_id": 29076,
+      "product": 981,
+      "nutrient": 29,
+      "value": "1500",
+      "perc1on100gr": "1500"
+  },
+  {
+      "_id": 29077,
+      "product": 979,
+      "nutrient": 29,
+      "value": "42",
+      "perc1on100gr": "42"
+  },
+  {
+      "_id": 29078,
+      "product": 980,
+      "nutrient": 29,
+      "value": "47",
+      "perc1on100gr": "47"
+  },
+  {
+      "_id": 29079,
+      "product": 983,
+      "nutrient": 29,
+      "value": "15",
+      "perc1on100gr": "15"
+  },
+  {
+      "_id": 29080,
+      "product": 977,
+      "nutrient": 29,
+      "value": "20",
+      "perc1on100gr": "20"
+  },
+  {
+      "_id": 29081,
+      "product": 978,
+      "nutrient": 29,
+      "value": "8",
+      "perc1on100gr": "8"
+  },
+  {
+      "_id": 29082,
+      "product": 747,
+      "nutrient": 29,
+      "value": "109.1",
+      "perc1on100gr": "109"
+  },
+  {
+      "_id": 29083,
+      "product": 748,
+      "nutrient": 29,
+      "value": "109.1",
+      "perc1on100gr": "109"
+  },
+  {
+      "_id": 29084,
+      "product": 751,
+      "nutrient": 29,
+      "value": "109.1",
+      "perc1on100gr": "109"
+  },
+  {
+      "_id": 29085,
+      "product": 749,
+      "nutrient": 29,
+      "value": "80",
+      "perc1on100gr": "80"
+  },
+  {
+      "_id": 29086,
+      "product": 750,
+      "nutrient": 29,
+      "value": "70",
+      "perc1on100gr": "70"
+  },
+  {
+      "_id": 29087,
+      "product": 752,
+      "nutrient": 29,
+      "value": "80",
+      "perc1on100gr": "80"
+  },
+  {
+      "_id": 29088,
+      "product": 738,
+      "nutrient": 29,
+      "value": "100",
+      "perc1on100gr": "100"
+  },
+  {
+      "_id": 29089,
+      "product": 730,
+      "nutrient": 29,
+      "value": "60",
+      "perc1on100gr": "60"
+  },
+  {
+      "_id": 29090,
+      "product": 739,
+      "nutrient": 29,
+      "value": "60",
+      "perc1on100gr": "60"
+  },
+  {
+      "_id": 29091,
+      "product": 754,
+      "nutrient": 29,
+      "value": "185",
+      "perc1on100gr": "185"
+  },
+  {
+      "_id": 29092,
+      "product": 753,
+      "nutrient": 29,
+      "value": "120",
+      "perc1on100gr": "120"
+  },
+  {
+      "_id": 29093,
+      "product": 192,
+      "nutrient": 29,
+      "value": "61",
+      "perc1on100gr": "61"
+  },
+  {
+      "_id": 29094,
+      "product": 194,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29095,
+      "product": 195,
+      "nutrient": 29,
+      "value": "50",
+      "perc1on100gr": "50"
+  },
+  {
+      "_id": 29096,
+      "product": 237,
+      "nutrient": 29,
+      "value": "34.2",
+      "perc1on100gr": "34"
+  },
+  {
+      "_id": 29097,
+      "product": 242,
+      "nutrient": 29,
+      "value": "34.2",
+      "perc1on100gr": "34"
+  },
+  {
+      "_id": 29098,
+      "product": 241,
+      "nutrient": 29,
+      "value": "36.1",
+      "perc1on100gr": "36"
+  },
+  {
+      "_id": 29099,
+      "product": 238,
+      "nutrient": 29,
+      "value": "36.1",
+      "perc1on100gr": "36"
+  },
+  {
+      "_id": 29100,
+      "product": 239,
+      "nutrient": 29,
+      "value": "35.8",
+      "perc1on100gr": "36"
+  },
+  {
+      "_id": 29101,
+      "product": 240,
+      "nutrient": 29,
+      "value": "33.5",
+      "perc1on100gr": "34"
+  },
+  {
+      "_id": 29102,
+      "product": 257,
+      "nutrient": 29,
+      "value": "33.5",
+      "perc1on100gr": "34"
+  },
+  {
+      "_id": 29103,
+      "product": 202,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29104,
+      "product": 203,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29105,
+      "product": 204,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29106,
+      "product": 205,
+      "nutrient": 29,
+      "value": "35",
+      "perc1on100gr": "35"
+  },
+  {
+      "_id": 29107,
+      "product": 206,
+      "nutrient": 29,
+      "value": "35",
+      "perc1on100gr": "35"
+  },
+  {
+      "_id": 29108,
+      "product": 207,
+      "nutrient": 29,
+      "value": "35",
+      "perc1on100gr": "35"
+  },
+  {
+      "_id": 29109,
+      "product": 208,
+      "nutrient": 29,
+      "value": "35",
+      "perc1on100gr": "35"
+  },
+  {
+      "_id": 29110,
+      "product": 209,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29111,
+      "product": 210,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29112,
+      "product": 211,
+      "nutrient": 29,
+      "value": "35",
+      "perc1on100gr": "35"
+  },
+  {
+      "_id": 29113,
+      "product": 212,
+      "nutrient": 29,
+      "value": "35",
+      "perc1on100gr": "35"
+  },
+  {
+      "_id": 29114,
+      "product": 213,
+      "nutrient": 29,
+      "value": "30",
+      "perc1on100gr": "30"
+  },
+  {
+      "_id": 29115,
+      "product": 214,
+      "nutrient": 29,
+      "value": "30",
+      "perc1on100gr": "30"
+  },
+  {
+      "_id": 29116,
+      "product": 216,
+      "nutrient": 29,
+      "value": "28",
+      "perc1on100gr": "28"
+  },
+  {
+      "_id": 29117,
+      "product": 284,
+      "nutrient": 29,
+      "value": "28",
+      "perc1on100gr": "28"
+  },
+  {
+      "_id": 29118,
+      "product": 285,
+      "nutrient": 29,
+      "value": "28",
+      "perc1on100gr": "28"
+  },
+  {
+      "_id": 29119,
+      "product": 287,
+      "nutrient": 29,
+      "value": "26",
+      "perc1on100gr": "26"
+  },
+  {
+      "_id": 29120,
+      "product": 383,
+      "nutrient": 29,
+      "value": "45.9",
+      "perc1on100gr": "46"
+  },
+  {
+      "_id": 29121,
+      "product": 338,
+      "nutrient": 29,
+      "value": "45.9",
+      "perc1on100gr": "46"
+  },
+  {
+      "_id": 29122,
+      "product": 384,
+      "nutrient": 29,
+      "value": "137.3",
+      "perc1on100gr": "137"
+  },
+  {
+      "_id": 29123,
+      "product": 385,
+      "nutrient": 29,
+      "value": "59.9",
+      "perc1on100gr": "60"
+  },
+  {
+      "_id": 29124,
+      "product": 386,
+      "nutrient": 29,
+      "value": "137.3",
+      "perc1on100gr": "137"
+  },
+  {
+      "_id": 29125,
+      "product": 388,
+      "nutrient": 29,
+      "value": "137.3",
+      "perc1on100gr": "137"
+  },
+  {
+      "_id": 29126,
+      "product": 344,
+      "nutrient": 29,
+      "value": "51",
+      "perc1on100gr": "51"
+  },
+  {
+      "_id": 29127,
+      "product": 345,
+      "nutrient": 29,
+      "value": "51",
+      "perc1on100gr": "51"
+  },
+  {
+      "_id": 29128,
+      "product": 346,
+      "nutrient": 29,
+      "value": "51",
+      "perc1on100gr": "51"
+  },
+  {
+      "_id": 29129,
+      "product": 347,
+      "nutrient": 29,
+      "value": "51",
+      "perc1on100gr": "51"
+  },
+  {
+      "_id": 29130,
+      "product": 348,
+      "nutrient": 29,
+      "value": "51",
+      "perc1on100gr": "51"
+  },
+  {
+      "_id": 29131,
+      "product": 353,
+      "nutrient": 29,
+      "value": "82.4",
+      "perc1on100gr": "82"
+  },
+  {
+      "_id": 29132,
+      "product": 354,
+      "nutrient": 29,
+      "value": "82.4",
+      "perc1on100gr": "82"
+  },
+  {
+      "_id": 29133,
+      "product": 355,
+      "nutrient": 29,
+      "value": "82.4",
+      "perc1on100gr": "82"
+  },
+  {
+      "_id": 29134,
+      "product": 356,
+      "nutrient": 29,
+      "value": "82.4",
+      "perc1on100gr": "82"
+  },
+  {
+      "_id": 29135,
+      "product": 381,
+      "nutrient": 29,
+      "value": "48.4",
+      "perc1on100gr": "48"
+  },
+  {
+      "_id": 29136,
+      "product": 362,
+      "nutrient": 29,
+      "value": "66",
+      "perc1on100gr": "66"
+  },
+  {
+      "_id": 29137,
+      "product": 363,
+      "nutrient": 29,
+      "value": "66",
+      "perc1on100gr": "66"
+  },
+  {
+      "_id": 29138,
+      "product": 360,
+      "nutrient": 29,
+      "value": "64.3",
+      "perc1on100gr": "64"
+  },
+  {
+      "_id": 29139,
+      "product": 361,
+      "nutrient": 29,
+      "value": "64.3",
+      "perc1on100gr": "64"
+  },
+  {
+      "_id": 29140,
+      "product": 342,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29141,
+      "product": 343,
+      "nutrient": 29,
+      "value": "40",
+      "perc1on100gr": "40"
+  },
+  {
+      "_id": 29142,
+      "product": 333,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29143,
+      "product": 329,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29144,
+      "product": 339,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29145,
+      "product": 351,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29146,
+      "product": 367,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29147,
+      "product": 371,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29148,
+      "product": 372,
+      "nutrient": 29,
+      "value": "56.7",
+      "perc1on100gr": "57"
+  },
+  {
+      "_id": 29149,
+      "product": 692,
+      "nutrient": 29,
+      "value": "172.1",
+      "perc1on100gr": "172"
+  },
+  {
+      "_id": 29150,
+      "product": 697,
+      "nutrient": 29,
+      "value": "172.1",
+      "perc1on100gr": "172"
+  },
+  {
+      "_id": 29151,
+      "product": 694,
+      "nutrient": 29,
+      "value": "150",
+      "perc1on100gr": "150"
+  },
+  {
+      "_id": 29152,
+      "product": 691,
+      "nutrient": 29,
+      "value": "140",
+      "perc1on100gr": "140"
+  },
+  {
+      "_id": 29153,
+      "product": 696,
+      "nutrient": 29,
+      "value": "140",
+      "perc1on100gr": "140"
+  },
+  {
+      "_id": 29154,
+      "product": 690,
+      "nutrient": 29,
+      "value": "120",
+      "perc1on100gr": "120"
+  },
+  {
+      "_id": 29155,
+      "product": 693,
+      "nutrient": 29,
+      "value": "100",
+      "perc1on100gr": "100"
+  },
+  {
+      "_id": 29156,
+      "product": 695,
+      "nutrient": 29,
+      "value": "110",
+      "perc1on100gr": "110"
+  },
+  {
+      "_id": 29157,
+      "product": 698,
+      "nutrient": 29,
+      "value": "130.6",
+      "perc1on100gr": "131"
+  },
+  {
+      "_id": 29158,
+      "product": 631,
+      "nutrient": 29,
+      "value": "200",
+      "perc1on100gr": "200"
+  },
+  {
+      "_id": 29159,
+      "product": 632,
+      "nutrient": 29,
+      "value": "180",
+      "perc1on100gr": "180"
+  },
+  {
+      "_id": 29160,
+      "product": 714,
+      "nutrient": 29,
+      "value": "140",
+      "perc1on100gr": "140"
+  },
+  {
+      "_id": 29161,
+      "product": 724,
+      "nutrient": 29,
+      "value": "15",
+      "perc1on100gr": "15"
+  },
+  {
+      "_id": 29162,
+      "product": 725,
+      "nutrient": 29,
+      "value": "14",
+      "perc1on100gr": "14"
+  },
+  {
+      "_id": 29163,
+      "product": 726,
+      "nutrient": 29,
+      "value": "15",
+      "perc1on100gr": "15"
+  },
+  {
+      "_id": 29164,
+      "product": 704,
+      "nutrient": 29,
+      "value": "8.7",
+      "perc1on100gr": "9"
+  },
+  {
+      "_id": 29165,
+      "product": 705,
+      "nutrient": 29,
+      "value": "8.7",
+      "perc1on100gr": "9"
+  },
+  {
+      "_id": 29166,
+      "product": 700,
+      "nutrient": 29,
+      "value": "23",
+      "perc1on100gr": "23"
+  },
+  {
+      "_id": 29167,
+      "product": 702,
+      "nutrient": 29,
+      "value": "23",
+      "perc1on100gr": "23"
+  },
+  {
+      "_id": 29168,
+      "product": 629,
+      "nutrient": 29,
+      "value": "250",
+      "perc1on100gr": "250"
+  },
+  {
+      "_id": 29169,
+      "product": 1249,
+      "nutrient": 29,
+      "value": "5213.1",
+      "perc1on100gr": "5213"
+  },
+  {
+      "_id": 29170,
+      "product": 1250,
+      "nutrient": 29,
+      "value": "2316.7",
+      "perc1on100gr": "2317"
   }
 ]
 }

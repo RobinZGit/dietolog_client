@@ -11,6 +11,8 @@
 
 ---
 
+7. Look for some other sources for this information And maybe update this database Add something that is not there, some products are not there Maybe there are no ingredients I'm especially interested in iodine I remember very few products with iodine in this database Add them And generally analyze Which products with which ingredients are not enough Let's do it this way Analyze which products with which ingredients are not enough And look for them somewhere else And add them to this database in the same format
+
 6. I want to see a link to the new file somewhere on this form from above.
 
 5. (скрин GitHub Pages https://robinzgit.github.io/dietolog_client/ — живой Angular «ДИЕТОЛОГ»; без текста запроса: выложить простой просмотр на Pages и связать со сайтом)
