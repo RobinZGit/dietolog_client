@@ -4,14 +4,43 @@
   text-align: center;
 }
 
+.simple-dietolog-bar {
+  text-align: center;
+  margin: 0 0 0.75rem;
+}
+
 .simple-dietolog-link {
   display: inline-block;
-  margin-left: 0.75rem;
-  font-size: 0.55em;
-  font-weight: 600;
-  vertical-align: middle;
-  color: #2f5d50;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a5c45;
   text-decoration: underline;
+  background: #e4efe9;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #9bbfad;
+}
+
+.simple-dietolog-link:hover {
+  background: #d3e8dc;
+}
+
+.simple-dietolog-btn {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  background: #2f5d50;
+  border-radius: 8px;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.simple-dietolog-btn:hover {
+  background: #244a40;
+  color: #fff;
 }
 
 .header-tables{

@@ -1,8 +1,9 @@
 
-<h1 class="header-main">{{mainHeader}}
+<h1 class="header-main">{{mainHeader}}</h1>
+<p class="simple-dietolog-bar">
   <a class="simple-dietolog-link" [href]="simpleDietologHref" target="_blank" rel="noopener"
-     title="Простой просмотр продуктов и нутриентов (IndexedDB)">простой просмотр</a>
-</h1>
+     title="Простой просмотр продуктов и нутриентов (IndexedDB)">Открыть простой просмотр (IndexedDB) →</a>
+</p>
 <!--button (click)="f()">test</button-->
 <div [ngClass]="classFilter">
 <div [ngClass]="getMainClass('row')">
@@ -15,6 +16,8 @@
           </label-->
           <!--<button class="improve-button" title="Рассчитать оптимальную раскладку" (click)="optimize()">&nbsp;GO!&nbsp;</button>-->
           <button class="improve-button" title="Добавить в раскладку один из рекомендованных продуктов" (click)="improveProductValues()">&nbsp;ADD</button>
+          <a class="simple-dietolog-btn" [href]="simpleDietologHref" target="_blank" rel="noopener"
+             title="simple/dietolog.html — продукты и нутриенты в IndexedDB">Простой HTML</a>
           <p><label title="Можно использовать ИЛИ-разделитель '|', например: 'кофе|сливки|сахар'" >
             &nbsp; &nbsp; &nbsp;1. <input type="checkbox" [(ngModel)]="params.sortBySubstr" (change)="finalSorting()">Поместить вверху списка продукты, содержащие подстроку:
              <input [(ngModel)]="params.textSort" type="text" (change)="params.sortBySubstr=true;finalSorting()" >
