@@ -11,6 +11,8 @@
 
 ---
 
+9. I'll give you a list of all the fields Do it And don't remember the product right away First, the group of products And then, when you expand the group, its product
+
 8. I would like to add a separate section of the products These are biological active additives And some of the most popular, such as calcium, iron, iodine Only from a specific company, for example, from a specific dosage The bud?
 
 7. Look for some other sources for this information And maybe update this database Add something that is not there, some products are not there Maybe there are no ingredients I'm especially interested in iodine I remember very few products with iodine in this database Add them And generally analyze Which products with which ingredients are not enough Let's do it this way Analyze which products with which ingredients are not enough And look for them somewhere else And add them to this database in the same format
