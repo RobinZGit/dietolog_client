@@ -54,7 +54,7 @@
               <button [ngClass]="btnNextDisabled()?'nav-button-disabled':'nav-button'" [disabled]="btnNextDisabled()" (click)="clickNext()">></button>
               </p>
               <p>
-                 <span>{{'Кол-во(гр.), итого: ' +  totalProductsWeight()}}</span>
+                 <span>{{'Кол-во(гр./шт. для БАД), итого: ' +  totalProductsWeight()}}</span>
 
               </p>
             </th>
@@ -73,6 +73,8 @@
                 <option>Исключить скоромное</option>
                 <option>Исключить до рыбы</option>
                 <option>Исключить до масла</option>
+                <option>Исключить БАД</option>
+                <option>Только БАД</option>
               </select>
               <p>{{'Исключен'}}</p>
             </th>
@@ -178,7 +180,7 @@
                               <button [ngClass]="btnNextDisabled()?'nav-button-disabled':'nav-button'" [disabled]="btnNextDisabled()" (click)="clickNext()">></button>
                               </p>
                               <p>
-                                 <span>{{'Кол-во(гр.), итого: ' +  totalProductsWeight()}}</span>
+                                 <span>{{'Кол-во(гр./шт. для БАД), итого: ' +  totalProductsWeight()}}</span>
 
                               </p>
                             </th>
@@ -194,6 +196,8 @@
                                 <option>Исключить скоромн</option>
                                 <option>Исключить до рыбы</option>
                                 <option>Исключить до масла</option>
+                                <option>Исключить БАД</option>
+                                <option>Только БАД</option>
                               </select>
                               <p>{{'Исключен'}}</p>
                             </th>

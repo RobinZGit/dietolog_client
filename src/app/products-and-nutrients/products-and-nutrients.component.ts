@@ -900,6 +900,8 @@ exclude(typeExcluded: string){
   else if (this.typeExcluded.indexOf('скоромное')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(['скоромное'].indexOf(p.fastdegree)>=0)})
   else if (this.typeExcluded.indexOf('до рыбы')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(['скоромное','до рыбы'].indexOf(p.fastdegree)>=0)})
   else if (this.typeExcluded.indexOf('до масла')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(['скоромное','до рыбы','до масла'].indexOf(p.fastdegree)>=0)})
+  else if (this.typeExcluded.indexOf('Исключить БАД')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(p.fastdegree==='БАД')})
+  else if (this.typeExcluded.indexOf('Только БАД')>=0) this.products.map((p:any)=>{if(p.val==0) p.excluded=(p.fastdegree!=='БАД')})
   this.params.typeExcluded = typeExcluded
   this.saveSettings()
 }

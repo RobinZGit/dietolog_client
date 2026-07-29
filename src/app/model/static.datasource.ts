@@ -1874,7 +1874,15 @@ private products: any =
 {"hint":"","rownumber":1230,"_id":1247,"name":"Нут","lowercase":"нут нагут","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
 {"hint":"","rownumber":1231,"_id":1248,"name":"Гречневая крупа, продел","lowercase":"гречневая крупа, продел","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
 {"hint":"","rownumber":1232,"_id":1249,"name":"Соль поваренная йодированная","lowercase":"соль поваренная йодированная","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
-{"hint":"","rownumber":1233,"_id":1250,"name":"Нори, морские водоросли сушёные","lowercase":"нори водоросли сушеные","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"}]
+{"hint":"","rownumber":1233,"_id":1250,"name":"Нори, морские водоросли сушёные","lowercase":"нори водоросли сушеные","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение"},
+{"hint":"БАД|БАД-шаблон|Йод 100 мкг|на 1 табл.: 100 мкг|value=dose*100","rownumber":1234,"_id":1251,"name":"БАД · БАД-шаблон · Йод 100 мкг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · йод 100 мкг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Йод 200 мкг|на 1 табл.: 200 мкг|value=dose*100","rownumber":1235,"_id":1252,"name":"БАД · БАД-шаблон · Йод 200 мкг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · йод 200 мкг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Кальций 500 мг|на 1 табл.: 500 мг|value=dose*100","rownumber":1236,"_id":1253,"name":"БАД · БАД-шаблон · Кальций 500 мг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · кальций 500 мг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Кальций 1000 мг|на 1 табл.: 1000 мг|value=dose*100","rownumber":1237,"_id":1254,"name":"БАД · БАД-шаблон · Кальций 1000 мг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · кальций 1000 мг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Железо 10 мг|на 1 табл.: 10 мг|value=dose*100","rownumber":1238,"_id":1255,"name":"БАД · БАД-шаблон · Железо 10 мг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · железо 10 мг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Железо 20 мг|на 1 табл.: 20 мг|value=dose*100","rownumber":1239,"_id":1256,"name":"БАД · БАД-шаблон · Железо 20 мг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · железо 20 мг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Селен 50 мкг|на 1 табл.: 50 мкг|value=dose*100","rownumber":1240,"_id":1257,"name":"БАД · БАД-шаблон · Селен 50 мкг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · селен 50 мкг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"},
+{"hint":"БАД|БАД-шаблон|Витамин D 10 мкг|на 1 табл.: 10 мкг|value=dose*100","rownumber":1241,"_id":1258,"name":"БАД · БАД-шаблон · Витамин D 10 мкг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · витамин d 10 мкг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД"}]
 ;
 
 
@@ -186825,6 +186833,62 @@ private info: any = [
       "nutrient": 29,
       "value": "2316.7",
       "perc1on100gr": "2317"
+  },
+  {
+      "_id": 29171,
+      "product": 1251,
+      "nutrient": 29,
+      "value": "10000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29172,
+      "product": 1252,
+      "nutrient": 29,
+      "value": "20000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29173,
+      "product": 1253,
+      "nutrient": 19,
+      "value": "50000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29174,
+      "product": 1254,
+      "nutrient": 19,
+      "value": "100000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29175,
+      "product": 1255,
+      "nutrient": 17,
+      "value": "1000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29176,
+      "product": 1256,
+      "nutrient": 17,
+      "value": "2000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29177,
+      "product": 1257,
+      "nutrient": 38,
+      "value": "5000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29178,
+      "product": 1258,
+      "nutrient": 12,
+      "value": "1000",
+      "perc1on100gr": "0"
   }
 ]
 }
