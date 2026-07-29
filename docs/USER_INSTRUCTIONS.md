@@ -11,6 +11,8 @@
 
 ---
 
+10. Now there is a freeze, we are preparing the base. Why is it taking so long, friend? It was all quick, and now it took a long time. Did I add so much new information?
+
 9. I'll give you a list of all the fields Do it And don't remember the product right away First, the group of products And then, when you expand the group, its product
 
 8. I would like to add a separate section of the products These are biological active additives And some of the most popular, such as calcium, iron, iodine Only from a specific company, for example, from a specific dosage The bud?
