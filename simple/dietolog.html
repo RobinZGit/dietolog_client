@@ -218,18 +218,20 @@
 </head>
 <body>
   <header>
-    <h1>Р”РёРµС‚РѕР»РѕРі <span style="font-weight:500;color:var(--muted);font-size:0.75em">РїСЂРѕСЃС‚РѕР№</span> <span id="appVersion" class="ver">v10</span></h1>
-    <p class="lead" id="leadText">РџРѕРёСЃРє в†’ <b>РіСЂСѓРїРїР°</b> в†’ РїСЂРѕРґСѓРєС‚ в†’ РЅСѓС‚СЂРёРµРЅС‚С‹. Р’СЃРµ Р‘РђР”С‹ РІ РѕРґРЅРѕР№ РіСЂСѓРїРїРµ <b>Р‘РђР”</b>.</p>
+    <h1>Диетолог <span style="font-weight:500;color:var(--muted);font-size:0.75em">простой</span> <span id="appVersion" class="ver">v10</span></h1>
+    <p class="lead" id="leadText">Поиск → <b>группа</b> → продукт → нутриенты. Все БАДы в одной группе <b>БАД</b>.</p>
     <div class="toolbar" id="toolbar">
-      <input id="q" type="search" placeholder="РџРѕРёСЃРє РїСЂРѕРґСѓРєС‚Р° РёР»Рё РіСЂСѓРїРїС‹вЂ¦" autocomplete="off" />
-      <div id="status">Р—Р°РіСЂСѓР·РєР°вЂ¦</div>
+      <input id="q" type="search" placeholder="Поиск продукта или группы…" autocomplete="off" />
+      <div id="status">Загрузка…</div>
     </div>
   </header>
   <div id="modePanel"></div>
-  <p class="browse-title" id="browseTitle">РЎРїСЂР°РІРѕС‡РЅРёРє РїСЂРѕРґСѓРєС‚РѕРІ</p>
+  <p class="browse-title" id="browseTitle">Справочник продуктов</p>
   <main>
-    <div id="list" class="list"><div class="loading">Р—Р°РіСЂСѓР·РєР° РіСЂСѓРїРївЂ¦</div></div>
+    <div id="list" class="list"><div class="loading">Загрузка групп…</div></div>
   </main>
+
+
 
 
 
@@ -1200,7 +1202,7 @@ function setVersionLabel() {
   if (el) el.textContent = v;
   const q = parseQuery();
   const modeTag = q.mode === 'browse' ? '' : (' В· ' + q.mode);
-  document.title = 'Р”РёРµС‚РѕР»РѕРі вЂ” РїСЂРѕСЃС‚РѕР№ ' + v + modeTag;
+  document.title = 'Диетолог — простой ' + v + modeTag;
 }
 
 function wireUi() {
