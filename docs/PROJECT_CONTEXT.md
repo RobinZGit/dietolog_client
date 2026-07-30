@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v15: параметр `days` / срок на форме; авто-кол-во без граммов; выкладка
+**Последнее обновление:** 2026-07-30 — v16: рекомендации выше нутриентов; «новый список» локально (offline) + replaceState URL
 
 ---
 
@@ -89,6 +89,12 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v16: рекомендации выше + новый список offline)
+
+- Блок «Рекомендуется добавить» — **над** таблицей нутриентов.
+- «Создать новый список» — пересчёт **внутри файла** (`history.replaceState` + `renderLayoutMode`), без перехода по сети; ссылка в адресной строке и на форме обновляется.
+- Seed/UI **v16**.
 
 ### 2026-07-30 (v15: срок days + авто-количество)
 
@@ -241,6 +247,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v16: rec above nutrients; new list local/offline + URL replaceState; USER #25 |
 | 2026-07-30 | v15: days/time URL + editable term; auto qty; USER #24 |
 | 2026-07-30 | v14: coverage pie + total %; rec select-all; USER #23 |
 | 2026-07-30 | layout recommendations: checkbox, trash exclude+recalc, new list button (USER #22) |

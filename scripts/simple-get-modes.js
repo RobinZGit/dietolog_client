@@ -56,6 +56,15 @@ function layoutUrl(itemsParam, days) {
   return url;
 }
 
+/** Update browser address bar without navigation (works offline). */
+function replaceLayoutUrl(itemsParam, days) {
+  const url = layoutUrl(itemsParam, days);
+  try {
+    history.replaceState(null, '', url);
+  } catch (e) { /* file:// or restricted */ }
+  return url;
+}
+
 /** Cyrillic → Latin (passport-ish) for URL slugs */
 const CYR2LAT = {
   а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z',
@@ -798,6 +807,8 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   }
   html += '</tbody></table>';
 
+  html += '<div id="recSection"></div>';
+
   html += '<h3>Нутриенты на срок ' + formatDays(duration) + ' сут.</h3>';
   html += '<table class="mode-table"><thead><tr><th>Нутриент</th><th>Есть</th><th>Нужно</th><th>Норма/сут</th><th>Дефицит</th><th>%</th></tr></thead><tbody>';
   for (const g of gaps) {
@@ -811,12 +822,15 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   }
   html += '</tbody></table>';
 
-  html += '<div id="recSection"></div>';
   html += '<div id="examplesSection"></div>';
+
+  html += '<p class="mode-note" id="layoutShareNote"><b>Ссылка (для копирования / когда снова будет сеть):</b><br/>' +
+    '<code id="layoutShareUrl">' + escapeHtml(layoutUrl(itemsRaw, targetDays)) + '</code></p>';
 
   html += '<p class="mode-note"><b>Формат:</b> <code>items</code> — <code>slug</code> или <code>slug:grams</code> · ' +
     '<code>id:N</code> / <code>id:N:g</code>; <code>days</code> (или <code>time</code>) — срок в сутках. ' +
-    'Без количества при указанном сроке граммы/шт. подбираются автоматически.</p>';
+    'Без количества при указанном сроке граммы/шт. подбираются автоматически. ' +
+    'Все расчёты и «Создать новый список» работают <b>локально в этом файле</b> (без запроса к серверу).</p>';
 
   box.innerHTML = html;
   panel.appendChild(box);
@@ -827,16 +841,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       let v = Number(String(daysInput.value).replace(',', '.'));
       if (!(v > 0) || !Number.isFinite(v)) v = LAYOUT_DEFAULT_DAYS;
       daysInput.value = String(v);
-      try {
-        const sp = new URLSearchParams(location.search);
-        sp.set('mode', 'layout');
-        sp.set('items', itemsRaw);
-        sp.set('days', String(v));
-        sp.delete('layout');
-        sp.delete('time');
-        sp.delete('d');
-        history.replaceState(null, '', pageBaseUrl() + '?' + sp.toString());
-      } catch (e) { /* ignore */ }
+      replaceLayoutUrl(itemsRaw, v);
       renderLayoutMode(panel, itemsRaw, v);
     };
     daysInput.addEventListener('change', applyDays);
@@ -885,10 +890,12 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
     const rec = recommendAdditions(totals, duration, 0, { preferBad: false, excludeIds: exIds });
     let rhtml = '<div class="rec-head">' +
       '<h3 class="rec-title">Рекомендуется добавить</h3>' +
-      '<button type="button" class="btn-new-list" id="btnNewList" title="Старая раскладка + отмеченные рекомендации">' +
+      '<button type="button" class="btn-new-list" id="btnNewList" ' +
+      'title="Пересчитать в этом файле (без сети) и обновить ссылку в адресной строке">' +
       'Создать новый список</button></div>';
-    rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, затем нажмите «Создать новый список». ' +
-      'Корзина — убрать из рекомендаций и подобрать другое (больше не предлагать).</p>';
+    rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, затем «Создать новый список» — ' +
+      'пересчёт <b>внутри страницы</b> (офлайн), адресная строка обновится. ' +
+      'Корзина — убрать из рекомендаций и подобрать другое.</p>';
 
     if (exIds.size) {
       rhtml += '<div class="exclude-bar"><span class="exclude-label">Не предлагать снова:</span> ';
@@ -1016,7 +1023,8 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
           return;
         }
         const items = buildLayoutItemsParam(baseParts.concat(checked));
-        location.assign(layoutUrl(items, targetDays));
+        replaceLayoutUrl(items, targetDays);
+        renderLayoutMode(panel, items, targetDays);
       });
     }
 
