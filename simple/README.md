@@ -29,4 +29,4 @@ python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI **v14+**: поиск → группа → продукт. Layout: диаграмма покрытия норм; рекомендации — select-all / чекбокс / корзина / новый список. См. `docs/BAD_SUPPLEMENTS.md`.
+UI **v15+**: layout — `days` (срок), диаграмма + поле срока; авто-кол-во без граммов; рекомендации select-all / корзина / новый список.
