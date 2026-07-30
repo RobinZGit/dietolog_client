@@ -29,4 +29,4 @@ python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI **v11+**: поиск → группа → продукт → нутриенты. Seed v11 — правки единиц Mn/Cu/B5 и шкалы Si (см. `docs/NUTRIENT_SCALE_AUDIT.md`). Все БАДы в группе **БАД**.
+UI **v12+**: поиск → группа → продукт → нутриенты. Seed v12 — 30 БАД; layout-пример с БАДами; добор предпочитает БАДы. См. `docs/BAD_SUPPLEMENTS.md`, `docs/NUTRIENT_SCALE_AUDIT.md`.
