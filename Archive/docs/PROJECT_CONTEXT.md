@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v22: «Создать новый список» без галочек → баланс ккал; рекомендации при дефиците
+**Последнее обновление:** 2026-07-30 — v23: кнопка скачать HTML с базой (офлайн / Android); README
 
 ---
 
@@ -89,6 +89,11 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v23: офлайн HTML с базой / Android)
+
+- База уже встроена в `dietolog.html` (`SEED`, ~0,5 МБ) — отдельный сервер не нужен.
+- Кнопка **«Скачать HTML с базой»** + прямая raw-ссылка; README с инструкцией для планшета.
 
 ### 2026-07-30 (v22: новый список без выбора — баланс калорий)
 
@@ -279,6 +284,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v23: offline download button + README; USER #32 |
 | 2026-07-30 | v22: new list balances kcal without selection; USER #31 |
 | 2026-07-30 | v21: silicon sources + sea salt; salt usable for Na; USER #30 |
 | 2026-07-30 | v20: layout trash + editable rec qty; USER #29 |

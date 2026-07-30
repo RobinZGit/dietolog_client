@@ -11,6 +11,8 @@
 
 ---
 
+32. I want to download the HTML file with the database locally and make it work locally, including on the Android tablet. Because now I have download links to gitpages. And the database, as I understand it, is also not there, because it is small.
+
 31. The button to create a new list, even if nothing is selected, must calculate the calories for the current period, that is, for this period, bring everything to the calorie norm, and if suddenly there is a drawback, then you need to let him choose some more products, as usual.
 
 30. Look for and add to the database as many sources of silicon as possible, because I can't get to its norm. And also sea salt, if it's not there yet. Look at its composition, if it's there. I see a lack of sodium in the solution, but for some reason salt is not used at all. And there is something else on it. And immediately put it in the repository.

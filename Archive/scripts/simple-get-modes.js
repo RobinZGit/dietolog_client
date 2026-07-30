@@ -65,6 +65,71 @@ function replaceLayoutUrl(itemsParam, days) {
   return url;
 }
 
+/** Raw file on GitHub Pages branch — full HTML with embedded SEED. */
+const OFFLINE_RAW_URL =
+  'https://raw.githubusercontent.com/RobinZGit/dietolog_client/gh-pages/dietolog.html';
+
+function formatSeedSizeHint() {
+  try {
+    const approx = JSON.stringify(SEED).length;
+    if (approx >= 1024 * 1024) {
+      return (approx / (1024 * 1024)).toFixed(1).replace('.', ',') + ' МБ';
+    }
+    return Math.max(1, Math.round(approx / 1024)) + ' КБ';
+  } catch (e) {
+    return '0,5 МБ';
+  }
+}
+
+async function downloadOfflineHtml() {
+  const btn = document.getElementById('btnDownloadOffline');
+  if (btn) btn.disabled = true;
+  try {
+    let text = null;
+    try {
+      const r = await fetch(pageBaseUrl(), { cache: 'no-store' });
+      if (r.ok) text = await r.text();
+    } catch (e) { /* file:// */ }
+    if (!text || text.indexOf('const SEED') < 0) {
+      text = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    }
+    const blob = new Blob([text], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dietolog-v' + SEED.version + '-offline.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch (e2) { /* ignore */ }
+    }, 2500);
+  } catch (e) {
+    window.open(OFFLINE_RAW_URL, '_blank');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function wireOfflineDownload() {
+  const note = document.getElementById('offlineNote');
+  if (note) {
+    note.innerHTML =
+      'Вся база продуктов уже <b>внутри этого HTML</b> (~' +
+      escapeHtml(formatSeedSizeHint()) + ', v' + SEED.version + ', ' +
+      SEED.products.length +
+      ' продуктов). Отдельный сервер и <code>seed.json</code> не нужны. ' +
+      'Android / планшет: скачать → открыть файл в Chrome. ' +
+      '<a href="' + OFFLINE_RAW_URL + '" download="dietolog-offline.html">' +
+      'Прямая ссылка на файл</a>.';
+  }
+  const btn = document.getElementById('btnDownloadOffline');
+  if (btn && !btn.getAttribute('data-wired')) {
+    btn.setAttribute('data-wired', '1');
+    btn.addEventListener('click', () => { downloadOfflineHtml(); });
+  }
+}
+
 /** Cyrillic → Latin (passport-ish) for URL slugs */
 const CYR2LAT = {
   а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z',
@@ -1310,7 +1375,9 @@ function renderDefaultModeLinks(panel) {
   panel.innerHTML =
     '<section class="mode-card mode-links">' +
     '<h2>Режимы по ссылке (GET)</h2>' +
-    '<p class="mode-note">Опубликованная страница: можно открывать с параметрами.</p>' +
+    '<p class="mode-note"><b>Офлайн:</b> один файл <code>dietolog.html</code> уже содержит всю базу (~' +
+    escapeHtml(formatSeedSizeHint()) +
+    '). Кнопка «Скачать HTML с базой» сверху — для телефона/планшета Android без GitHub Pages.</p>' +
     '<ol class="mode-ol">' +
     '<li><b>Нутриенты → главные продукты:</b><br/>' +
     '<a href="' + escapeHtml(urlNutrients) + '">' + escapeHtml(urlNutrients) + '</a></li>' +

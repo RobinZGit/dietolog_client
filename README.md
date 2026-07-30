@@ -1,29 +1,32 @@
-# Диетолог (простой HTML)
+# dietolog_client (simple offline client)
 
-Один файл **`dietolog.html`** — просмотр продуктов / нутриентов / БАД / анализ раскладки.
+One-file app: **`dietolog.html`** (~0.5–0.6 MB). The full product/nutrient database is **embedded** inside the HTML (`const SEED = …`). No server and no separate `seed.json` are required at runtime.
 
-## GitHub Pages
+## Online
 
-**Сайт:** https://robinzgit.github.io/dietolog_client/dietolog.html  
+https://robinzgit.github.io/dietolog_client/dietolog.html
 
-Имя файла не меняем на `index.html` — открывается именно `dietolog.html`.
+## Offline / Android tablet
 
-## Репозиторий
+1. Open the page above (or use the green button **«Скачать HTML с базой»**).
+2. Save `dietolog-vXX-offline.html` to Downloads / Files.
+3. Open that file in **Chrome** (or another browser that can open local HTML).
+4. Search, layout analysis, and «Создать новый список» work **without internet**.
 
-| Путь | Назначение |
-|------|------------|
-| `dietolog.html` | Рабочее приложение (опубликовано) |
-| `seed.json` | Снимок данных (также встроен в HTML) |
-| `Archive/` | Старый Angular-проект и скрипты пересборки |
+Direct raw file (same content as Pages):
 
-Пересборка из архива (при необходимости):
+https://raw.githubusercontent.com/RobinZGit/dietolog_client/gh-pages/dietolog.html
 
-```bash
-cd Archive
-python scripts/add-bad-supplements.py
-python scripts/build-simple-dietolog.py
-python scripts/patch-simple-get-modes.py
-python scripts/fix-mojibake-simple.py
+`seed.json` in the repo is only for rebuilds / tooling — the app does not fetch it.
+
+## Rebuild (developers)
+
+From repo root:
+
+```text
+python Archive/scripts/build-simple-dietolog.py
+python Archive/scripts/patch-simple-get-modes.py
+python Archive/scripts/fix-mojibake-simple.py
 ```
 
-Контекст и инструкции: `Archive/docs/`.
+Angular sources live under `Archive/`.
