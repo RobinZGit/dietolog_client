@@ -1,6 +1,6 @@
 # dietolog_client (simple offline client)
 
-One-file app: **`dietolog.html`** (~0.5–0.6 MB). The full product/nutrient database is **embedded** at the **bottom** of the HTML (`const SEED = …`, section «ВСТРОЕННАЯ БАЗА ДАННЫХ»). No server and no separate `seed.json` are required at runtime.
+One-file app: **`dietolog.html`** (~0.5–0.6 MB). The full product/nutrient database is **embedded** inside the HTML (`const SEED = …`). No server and no separate `seed.json` are required at runtime.
 
 ## Online
 
