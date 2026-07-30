@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-29 — v10: все БАДы в группе «БАД»; в simple только поиск (без вкладок)
+**Последнее обновление:** 2026-07-30 — simple GET-режимы (`mode=nutrients` / `mode=layout`) + выкладка Pages
 
 ---
 
@@ -36,8 +36,23 @@
 
 **Открыть:**
 - Pages: https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
+- Нутриенты → топ продуктов: `…/simple/dietolog.html?mode=nutrients`  
+- Анализ раскладки: `…/simple/dietolog.html?mode=layout&items=slug:grams,…`  
 - или через Angular: заголовок «ДИЕТОЛОГ» → **«простой просмотр»**  
 - локально: `simple/dietolog.html` / `ng serve` → `/simple/dietolog.html`
+
+### GET-режимы (`simple/dietolog.html`)
+
+| Режим | Параметры | UI |
+|-------|-----------|-----|
+| browse (по умолчанию) | нет | Ссылки на режимы + поиск → группа → продукт |
+| nutrients | `mode=nutrients` или `nutrients=1` | Список нутриентов; раскрытие → топ‑15 продуктов (содержание + % сут. min); ниже справочник |
+| layout | `mode=layout&items=…` или `layout=…` | Раскладка, нутриенты/дефицит на срок, рекомендации, 3 примера полной раскладки |
+
+**Формат `items` / `layout` (читаемый в URL):** латиница `slug:grams`, через запятую, напр. `yajco_kurinoe_celoe:100,grechiha_zerno:150`.  
+Альтернативы: JSON `[{"n":"slug","g":100}]`; точный id `id:193:100`.  
+Сопоставление имён: транслит + нечёткий поиск → в таблице «имя из ссылки» и «найдено в базе».  
+Длительность раскладки = покрытие сут.min по **макросам** (ккал/белки/жиры/углеводы); абсолютный max по микронутриентам показывается справочно. Дефицит остальных на практический срок; добор жадным алгоритмом (+~8%), без специй в рекомендациях.
 
 Папка `simple/` в `angular.json` assets. Ссылка строится от `document.baseURI` (корректно для Pages `base-href`).  
 **Деплой Pages:** `ng build --configuration production --base-href https://robinzgit.github.io/dietolog_client/` → содержимое `dist/dietolog_client` в ветку `gh-pages`.
@@ -73,6 +88,13 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (GET-режимы simple)
+
+- `mode=nutrients` — нутриенты → топ‑15 продуктов + % нормы.
+- `mode=layout&items=` — латиница `slug:g`, JSON или `id:N:g`; срок по max покрытию; дефициты; рекомендации; 3 примера.
+- Без параметров — ссылки на оба режима (Pages-совместимо через `location`).
+- Сопоставление латинских/нечётких имён с русским каталогом (исходное имя + найденное).
 
 ### 2026-07-29 (v10: одна группа БАД + только поиск)
 
@@ -159,11 +181,13 @@
 
 ## Открытые задачи
 
-- [ ] Действия формы простого клиента (по указаниям Sergey).
+- [x] GET-режимы simple: nutrients / layout analysis (п. 16 USER_INSTRUCTIONS).
+- [ ] Действия формы простого клиента (прочие указания Sergey).
 - [x] Точечное дополнение йода (USDA R4) — сделано; дальше: V/Si/B/D/Cr и др.
 - [ ] Дополнение прочих sparse-нутриентов (ванадий, кремний, бор, D, …).
 - [ ] При обновлении `static.datasource.ts` — `python3 scripts/build-simple-dietolog.py` и bump `SEED.version` при необходимости.
 - [ ] Судьба дубликата `static.datasource.arrays.ts`.
+- [x] Выложить обновлённый `simple/dietolog.html` в `gh-pages` (после проверки).
 
 ---
 
@@ -171,6 +195,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | GET modes: nutrients + layout items (латиница/JSON), анализ срока/дефицита/рекомендаций |
 | 2026-07-29 | Docs/контекст; анализ БД/IndexedDB |
 | 2026-07-29 | `simple/dietolog.html` + IDB + ссылка из Angular |
 | 2026-07-29 | Деплой GitHub Pages (`gh-pages`), `.nojekyll`, ссылка baseURI |
@@ -180,4 +205,4 @@
 
 ## Запросы пользователя (сводка)
 
-См. `docs/USER_INSTRUCTIONS.md` (п. 4 — старт реализации одного файла / минимальная форма / актуальность БД / ссылка из проекта).
+См. `docs/USER_INSTRUCTIONS.md` (п. **16** — GET-режимы published simple; п. 4 — старт одного файла).
