@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — simple GET-режимы (`mode=nutrients` / `mode=layout`) + выкладка Pages
+**Последнее обновление:** 2026-07-30 — v11: аудит шкал (Mn/Cu/B5→мг, Si÷100, точечные правки); GET-режимы simple + Pages
 
 ---
 
@@ -88,6 +88,14 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v11: аудит шкал нутриентов)
+
+- Сверка примера layout и распределений с USDA / iodine DB / literature Si.
+- **Mn, Cu, B5:** units → **мг**, сут.min ÷1000 (значения уже были в мг).
+- **Кремний:** все food-значения ÷100 (рис/гречка теперь ~1 мг/100 г).
+- Точки: ячмень B2 28→0.28; фейхоа Zn 40→0.06; яйцо I 20→49.
+- Отчёт: `docs/NUTRIENT_SCALE_AUDIT.md`. Seed simple **v11**.
 
 ### 2026-07-30 (GET-режимы simple)
 
@@ -184,7 +192,8 @@
 - [x] GET-режимы simple: nutrients / layout analysis (п. 16 USER_INSTRUCTIONS).
 - [ ] Действия формы простого клиента (прочие указания Sergey).
 - [x] Точечное дополнение йода (USDA R4) — сделано; дальше: V/Si/B/D/Cr и др.
-- [ ] Дополнение прочих sparse-нутриентов (ванадий, кремний, бор, D, …).
+- [ ] Полный маппинг каталога на USDA FDC для всех продуктов (имена EN/RU).
+- [ ] Синхронизация правок шкал с `dietolog_server` (Postgres), если сервер ещё источник для non-local режима.
 - [ ] При обновлении `static.datasource.ts` — `python3 scripts/build-simple-dietolog.py` и bump `SEED.version` при необходимости.
 - [ ] Судьба дубликата `static.datasource.arrays.ts`.
 - [x] Выложить обновлённый `simple/dietolog.html` в `gh-pages` (после проверки).
@@ -195,6 +204,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v11 аудит шкал: Mn/Cu/B5 мг, Si÷100, B2/Zn/I точечно; NUTRIENT_SCALE_AUDIT |
 | 2026-07-30 | GET modes: nutrients + layout items (латиница/JSON), анализ срока/дефицита/рекомендаций |
 | 2026-07-29 | Docs/контекст; анализ БД/IndexedDB |
 | 2026-07-29 | `simple/dietolog.html` + IDB + ссылка из Angular |

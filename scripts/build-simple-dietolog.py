@@ -17,8 +17,8 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 10
-SOURCE = "dietolog_client · food groups; all BADs in group БАД"
+VERSION = 11
+SOURCE = "dietolog_client · v11 unit/scale fixes (Mn/Cu/B5 mg; Si÷100; point fixes)"
 CHUNK = 120000
 
 
