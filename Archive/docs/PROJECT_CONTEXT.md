@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v16: рекомендации выше нутриентов; «новый список» локально (offline) + replaceState URL
+**Последнее обновление:** 2026-07-30 — v17: `dietolog.html` в корне репо/Pages; Angular в `Archive/`; хаб → dietolog.html
 
 ---
 
@@ -89,6 +89,12 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v17: корень = dietolog.html, Angular → Archive)
+
+- Рабочий файл **`dietolog.html`** в корне репозитория (имя не `index.html`).
+- Весь Angular-проект и скрипты — в **`Archive/`**; папка `simple/` удалена.
+- Pages публикует `dietolog.html`; хаб My Projects → `…/dietolog_client/dietolog.html`.
 
 ### 2026-07-30 (v16: рекомендации выше + новый список offline)
 
@@ -247,6 +253,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v17: root dietolog.html; Angular→Archive; Pages+hub link; USER #26 |
 | 2026-07-30 | v16: rec above nutrients; new list local/offline + URL replaceState; USER #25 |
 | 2026-07-30 | v15: days/time URL + editable term; auto qty; USER #24 |
 | 2026-07-30 | v14: coverage pie + total %; rec select-all; USER #23 |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Пересобрать simple/seed.json и simple/dietolog.html из static.datasource.ts.
+"""Пересобрать корневые seed.json и dietolog.html из Archive static.datasource.ts.
 
 У всех продуктов поле group (пищевые группы / БАД · …).
 В UI: группа → продукт → нутриенты (ленивая подгрузка продуктов).
@@ -12,13 +12,13 @@ import re
 import sys
 from collections import defaultdict
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
-OUT_DIR = ROOT / "simple"
-SEED_PATH = OUT_DIR / "seed.json"
-HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 16
-SOURCE = "dietolog_client · v16 rec above nutrients; new list local offline"
+ARCHIVE = pathlib.Path(__file__).resolve().parents[1]
+REPO = ARCHIVE.parent
+SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
+SEED_PATH = REPO / "seed.json"
+HTML_PATH = REPO / "dietolog.html"
+VERSION = 17
+SOURCE = "dietolog_client · v17 root dietolog.html; Angular in Archive/"
 CHUNK = 120000
 
 
@@ -150,7 +150,7 @@ def main() -> int:
         print("missing", SRC, file=sys.stderr)
         return 1
     seed = extract()
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    SEED_PATH.parent.mkdir(parents=True, exist_ok=True)
     SEED_PATH.write_text(
         json.dumps(seed, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )

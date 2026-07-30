@@ -20,16 +20,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-      - run: npm ci --legacy-peer-deps
-      - run: npx ng build --configuration production --base-href "https://robinzgit.github.io/dietolog_client/"
-      - run: test -f dist/dietolog_client/simple/dietolog.html
+      - name: Prepare Pages payload (dietolog.html at site root)
+        run: |
+          mkdir -p _site
+          cp dietolog.html _site/dietolog.html
+          cp .nojekyll _site/.nojekyll
+          test -f seed.json && cp seed.json _site/seed.json || true
+          test -f _site/dietolog.html
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/dietolog_client
+          path: _site
 
   deploy:
     needs: build
