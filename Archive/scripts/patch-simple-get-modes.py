@@ -190,7 +190,7 @@ BODY_HEADER = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v24</span></h1>\n'
+    '<span id="appVersion" class="ver">v25</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "
@@ -294,6 +294,17 @@ def main() -> None:
     if "function setVersionLabel" in modes:
         modes = modes[: modes.find("function setVersionLabel")]
 
+    # Preserve embedded database (SEED) — never drop it while rewriting modes.
+    # Match only the DB banner comment (====), not other /* ... */ blocks (e.g. GET modes).
+    seed_m = re.search(
+        r"(?:/\* ={5,}[\s\S]*?БАЗА ДАННЫХ[\s\S]*?\*/\s*)?"
+        r"const SEED = JSON\.parse\(\s*\[[\s\S]*?\]\.join\(\"\"\)\s*\);\n?",
+        html,
+    )
+    seed_block = seed_m.group(0) if seed_m else ""
+    if seed_m:
+        html = html[: seed_m.start()] + html[seed_m.end() :]
+
     if "/* === GET modes (v11)" in html and "function parseQuery()" in html:
         html = re.sub(
             r"/\* === GET modes \(v11\).*?(?=function setVersionLabel\(|$</script>)",
@@ -334,7 +345,19 @@ def main() -> None:
         m = re.search(r"(?:function parseQuery\(\)|function setVersionLabel\(\))[\s\S]*?\nmain\(\);\n", html)
     if not m:
         raise SystemExit("modes/main block not found")
-    html = html[: m.start()] + modes + "\n" + main_js + "\n" + html[m.end() :]
+    # modes + SEED (БД внизу скрипта) + boot
+    html = (
+        html[: m.start()]
+        + modes
+        + "\n"
+        + (seed_block.rstrip() + "\n\n" if seed_block else "")
+        + main_js
+        + "\n"
+        + html[m.end() :]
+    )
+
+    if "const SEED = JSON.parse" not in html:
+        raise SystemExit("SEED missing after patch — refuse to write broken HTML")
 
     HTML.write_text(html, encoding="utf-8", newline="\n")
     print("patched", HTML, "bytes", HTML.stat().st_size)

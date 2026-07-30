@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v24: степень поста (fastdegree) в URL и форме раскладки
+**Последнее обновление:** 2026-07-30 — v25: один файл dietolog.html (SEED/БД внутри); seed.json → Archive/
 
 ---
 
@@ -26,7 +26,7 @@
 | Файл | Назначение |
 |------|------------|
 | `simple/dietolog.html` | HTML+JS+встроенный SEED → IndexedDB `dietolog_simple` |
-| `simple/seed.json` | Компактный снимок для пересборки |
+| `Archive/seed.json` | Снимок для пересборки (не нужен пользователю) |
 | `simple/README.md` | Как открыть / пересобрать |
 | `scripts/build-simple-dietolog.py` | Пересборка SEED/HTML из `static.datasource.ts` |
 
@@ -89,6 +89,12 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v25: один файл — БД внутри HTML)
+
+- В корне репозитория для пользователей остаётся **`dietolog.html`** (без `seed.json`).
+- Снимок БД — объект **`SEED`** внизу скрипта с комментарием «БАЗА ДАННЫХ (SEED)».
+- Копия для пересборки: `Archive/seed.json`. Pages публикует только HTML.
 
 ### 2026-07-30 (v24: степень поста fastdegree)
 
@@ -291,6 +297,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v25: one-file HTML, SEED comment, seed.json→Archive; USER #34 |
 | 2026-07-30 | v24: fastdegree URL+UI filter; seafood degrees fixed; USER #33 |
 | 2026-07-30 | v23: offline download button + README; USER #32 |
 | 2026-07-30 | v22: new list balances kcal without selection; USER #31 |

@@ -188,7 +188,7 @@ function wireOfflineDownload() {
       'Вся база продуктов уже <b>внутри этого HTML</b> (~' +
       escapeHtml(formatSeedSizeHint()) + ', v' + SEED.version + ', ' +
       SEED.products.length +
-      ' продуктов). Отдельный сервер и <code>seed.json</code> не нужны. ' +
+      ' продуктов). Вся БД внутри этого HTML — отдельный seed.json не нужен. ' +
       'Android / планшет: скачать → открыть файл в Chrome. ' +
       '<a href="' + OFFLINE_RAW_URL + '" download="dietolog-offline.html">' +
       'Прямая ссылка на файл</a>.';

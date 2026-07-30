@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Пересобрать корневые seed.json и dietolog.html из Archive static.datasource.ts.
+"""Пересобрать Archive/seed.json и корневой dietolog.html из static.datasource.ts.
 
-У всех продуктов поле group (пищевые группы / БАД · …).
-В UI: группа → продукт → нутриенты (ленивая подгрузка продуктов).
+Рабочий артефакт для пользователей — один файл dietolog.html (БД внутри как SEED).
+Archive/seed.json — только для пересборки/инструментов.
 """
 from __future__ import annotations
 
@@ -15,11 +15,23 @@ from collections import defaultdict
 ARCHIVE = pathlib.Path(__file__).resolve().parents[1]
 REPO = ARCHIVE.parent
 SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
-SEED_PATH = REPO / "seed.json"
+SEED_PATH = ARCHIVE / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 24
-SOURCE = "dietolog_client · v24 fastdegree filter in layout"
+VERSION = 25
+SOURCE = "dietolog_client · v25 one-file HTML with embedded DB (SEED)"
 CHUNK = 120000
+
+SEED_COMMENT = """\
+/* =============================================================================
+ * БАЗА ДАННЫХ (SEED) — снимок продуктов и нутриентов, встроенный в этот HTML
+ * =============================================================================
+ * Это и есть вся БД «Диетолога» (nutrients / products / info).
+ * Файл самодостаточен: отдельный seed.json НЕ нужен для работы и для шаринга.
+ * Скачайте / сохраните только dietolog.html — база уже внутри.
+ * Для разработчиков копия снимка лежит в Archive/seed.json (пересборка).
+ * =============================================================================
+ */
+"""
 
 
 def bracket_slice(text: str, start: int) -> tuple[str, int]:
@@ -123,11 +135,19 @@ def inject_seed_into_html(seed: dict) -> None:
     seed_json = json.dumps(seed, ensure_ascii=False, separators=(",", ":"))
     chunks = [seed_json[i : i + CHUNK] for i in range(0, len(seed_json), CHUNK)]
     chunks_js = ",\n".join(json.dumps(c, ensure_ascii=False) for c in chunks)
-    new_block = "const SEED = JSON.parse(\n[\n" + chunks_js + '\n].join("")\n);'
+    new_block = SEED_COMMENT + "const SEED = JSON.parse(\n[\n" + chunks_js + '\n].join("")\n);'
+
+    # Prefer replacing an existing SEED (with optional preceding DB banner comment).
     m = re.search(
+        r"(?:/\* ={5,}[\s\S]*?БАЗА ДАННЫХ[\s\S]*?\*/\s*)?"
         r"const SEED = JSON\.parse\(\s*\[[\s\S]*?\]\.join\(\"\"\)\s*\);",
         html,
     )
+    if not m:
+        m = re.search(
+            r"const SEED = JSON\.parse\(\s*\[[\s\S]*?\]\.join\(\"\"\)\s*\);",
+            html,
+        )
     if not m:
         raise SystemExit("SEED block not found in HTML")
     html = html[: m.start()] + new_block + html[m.end() :]
@@ -143,6 +163,7 @@ def inject_seed_into_html(seed: dict) -> None:
     )
     html = re.sub(r"const DB_VERSION = \d+;", f"const DB_VERSION = {VERSION};", html)
     HTML_PATH.write_text(html, encoding="utf-8")
+
 
 
 def main() -> int:
