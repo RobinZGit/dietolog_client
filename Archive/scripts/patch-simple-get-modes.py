@@ -357,6 +357,8 @@ def main() -> None:
 
     if "const SEED = JSON.parse" not in html:
         raise SystemExit("SEED missing after patch — refuse to write broken HTML")
+    if "function openDb" not in html or "function renderList" not in html:
+        raise SystemExit("core UI missing after patch (openDb/renderList) — refuse to write broken HTML")
 
     HTML.write_text(html, encoding="utf-8", newline="\n")
     print("patched", HTML, "bytes", HTML.stat().st_size)
