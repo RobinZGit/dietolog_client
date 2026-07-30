@@ -163,7 +163,6 @@ CSS_EXTRA = """
       padding: 0.35rem 0.45rem; border: 1px solid var(--line); border-radius: 6px;
       color: var(--accent); background: #fff;
     }
-    .pill.fd { background: #e8eef5; color: #2a4a6a; font-weight: 600; }
     .rec-table th.col-product {
       cursor: pointer; user-select: none;
     }

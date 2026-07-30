@@ -1181,15 +1181,12 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
     const it = matched[i];
     const unit = it.product && it.product.section === 'bad' ? ' шт.' : ' г';
     const qtyNote = it.autoSized ? ' <span class="pill warn" title="Подобрано под срок">авто</span>' : '';
-    const fdBadge = (it.product && it.product.fastdegree && it.product.fastdegree !== 'БАД')
-      ? ' <span class="pill fd" title="Степень поста">' + escapeHtml(it.product.fastdegree) + '</span>'
-      : '';
     html += '<tr data-layout-idx="' + i + '">' +
       '<td class="col-del"><button type="button" class="btn-trash btn-layout-trash" ' +
       'title="Удалить из раскладки и пересчитать" aria-label="Удалить">' + trashIconSvg() + '</button></td>' +
       '<td><code>' + escapeHtml(it.original) + '</code></td><td>' +
       (it.product
-        ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') + fdBadge
+        ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '')
         : '<span class="miss">не найдено</span>') +
       '</td><td class="num">' + (it.grams > 0 ? (it.grams + unit) : '—') + qtyNote +
       '</td><td class="num">' + (it.product ? Math.round(it.score) : '—') + '</td></tr>';

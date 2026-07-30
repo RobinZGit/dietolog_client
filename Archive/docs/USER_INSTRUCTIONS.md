@@ -11,6 +11,8 @@
 
 ---
 
+35. Don't write the degree of the post in the layout, just find the name of the product in the database and that's it. And immediately put it in the main.
+
 34. I don't really understand I'm looking at the repository I see a file dietologist.ml and a seed.json We made it so that this seed is placed in front of the dietologist But I don't see it inside Is it reasonable to do this? I'd like it to be one file So that this seed, in the form of some object, can be placed somewhere down and share it with the rest of the community and write in the comments that this is a bad download and leave one file and press the seed If you can, do it like this and post it right away in the May branch
 
 33. Let's add to this database the degree of fasting of Orthodox Christians to each product I think there is already such a column It can be with a crown, it can be fish, it can be oil, or it can be completely fast It depends on how it is correctly called Set these degrees for each product And you need a parameter in the URL The degree of fasting too By default, it will not be set And it doesn't matter that everything is completely possible And in the form, where the time is selected, you need to make a selection of the degree of fasting By default, everything When we select it, it should calculate and remove everything that is not suitable and offer a new list This is immediately in the main tab
