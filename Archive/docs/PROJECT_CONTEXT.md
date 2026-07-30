@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — SEED перенесён в конец `dietolog.html` + комментарии ко всем функциям и к базе
+**Последнее обновление:** 2026-07-30 — публикация на Pages: SEED внизу файла + комментарии (USER #34)
 
 ---
 
@@ -89,6 +89,11 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (публикация Pages: SEED внизу)
+
+- Выложено в `gh-pages`: `dietolog.html` с базой в конце файла и комментариями к функциям.
+- Живая страница: https://robinzgit.github.io/dietolog_client/dietolog.html
 
 ### 2026-07-30 (SEED в конце файла + комментарии)
 
@@ -292,6 +297,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | Pages deploy: SEED at bottom + comments; USER #34 |
 | 2026-07-30 | SEED в конец dietolog.html + комментарии ко всем функциям и к БД; USER #33 |
 | 2026-07-30 | v23: offline download button + README; USER #32 |
 | 2026-07-30 | v22: new list balances kcal without selection; USER #31 |

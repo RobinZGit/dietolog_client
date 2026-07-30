@@ -11,6 +11,8 @@
 
 ---
 
+34. Booklets of May have been published.
+
 33. Or you can build a file seed right inside the main file, so that the database is in the main file. Divide it somewhere at the very bottom, put it somewhere, and comment, write comments to all the functions. And to this database.
 
 32. I want to download the HTML file with the database locally and make it work locally, including on the Android tablet. Because now I have download links to gitpages. And the database, as I understand it, is also not there, because it is small.
