@@ -363,15 +363,22 @@ function nutrientDataCoverage(nutrientId) {
   return productsCache.length ? hit / productsCache.length : 0;
 }
 
+function nutrientHasBad(nutrientId) {
+  for (const p of productsCache) {
+    if (p.section !== 'bad') continue;
+    if (productNutrientPerBase(p.id, nutrientId) > 0) return true;
+  }
+  return false;
+}
+
 function isFillableNutrient(n) {
-  // skip ultra-sparse micros (Si/V/…) — they force kg of dried herbs
-  return nutrientDataCoverage(n.id) >= 0.2;
+  // foods with decent coverage OR any BAD can cover this nutrient
+  return nutrientDataCoverage(n.id) >= 0.2 || nutrientHasBad(n.id);
 }
 
 function maxPortionForProduct(product) {
-  if (product.section === 'bad') return 3;
+  if (product.section === 'bad') return 5; // tablets
   if ((product.group || '') === 'Специи и приправы' || SPICE_NAME_RE.test(product.name)) return 10;
-  // organ meats / shellfish often top sparse micros — keep portions modest
   if (/печень|почки|устриц|мидии|трубач/i.test(product.name)) return 100;
   return 250;
 }
@@ -399,14 +406,16 @@ function cloneTotals(totals) {
 }
 
 /**
- * Greedy fill of missing nutrients for `duration` days.
- * variantShift: skip first N candidates for variety in examples.
+ * Greedy fill: prefer БАД (max supplements, min new foods).
+ * variantShift: diversify which BAD/food among top candidates.
  */
 function recommendAdditions(baseTotals, duration, variantShift) {
   const totals = cloneTotals(baseTotals);
   const added = [];
   const usedIds = new Set();
   const skippedNutrientIds = new Set();
+  let foodAdds = 0;
+  const MAX_FOOD_ADDS = 3; // keep new foods minimal
   for (let iter = 0; iter < LAYOUT_MAX_ITERS; iter++) {
     const gaps = shortagesForDuration(totals, duration);
     const worst = gaps.find((g) =>
@@ -417,41 +426,58 @@ function recommendAdditions(baseTotals, duration, variantShift) {
     );
     if (!worst) break;
 
-    const candidates = topProductsForNutrient(worst.n.id, 40)
-      .filter((r) => r.product.section !== 'bad' || r.pct > 5);
+    const ranked = topProductsForNutrient(worst.n.id, 80);
+    const badCandidates = ranked.filter((r) => r.product.section === 'bad');
+    const foodCandidates = ranked.filter((r) => r.product.section !== 'bad');
+    // Prefer BADs; foods only if no BAD works and under food budget
+    const pools = foodAdds >= MAX_FOOD_ADDS
+      ? [badCandidates]
+      : [badCandidates, foodCandidates];
 
     let chosen = null;
     let grams = 0;
-    const start = variantShift % Math.max(candidates.length, 1);
-    for (let k = 0; k < candidates.length; k++) {
-      const c = candidates[(start + k) % candidates.length];
-      if (usedIds.has(c.product.id)) continue;
-      const per100 = c.product.section === 'bad'
-        ? (productNutrientPerBase(c.product.id, worst.n.id) / 100)
-        : productNutrientPerBase(c.product.id, worst.n.id);
-      if (per100 <= 0) continue;
-      const target = worst.shortage * 1.08;
-      let g;
-      if (c.product.section === 'bad') {
-        g = Math.max(1, Math.ceil(target / per100));
-      } else {
-        g = Math.ceil((target / per100) * 100);
-        g = Math.max(g, 20);
-        g = Math.ceil(g / 10) * 10;
-      }
-      const maxG = maxPortionForProduct(c.product);
-      if (g > maxG) {
-        if (c.product.section !== 'bad' && maxG >= 20) {
-          const help = amountInPortion(c.product, worst.n.id, maxG);
-          if (help < worst.shortage * 0.08) continue;
-          g = maxG;
+    let chosenIsBad = false;
+    outer:
+    for (const pool of pools) {
+      if (!pool.length) continue;
+      const start = variantShift % pool.length;
+      for (let k = 0; k < pool.length; k++) {
+        const c = pool[(start + k) % pool.length];
+        if (usedIds.has(c.product.id)) continue;
+        const isBad = c.product.section === 'bad';
+        const per100 = isBad
+          ? (productNutrientPerBase(c.product.id, worst.n.id) / 100)
+          : productNutrientPerBase(c.product.id, worst.n.id);
+        if (per100 <= 0) continue;
+        const target = worst.shortage * 1.08;
+        let g;
+        if (isBad) {
+          g = Math.max(1, Math.ceil(target / per100));
         } else {
-          continue;
+          g = Math.ceil((target / per100) * 100);
+          g = Math.max(g, 20);
+          g = Math.ceil(g / 10) * 10;
         }
+        const maxG = maxPortionForProduct(c.product);
+        if (g > maxG) {
+          if (!isBad && maxG >= 20) {
+            const help = amountInPortion(c.product, worst.n.id, maxG);
+            if (help < worst.shortage * 0.08) continue;
+            g = maxG;
+          } else if (isBad) {
+            // take max tablets if still helpful
+            const help = amountInPortion(c.product, worst.n.id, maxG);
+            if (help < worst.shortage * 0.05) continue;
+            g = maxG;
+          } else {
+            continue;
+          }
+        }
+        chosen = c.product;
+        grams = g;
+        chosenIsBad = isBad;
+        break outer;
       }
-      chosen = c.product;
-      grams = g;
-      break;
     }
     if (!chosen) {
       skippedNutrientIds.add(worst.n.id);
@@ -462,8 +488,9 @@ function recommendAdditions(baseTotals, duration, variantShift) {
       if (add) totals.set(n.id, (totals.get(n.id) || 0) + add);
     }
     usedIds.add(chosen.id);
+    if (!chosenIsBad) foodAdds += 1;
     added.push({ product: chosen, grams, forNutrient: worst.n.name });
-    if (added.length >= 12) break;
+    if (added.length >= 16) break;
   }
   return { added, totals };
 }
@@ -573,17 +600,37 @@ function renderLayoutMode(panel, itemsRaw) {
   });
 
   html += '<p class="mode-note"><b>Формат параметра items/layout:</b> ' +
-    '<code>latin_slug:grams,other_slug:grams</code> · либо JSON ' +
-    '<code>[{"n":"slug","g":100}]</code> · id точно: <code>id:193:100</code>. ' +
-    'В таблице выше: исходное имя из ссылки и ближайший русский продукт из базы.</p>';
+    '<code>latin_slug:grams,id:1251:1</code> · JSON <code>[{"n":"slug","g":100}]</code>. ' +
+    'Для БАД количество = <b>шт.</b> Добор дефицитов предпочитает БАДы (мало новых продуктов). ' +
+    'В таблице: исходное имя из ссылки и ближайший продукт из базы.</p>';
 
   box.innerHTML = html;
   panel.appendChild(box);
 }
 
+function findBadProductByTitle(substr) {
+  const s = String(substr || '').toLowerCase();
+  return productsCache.find((p) => p.section === 'bad' && p.nameLower.includes(s)) || null;
+}
+
 function exampleLayoutParam() {
-  // Stable-ish examples that exist in DB (latin slugs)
-  return 'yajco_kurinoe_celoe:100,grechiha_zerno:150,moloko_suhoe_1:40,krupa_risovaya:100';
+  // Short food base + several BADs (prefer supplements in the demo link).
+  const parts = ['yajco_kurinoe_celoe:100', 'grechiha_zerno:80'];
+  const badTitles = [
+    ['витамин d 10', 1],
+    ['йод 100', 1],
+    ['железо 10', 1],
+    ['витамин c 500', 1],
+    ['цинк 10', 1],
+    ['витамин b12 5', 1],
+    ['магний 200', 1],
+    ['селен 50', 1],
+  ];
+  for (const [title, qty] of badTitles) {
+    const p = findBadProductByTitle(title);
+    if (p) parts.push('id:' + p.id + ':' + qty);
+  }
+  return parts.join(',');
 }
 
 function renderDefaultModeLinks(panel) {
@@ -599,7 +646,8 @@ function renderDefaultModeLinks(panel) {
     '<a href="' + escapeHtml(urlNutrients) + '">' + escapeHtml(urlNutrients) + '</a></li>' +
     '<li><b>Анализ раскладки (пример):</b><br/>' +
     '<a href="' + escapeHtml(urlLayout) + '">' + escapeHtml(urlLayout) + '</a><br/>' +
-    '<span class="mode-note">Параметр <code>items</code> (или <code>layout</code>): ' +
+    '<span class="mode-note">Параметр <code>items</code> (или <code>layout</code>): еда + <b>БАДы</b> (<code>id:N:шт</code>). ' +
+    'Добор раскладки предпочитает БАДы (минимум новых продуктов). Пример: ' +
     '<code>' + escapeHtml(exampleLayoutParam()) + '</code></span></li>' +
     '</ol>' +
     '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
