@@ -92,6 +92,26 @@ CSS_EXTRA = """
       border: none; background: transparent; color: var(--accent);
       cursor: pointer; font-size: 0.78rem; text-decoration: underline; padding: 0.1rem 0.25rem;
     }
+    .coverage-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 1.75rem;
+      margin: 0.75rem 0 1rem; padding: 0.75rem 0.9rem;
+      border: 1px solid var(--line); border-radius: 10px; background: #faf7f1;
+    }
+    .coverage-chart { flex: 0 0 auto; }
+    .coverage-chart svg { display: block; }
+    .coverage-summary { flex: 1 1 12rem; min-width: 10rem; }
+    .coverage-summary .cov-label {
+      margin: 0 0 0.2rem; color: var(--muted); font-size: 0.82rem; font-weight: 600;
+    }
+    .coverage-summary .cov-pct {
+      margin: 0; font-size: 2.1rem; font-weight: 800; color: var(--accent);
+      font-variant-numeric: tabular-nums; line-height: 1.1;
+    }
+    .coverage-summary .cov-note { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.8rem; }
+    .rec-table th.col-product {
+      cursor: pointer; user-select: none;
+    }
+    .rec-table th.col-product:hover { color: var(--accent); }
 """
 
 # ASCII-safe BODY (unicode escapes)
@@ -100,7 +120,7 @@ BODY_HEADER = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v13</span></h1>\n'
+    '<span id="appVersion" class="ver">v14</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "

@@ -534,6 +534,104 @@ function buildLayoutItemsParam(parts) {
     .join(',');
 }
 
+/** Polar → cartesian for SVG pie */
+function polarXY(cx, cy, r, angleDeg) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function svgDonutSlice(cx, cy, rOuter, rInner, a0, a1, fill) {
+  // full circle edge case
+  const span = a1 - a0;
+  if (span <= 0.01) return '';
+  if (span >= 359.9) {
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + rOuter + '" fill="' + fill + '"/>' +
+      (rInner > 0
+        ? '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#faf7f1"/>'
+        : '');
+  }
+  const large = span > 180 ? 1 : 0;
+  const p0 = polarXY(cx, cy, rOuter, a0);
+  const p1 = polarXY(cx, cy, rOuter, a1);
+  const q1 = polarXY(cx, cy, rInner, a1);
+  const q0 = polarXY(cx, cy, rInner, a0);
+  if (rInner <= 0) {
+    return '<path d="M ' + cx + ' ' + cy +
+      ' L ' + p0.x.toFixed(2) + ' ' + p0.y.toFixed(2) +
+      ' A ' + rOuter + ' ' + rOuter + ' 0 ' + large + ' 1 ' + p1.x.toFixed(2) + ' ' + p1.y.toFixed(2) +
+      ' Z" fill="' + fill + '"/>';
+  }
+  return '<path d="M ' + p0.x.toFixed(2) + ' ' + p0.y.toFixed(2) +
+    ' A ' + rOuter + ' ' + rOuter + ' 0 ' + large + ' 1 ' + p1.x.toFixed(2) + ' ' + p1.y.toFixed(2) +
+    ' L ' + q1.x.toFixed(2) + ' ' + q1.y.toFixed(2) +
+    ' A ' + rInner + ' ' + rInner + ' 0 ' + large + ' 0 ' + q0.x.toFixed(2) + ' ' + q0.y.toFixed(2) +
+    ' Z" fill="' + fill + '"/>';
+}
+
+const COVERAGE_COLORS = [
+  '#2f5d50', '#3d7a68', '#4a8f6e', '#5a9e5c', '#6aad4a',
+  '#c4a035', '#d0892a', '#c96b3c', '#b85a5a', '#8b6b9e',
+  '#5a7a9e', '#4a8a9e', '#3d8a7a', '#6b8f4a', '#9e7a4a',
+];
+
+/**
+ * Equal sectors per nutrient; filled arc fraction = min(pct,100)/100; rest white.
+ * Returns { html, totalPct }.
+ */
+function buildCoverageChartHtml(gaps) {
+  const rows = (gaps || []).filter((g) => g && g.fillable !== false && g.daily > 0);
+  if (!rows.length) {
+    return {
+      html: '<div class="coverage-row"><div class="coverage-summary">' +
+        '<p class="cov-label">Покрытие норм</p>' +
+        '<p class="cov-pct">—</p>' +
+        '<p class="cov-note">Нет данных по нутриентам</p></div></div>',
+      totalPct: 0,
+    };
+  }
+  const caps = rows.map((g) => Math.max(0, Math.min(100, Number(g.pct) || 0)));
+  const totalPct = caps.reduce((s, v) => s + v, 0) / caps.length;
+  const n = rows.length;
+  const sector = 360 / n;
+  const cx = 70;
+  const cy = 70;
+  const rOuter = 62;
+  const rInner = 28;
+  let svg = '<svg class="coverage-svg" width="140" height="140" viewBox="0 0 140 140" ' +
+    'role="img" aria-label="Покрытие суточных норм по нутриентам">';
+  // base white ring (unfilled)
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rOuter + '" fill="#ffffff" stroke="#e4ddd0" stroke-width="1"/>';
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#faf7f1"/>';
+  for (let i = 0; i < n; i++) {
+    const a0 = i * sector;
+    const a1 = (i + 1) * sector;
+    // separator tick (thin white slice edge)
+    const filledSpan = sector * (caps[i] / 100);
+    const color = COVERAGE_COLORS[i % COVERAGE_COLORS.length];
+    if (filledSpan > 0.15) {
+      svg += svgDonutSlice(cx, cy, rOuter, rInner, a0, a0 + filledSpan, color);
+    }
+    // sector divider line
+    const tip = polarXY(cx, cy, rOuter, a0);
+    const inn = polarXY(cx, cy, rInner, a0);
+    svg += '<line x1="' + inn.x.toFixed(2) + '" y1="' + inn.y.toFixed(2) +
+      '" x2="' + tip.x.toFixed(2) + '" y2="' + tip.y.toFixed(2) +
+      '" stroke="#e4ddd0" stroke-width="1"/>';
+  }
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#faf7f1"/>';
+  svg += '</svg>';
+
+  const html = '<div class="coverage-row">' +
+    '<div class="coverage-chart">' + svg + '</div>' +
+    '<div class="coverage-summary">' +
+    '<p class="cov-label">Покрытие суточных норм (на срок)</p>' +
+    '<p class="cov-pct">' + Math.round(totalPct) + '%</p>' +
+    '<p class="cov-note">Среднее по ' + n + ' нутриентам: сектор = нутриент; ' +
+    'заливка — доля закрытой нормы, белое — дефицит.</p>' +
+    '</div></div>';
+  return { html, totalPct };
+}
+
 function renderLayoutMode(panel, itemsRaw) {
   if (!matchIndex.length) buildMatchIndex();
   if (!String(itemsRaw || '').trim()) {
@@ -578,6 +676,9 @@ function renderLayoutMode(panel, itemsRaw) {
       '» (~' + durationAll.toFixed(2) + ' сут.); для добора рациона берём срок по макросам.';
   }
   html += ' Остальные нутриенты — с дефицитом на практический срок.</p>';
+
+  const coverage = buildCoverageChartHtml(gaps);
+  html += coverage.html;
 
   html += '<h3>Ваша раскладка</h3><table class="mode-table"><thead><tr>' +
     '<th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
@@ -671,7 +772,10 @@ function renderLayoutMode(panel, itemsRaw) {
       rhtml += '<p class="mode-note">Раскладка уже достаточно полная на этот срок (или нечего подобрать после исключений).</p>';
     } else {
       rhtml += '<table class="mode-table rec-table"><thead><tr>' +
-        '<th class="col-check"></th><th>Продукт</th><th>Кол-во</th><th>Закрывает</th><th class="col-del"></th>' +
+        '<th class="col-check"><input type="checkbox" class="rec-check-all" id="recCheckAll" ' +
+        'title="Выбрать всё / снять всё" aria-label="Выбрать всё" /></th>' +
+        '<th class="col-product" id="recProductHead" title="Выбрать всё / снять всё">Продукт</th>' +
+        '<th>Кол-во</th><th>Закрывает</th><th class="col-del"></th>' +
         '</tr></thead><tbody>';
       for (const a of rec.added) {
         const unit = a.product.section === 'bad' ? ' шт.' : ' г';
@@ -692,6 +796,38 @@ function renderLayoutMode(panel, itemsRaw) {
       rhtml += '</tbody></table>';
     }
     recMount.innerHTML = rhtml;
+
+    function allRecChecks() {
+      return [...recMount.querySelectorAll('.rec-check')];
+    }
+
+    function syncCheckAllState() {
+      const boxes = allRecChecks();
+      const master = recMount.querySelector('#recCheckAll');
+      if (!master || !boxes.length) return;
+      const nOn = boxes.filter((b) => b.checked).length;
+      master.checked = nOn === boxes.length && boxes.length > 0;
+      master.indeterminate = nOn > 0 && nOn < boxes.length;
+    }
+
+    function toggleSelectAll() {
+      const boxes = allRecChecks();
+      if (!boxes.length) return;
+      const allOn = boxes.every((b) => b.checked);
+      const next = !allOn; // if all chosen → clear; otherwise select all
+      boxes.forEach((b) => { b.checked = next; });
+      syncCheckAllState();
+    }
+
+    const master = recMount.querySelector('#recCheckAll');
+    if (master) master.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleSelectAll();
+    });
+    const prodHead = recMount.querySelector('#recProductHead');
+    if (prodHead) prodHead.addEventListener('click', toggleSelectAll);
+    allRecChecks().forEach((b) => b.addEventListener('change', syncCheckAllState));
+    syncCheckAllState();
 
     recMount.querySelectorAll('.btn-trash').forEach((btn) => {
       btn.addEventListener('click', () => {
