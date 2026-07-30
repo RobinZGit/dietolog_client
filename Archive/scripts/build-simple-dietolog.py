@@ -117,6 +117,10 @@ def extract() -> dict:
 
 
 def inject_seed_into_html(seed: dict) -> None:
+    """Replace `const SEED = …` in dietolog.html (lives at the bottom of <script>).
+
+    The explanatory comment block «ВСТРОЕННАЯ БАЗА ДАННЫХ» above SEED is kept as-is.
+    """
     if not HTML_PATH.exists():
         raise SystemExit(f"HTML missing: {HTML_PATH}")
     html = HTML_PATH.read_text(encoding="utf-8")
@@ -130,6 +134,7 @@ def inject_seed_into_html(seed: dict) -> None:
     )
     if not m:
         raise SystemExit("SEED block not found in HTML")
+    # Keep SEED at the bottom of the script (after app logic); only swap the payload.
     html = html[: m.start()] + new_block + html[m.end() :]
     html = re.sub(
         r"(Диетолог — простой )v\d+",

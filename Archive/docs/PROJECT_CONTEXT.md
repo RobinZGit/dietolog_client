@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v23: кнопка скачать HTML с базой (офлайн / Android); README
+**Последнее обновление:** 2026-07-30 — публикация на Pages: SEED внизу файла + комментарии (USER #34)
 
 ---
 
@@ -89,6 +89,19 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (публикация Pages: SEED внизу)
+
+- Выложено в `gh-pages`: `dietolog.html` с базой в конце файла и комментариями к функциям.
+- Живая страница: https://robinzgit.github.io/dietolog_client/dietolog.html
+
+### 2026-07-30 (SEED в конце файла + комментарии)
+
+- Встроенная база `const SEED` перенесена **в самый низ** `<script>` в `dietolog.html` (после всей логики, перед `main()`).
+- Над SEED — блок комментариев «ВСТРОЕННАЯ БАЗА ДАННЫХ»: структура `version` / `source` / `nutrients` / `products` / `info`.
+- JSDoc/комментарии ко **всем** функциям приложения (включая вложенные в layout UI).
+- В начале `<script>` — указатель, что база внизу файла.
+- `build-simple-dietolog.py` по-прежнему подменяет только payload SEED на месте (комментарий к БД сохраняется).
 
 ### 2026-07-30 (v23: офлайн HTML с базой / Android)
 
@@ -284,6 +297,8 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | Pages deploy: SEED at bottom + comments; USER #34 |
+| 2026-07-30 | SEED в конец dietolog.html + комментарии ко всем функциям и к БД; USER #33 |
 | 2026-07-30 | v23: offline download button + README; USER #32 |
 | 2026-07-30 | v22: new list balances kcal without selection; USER #31 |
 | 2026-07-30 | v21: silicon sources + sea salt; salt usable for Na; USER #30 |
@@ -309,4 +324,4 @@
 
 ## Запросы пользователя (сводка)
 
-См. `docs/USER_INSTRUCTIONS.md` (п. **16** — GET-режимы published simple; п. 4 — старт одного файла).
+См. `docs/USER_INSTRUCTIONS.md` (п. **33** — SEED в основном файле снизу + комментарии; п. **16** — GET-режимы; п. 4 — старт одного файла).
