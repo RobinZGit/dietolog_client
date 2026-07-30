@@ -11,6 +11,8 @@
 
 ---
 
+33. Let's add to this database the degree of fasting of Orthodox Christians to each product I think there is already such a column It can be with a crown, it can be fish, it can be oil, or it can be completely fast It depends on how it is correctly called Set these degrees for each product And you need a parameter in the URL The degree of fasting too By default, it will not be set And it doesn't matter that everything is completely possible And in the form, where the time is selected, you need to make a selection of the degree of fasting By default, everything When we select it, it should calculate and remove everything that is not suitable and offer a new list This is immediately in the main tab
+
 32. I want to download the HTML file with the database locally and make it work locally, including on the Android tablet. Because now I have download links to gitpages. And the database, as I understand it, is also not there, because it is small.
 
 31. The button to create a new list, even if nothing is selected, must calculate the calories for the current period, that is, for this period, bring everything to the calorie norm, and if suddenly there is a drawback, then you need to let him choose some more products, as usual.

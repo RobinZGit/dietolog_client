@@ -138,10 +138,15 @@ CSS_EXTRA = """
       font-variant-numeric: tabular-nums; line-height: 1.1;
     }
     .coverage-summary .cov-note { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.8rem; }
-    .coverage-days {
-      flex: 0 1 11rem; min-width: 9rem;
+    .coverage-controls {
+      flex: 1 1 14rem; min-width: 11rem;
+      display: flex; flex-direction: column; gap: 0.65rem;
       padding: 0.35rem 0.5rem 0.35rem 0.75rem;
       border-left: 1px dashed var(--line);
+    }
+    .coverage-days, .coverage-fast { padding: 0; border: none; min-width: 0; }
+    .coverage-days {
+      flex: 0 1 auto;
     }
     .days-label {
       display: block; font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.25rem;
@@ -153,6 +158,12 @@ CSS_EXTRA = """
       font-variant-numeric: tabular-nums;
     }
     .days-unit { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+    .fast-select {
+      width: 100%; max-width: 14rem; font-size: 0.95rem; font-weight: 600;
+      padding: 0.35rem 0.45rem; border: 1px solid var(--line); border-radius: 6px;
+      color: var(--accent); background: #fff;
+    }
+    .pill.fd { background: #e8eef5; color: #2a4a6a; font-weight: 600; }
     .rec-table th.col-product {
       cursor: pointer; user-select: none;
     }
@@ -179,7 +190,7 @@ BODY_HEADER = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v23</span></h1>\n'
+    '<span id="appVersion" class="ver">v24</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "

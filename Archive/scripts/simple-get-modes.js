@@ -1,11 +1,14 @@
 /* === GET modes (v11) — injected into dietolog.html ===
  *
  * mode=nutrients  — list nutrients; expand → top TOP_N products with amount + % of daily min
- * mode=layout&items=slug:grams,slug:grams&days=1
+ * mode=layout&items=slug:grams,slug:grams&days=1[&fastdegree=…]
  *   or ?layout=slug:grams,...
  *   items may also be JSON: [{"n":"slug","g":100},{"n":"id:193","g":50}]
  *   days|time — target duration in days (default 1). If set, items may omit quantity:
  *     items=egg,buckwheat&days=3 → quantities are auto-sized for that period.
+ *   fastdegree|fast|post — степень поста (по умолчанию не задана = всё разрешено):
+ *     сухоядение | до масла | до рыбы | скоромное
+ *     (aliases: dry/strict, oil, fish, meat/none)
  *
  * Layout line format (readable in URL, Latin preferred):
  *   grechiha_zerno:150,yajco_kurinoe_celoe:100,moloko_suhoe_1:30
@@ -19,6 +22,67 @@ const LAYOUT_MAX_ITERS = 35;
 const LAYOUT_MAX_ADD_G = 400;
 const LAYOUT_DEFAULT_DAYS = 1;
 const SPICE_NAME_RE = /сушен|молот(ый|ая|ое)|специ|перец\b|базилик|гвоздик|кориц|кардамон|куркум|орегано|тимьян|мята\b|лавровый|майоран|фенхель|имбирь|шалфей|укроп суш|петрушка суш|кориандр|\bсоль\b/i;
+
+/** Orthodox fasting scale (stricter → milder). Product allowed if its rank ≤ day rank. */
+const FAST_DEGREE_RANK = {
+  'сухоядение': 0,
+  'до масла': 1,
+  'до рыбы': 2,
+  'скоромное': 3,
+};
+const FAST_DEGREE_OPTIONS = [
+  { value: '', label: 'Всё' },
+  { value: 'скоромное', label: 'Скоромное' },
+  { value: 'до рыбы', label: 'До рыбы' },
+  { value: 'до масла', label: 'До масла' },
+  { value: 'сухоядение', label: 'Сухоядение' },
+];
+
+function normalizeFastDegree(raw) {
+  if (raw == null) return null;
+  let s = String(raw).trim().toLowerCase().replace(/_/g, ' ').replace(/\+/g, ' ');
+  if (!s || s === 'all' || s === 'any' || s === 'всё' || s === 'все' || s === 'none') return null;
+  const aliases = {
+    'сухоядение': 'сухоядение',
+    'dry': 'сухоядение',
+    'strict': 'сухоядение',
+    'strictfast': 'сухоядение',
+    'до масла': 'до масла',
+    'масло': 'до масла',
+    'oil': 'до масла',
+    'wineandoil': 'до масла',
+    'до рыбы': 'до рыбы',
+    'рыба': 'до рыбы',
+    'fish': 'до рыбы',
+    'скоромное': 'скоромное',
+    'meat': 'скоромное',
+    'dairy': 'скоромное',
+    'nofast': 'скоромное',
+    'crown': 'скоромное',
+  };
+  if (aliases[s]) return aliases[s];
+  s = s.replace(/\s+/g, ' ');
+  return aliases[s] || (Object.prototype.hasOwnProperty.call(FAST_DEGREE_RANK, s) ? s : null);
+}
+
+function productAllowedForFast(product, fastDegree) {
+  if (!fastDegree) return true;
+  if (!product) return true;
+  if (product.section === 'bad' || product.group === 'БАД') return true;
+  const fd = String(product.fastdegree || '');
+  if (!fd || fd === 'БАД' || fd.indexOf('БАД') === 0) return true;
+  const dayRank = FAST_DEGREE_RANK[fastDegree];
+  const prodRank = FAST_DEGREE_RANK[fd];
+  if (dayRank == null) return true;
+  if (prodRank == null) return true;
+  return prodRank <= dayRank;
+}
+
+function fastDegreeLabel(fastDegree) {
+  if (!fastDegree) return 'Всё';
+  const opt = FAST_DEGREE_OPTIONS.find((o) => o.value === fastDegree);
+  return opt ? opt.label : fastDegree;
+}
 
 function parseQuery() {
   const sp = new URLSearchParams(location.search);
@@ -35,10 +99,12 @@ function parseQuery() {
     const n = Number(String(daysRaw).trim().replace(',', '.'));
     if (n > 0 && Number.isFinite(n)) days = n;
   }
+  const fastRaw = sp.get('fastdegree') || sp.get('fast') || sp.get('post');
   return {
     mode,
     itemsRaw: itemsRaw || layoutRaw || '',
     days,
+    fastdegree: normalizeFastDegree(fastRaw),
   };
 }
 
@@ -47,18 +113,22 @@ function pageBaseUrl() {
   return location.href.split('#')[0].split('?')[0];
 }
 
-function layoutUrl(itemsParam, days) {
+function layoutUrl(itemsParam, days, fastdegree) {
   let url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(itemsParam);
   const d = Number(days);
   if (d > 0 && Number.isFinite(d)) {
     url += '&days=' + encodeURIComponent(String(d));
   }
+  const fd = normalizeFastDegree(fastdegree);
+  if (fd) {
+    url += '&fastdegree=' + encodeURIComponent(fd);
+  }
   return url;
 }
 
 /** Update browser address bar without navigation (works offline). */
-function replaceLayoutUrl(itemsParam, days) {
-  const url = layoutUrl(itemsParam, days);
+function replaceLayoutUrl(itemsParam, days, fastdegree) {
+  const url = layoutUrl(itemsParam, days, fastdegree);
   try {
     history.replaceState(null, '', url);
   } catch (e) { /* file:// or restricted */ }
@@ -580,9 +650,11 @@ function cloneTotals(totals) {
  * options.preferBad = false → foods only (examples 1–2)
  * options.preferBad = true  → foods first, then BADs for leftover gaps (example 3 «с БАД»)
  * options.excludeIds = Set|Array of product ids never to recommend
+ * options.fastdegree = string|null — Orthodox fasting day allowance
  */
 function recommendAdditions(baseTotals, duration, variantShift, options) {
   const preferBad = !!(options && options.preferBad);
+  const fastDegree = normalizeFastDegree(options && options.fastdegree);
   const totals = cloneTotals(baseTotals);
   const added = [];
   const usedIds = new Set();
@@ -601,7 +673,8 @@ function recommendAdditions(baseTotals, duration, variantShift, options) {
     );
     if (!worst) break;
 
-    const ranked = topProductsForNutrient(worst.n.id, 80);
+    const ranked = topProductsForNutrient(worst.n.id, 80)
+      .filter((r) => productAllowedForFast(r.product, fastDegree));
     const badCandidates = ranked.filter((r) => r.product.section === 'bad');
     const foodCandidates = ranked.filter((r) => r.product.section !== 'bad');
     // foods only OR foods first + BADs for remaining gaps («немного БАД» in example 3)
@@ -989,7 +1062,7 @@ function buildCoverageChartHtml(gaps) {
   return { chartHtml, totalPct };
 }
 
-function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
+function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
   if (!matchIndex.length) buildMatchIndex();
   if (!String(itemsRaw || '').trim()) {
     panel.innerHTML =
@@ -1002,6 +1075,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
 
   let targetDays = Number(daysFromQuery);
   if (!(targetDays > 0) || !Number.isFinite(targetDays)) targetDays = LAYOUT_DEFAULT_DAYS;
+  let targetFast = normalizeFastDegree(fastFromQuery);
 
   const parsed = parseLayoutItems(itemsRaw);
   let matched = parsed.map((row) => {
@@ -1015,6 +1089,33 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       autoSized: false,
     };
   });
+
+  // Drop products not allowed for the selected fasting degree, then recalculate.
+  if (targetFast) {
+    const kept = [];
+    const removedNames = [];
+    for (const row of matched) {
+      if (!row.product || productAllowedForFast(row.product, targetFast)) {
+        kept.push(row);
+      } else {
+        removedNames.push(row.product.name);
+      }
+    }
+    if (removedNames.length) {
+      matched = kept;
+      const itemsFiltered = buildLayoutItemsParamFromMatched(matched);
+      itemsRaw = itemsFiltered;
+      const shown = removedNames.slice(0, 8).join(', ') +
+        (removedNames.length > 8 ? '…' : '');
+      saveLayoutAdjustMessage(
+        'По степени поста «' + fastDegreeLabel(targetFast) + '» убрано из раскладки: ' +
+        removedNames.length + ' — ' + shown +
+        '. Ниже — новый расчёт и рекомендации из допустимых продуктов.'
+      );
+      replaceLayoutUrl(itemsFiltered, targetDays, targetFast);
+    }
+  }
+
   matched = autoSizeLayoutPortions(matched, targetDays);
 
   const totals = accumulateLayout(matched);
@@ -1039,6 +1140,12 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   }
   html += '<p class="mode-note">Целевой срок раскладки: <b>' + formatDays(targetDays) + ' сут.</b> ' +
     '(параметр <code>days</code> / поле справа от диаграммы). ';
+  if (targetFast) {
+    html += 'Степень поста: <b>' + escapeHtml(fastDegreeLabel(targetFast)) + '</b> ' +
+      '(параметр <code>fastdegree</code>). ';
+  } else {
+    html += 'Степень поста не задана — <b>все продукты</b>. ';
+  }
   if (inferred.durationNutrient) {
     html += 'По макросам текущий набор тянет примерно на ~' + inferred.duration.toFixed(2) +
       ' сут. («' + escapeHtml(inferred.durationNutrient.name) + '»). ';
@@ -1046,15 +1153,27 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   html += 'Дефициты и рекомендации считаются на целевой срок.</p>';
 
   const coverage = buildCoverageChartHtml(gaps);
+  let fastOpts = '';
+  for (const opt of FAST_DEGREE_OPTIONS) {
+    const sel = (opt.value === (targetFast || '')) ? ' selected' : '';
+    fastOpts += '<option value="' + escapeHtml(opt.value) + '"' + sel + '>' +
+      escapeHtml(opt.label) + '</option>';
+  }
   html += '<div class="coverage-row">' + coverage.chartHtml +
+    '<div class="coverage-controls">' +
     '<div class="coverage-days">' +
     '<label class="days-label" for="layoutDaysInput">Срок</label>' +
     '<div class="days-input-row">' +
     '<input type="number" id="layoutDaysInput" class="days-input" min="0.1" step="0.5" ' +
     'value="' + escapeHtml(String(targetDays)) + '" title="На сколько суток нужна раскладка" />' +
     '<span class="days-unit">сут.</span></div>' +
-    '<p class="cov-note">По умолчанию 1 сутки. Можно изменить — пересчитаем количества (если без граммов), покрытие и рекомендации.</p>' +
-    '</div></div>';
+    '</div>' +
+    '<div class="coverage-fast">' +
+    '<label class="days-label" for="layoutFastInput">Степень поста</label>' +
+    '<select id="layoutFastInput" class="fast-select" title="Ограничение по православному посту">' +
+    fastOpts + '</select>' +
+    '<p class="cov-note">По умолчанию — всё. При выборе убираются неподходящие продукты и строится новый список.</p>' +
+    '</div></div></div>';
 
   html += '<h3>Ваша раскладка</h3><table class="mode-table layout-table"><thead><tr>' +
     '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
@@ -1062,12 +1181,15 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
     const it = matched[i];
     const unit = it.product && it.product.section === 'bad' ? ' шт.' : ' г';
     const qtyNote = it.autoSized ? ' <span class="pill warn" title="Подобрано под срок">авто</span>' : '';
+    const fdBadge = (it.product && it.product.fastdegree && it.product.fastdegree !== 'БАД')
+      ? ' <span class="pill fd" title="Степень поста">' + escapeHtml(it.product.fastdegree) + '</span>'
+      : '';
     html += '<tr data-layout-idx="' + i + '">' +
       '<td class="col-del"><button type="button" class="btn-trash btn-layout-trash" ' +
       'title="Удалить из раскладки и пересчитать" aria-label="Удалить">' + trashIconSvg() + '</button></td>' +
       '<td><code>' + escapeHtml(it.original) + '</code></td><td>' +
       (it.product
-        ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '')
+        ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') + fdBadge
         : '<span class="miss">не найдено</span>') +
       '</td><td class="num">' + (it.grams > 0 ? (it.grams + unit) : '—') + qtyNote +
       '</td><td class="num">' + (it.product ? Math.round(it.score) : '—') + '</td></tr>';
@@ -1096,15 +1218,21 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   html += '<div id="examplesSection"></div>';
 
   html += '<p class="mode-note" id="layoutShareNote"><b>Ссылка (для копирования / когда снова будет сеть):</b><br/>' +
-    '<code id="layoutShareUrl">' + escapeHtml(layoutUrl(itemsRaw, targetDays)) + '</code></p>';
+    '<code id="layoutShareUrl">' + escapeHtml(layoutUrl(itemsRaw, targetDays, targetFast)) + '</code></p>';
 
   html += '<p class="mode-note"><b>Формат:</b> <code>items</code> — <code>slug</code> или <code>slug:grams</code> · ' +
-    '<code>id:N</code> / <code>id:N:g</code>; <code>days</code> (или <code>time</code>) — срок в сутках. ' +
+    '<code>id:N</code> / <code>id:N:g</code>; <code>days</code> (или <code>time</code>) — срок в сутках; ' +
+    '<code>fastdegree</code> — степень поста (<code>сухоядение</code> / <code>до масла</code> / <code>до рыбы</code> / <code>скоромное</code>), по умолчанию не задана. ' +
     'Без количества при указанном сроке граммы/шт. подбираются автоматически. ' +
     'Все расчёты и «Создать новый список» работают <b>локально в этом файле</b> (без запроса к серверу).</p>';
 
   box.innerHTML = html;
   panel.appendChild(box);
+
+  function refreshLayout(nextItems, nextDays, nextFast) {
+    replaceLayoutUrl(nextItems, nextDays, nextFast);
+    renderLayoutMode(panel, nextItems, nextDays, nextFast);
+  }
 
   box.querySelectorAll('.btn-layout-trash').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1113,8 +1241,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       if (!Number.isFinite(idx)) return;
       const next = matched.filter((_, i) => i !== idx);
       const items = buildLayoutItemsParamFromMatched(next);
-      replaceLayoutUrl(items, targetDays);
-      renderLayoutMode(panel, items, targetDays);
+      refreshLayout(items, targetDays, targetFast);
     });
   });
 
@@ -1124,8 +1251,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       let v = Number(String(daysInput.value).replace(',', '.'));
       if (!(v > 0) || !Number.isFinite(v)) v = LAYOUT_DEFAULT_DAYS;
       daysInput.value = String(v);
-      replaceLayoutUrl(itemsRaw, v);
-      renderLayoutMode(panel, itemsRaw, v);
+      refreshLayout(itemsRaw, v, targetFast);
     };
     daysInput.addEventListener('change', applyDays);
     daysInput.addEventListener('keydown', (e) => {
@@ -1133,6 +1259,14 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
         e.preventDefault();
         applyDays();
       }
+    });
+  }
+
+  const fastInput = box.querySelector('#layoutFastInput');
+  if (fastInput) {
+    fastInput.addEventListener('change', () => {
+      const nextFast = normalizeFastDegree(fastInput.value);
+      refreshLayout(itemsRaw, targetDays, nextFast);
     });
   }
 
@@ -1144,6 +1278,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       const r = recommendAdditions(totals, duration, spec.shift, {
         preferBad: spec.preferBad,
         excludeIds: exIds,
+        fastdegree: targetFast,
       });
       return {
         label: spec.label,
@@ -1154,7 +1289,9 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
     });
     let ehtml = '<h3>Примеры более полных раскладок</h3>';
     ehtml += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты; ' +
-      'пример <b>3</b> — с несколькими БАДами. На срок ' + formatDays(duration) + ' сут.</p>';
+      'пример <b>3</b> — с несколькими БАДами. На срок ' + formatDays(duration) + ' сут.' +
+      (targetFast ? (' С учётом поста «' + escapeHtml(fastDegreeLabel(targetFast)) + '».') : '') +
+      '</p>';
     examples.forEach((ex, i) => {
       ehtml += '<div class="example-block"><h4>Пример ' + (i + 1) + escapeHtml(ex.label || '') +
         (ex.complete ? ' <span class="pill ok">полный</span>' : ' <span class="pill warn">частичный</span>') +
@@ -1170,7 +1307,11 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
 
   function renderRecommendations() {
     const exIds = loadLayoutExcludeIds();
-    const rec = recommendAdditions(totals, duration, 0, { preferBad: false, excludeIds: exIds });
+    const rec = recommendAdditions(totals, duration, 0, {
+      preferBad: false,
+      excludeIds: exIds,
+      fastdegree: targetFast,
+    });
     let rhtml = '<div class="rec-head">' +
       '<h3 class="rec-title">Рекомендуется добавить</h3>' +
       '<button type="button" class="btn-new-list" id="btnNewList" ' +
@@ -1337,8 +1478,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
         const msg = formatCalorieOnlyMessage(balanced, targetDays, checked.length > 0);
         if (msg) saveLayoutAdjustMessage(msg);
         const items = buildLayoutItemsParam(balanced.parts);
-        replaceLayoutUrl(items, targetDays);
-        renderLayoutMode(panel, items, targetDays);
+        refreshLayout(items, targetDays, targetFast);
       });
     }
 
@@ -1383,10 +1523,14 @@ function renderDefaultModeLinks(panel) {
     '<a href="' + escapeHtml(urlNutrients) + '">' + escapeHtml(urlNutrients) + '</a></li>' +
     '<li><b>Анализ раскладки (пример):</b><br/>' +
     '<a href="' + escapeHtml(urlLayout) + '">' + escapeHtml(urlLayout) + '</a><br/>' +
-    '<span class="mode-note">Параметры: <code>items</code> (продукты), <code>days</code> (срок в сутках, по умолчанию 1). ' +
+    '<span class="mode-note">Параметры: <code>items</code> (продукты), <code>days</code> (срок, по умолчанию 1), ' +
+    '<code>fastdegree</code> (степень поста, по умолчанию не задана = всё). ' +
     'Без граммов при <code>days</code> количества подбираются. Примеры 1–2 без БАД; пример <b>3 — с БАДами</b>.</span><br/>' +
     '<span class="mode-note">Без количеств на 3 суток: <a href="' + escapeHtml(urlLayoutAuto) + '">' +
-    escapeHtml(urlLayoutAuto) + '</a></span></li>' +
+    escapeHtml(urlLayoutAuto) + '</a></span><br/>' +
+    '<span class="mode-note">Пост сухоядение: <a href="' +
+    escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '">' +
+    escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '</a></span></li>' +
     '</ol>' +
     '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
     '</section>';
@@ -1404,7 +1548,7 @@ function applyModeUi(query) {
     if (toolbar) toolbar.style.display = '';
   } else if (query.mode === 'layout') {
     if (lead) lead.innerHTML = 'Режим: <b>анализ раскладки</b>. Сначала результат и примеры, ниже — поиск и справочник продуктов.';
-    renderLayoutMode(panel, query.itemsRaw, query.days);
+    renderLayoutMode(panel, query.itemsRaw, query.days, query.fastdegree);
     if (toolbar) toolbar.style.display = '';
   } else {
     if (lead) lead.innerHTML = 'Поиск → <b>группа</b> → продукт → нутриенты. Все БАДы в одной группе <b>БАД</b>.';

@@ -17,8 +17,8 @@ REPO = ARCHIVE.parent
 SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
 SEED_PATH = REPO / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 23
-SOURCE = "dietolog_client · v23 offline download HTML with embedded DB"
+VERSION = 24
+SOURCE = "dietolog_client · v24 fastdegree filter in layout"
 CHUNK = 120000
 
 

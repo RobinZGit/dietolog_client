@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v23: кнопка скачать HTML с базой (офлайн / Android); README
+**Последнее обновление:** 2026-07-30 — v24: степень поста (fastdegree) в URL и форме раскладки
 
 ---
 
@@ -37,8 +37,8 @@
 **Открыть:**
 - Pages: https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
 - Нутриенты → топ продуктов: `…/simple/dietolog.html?mode=nutrients`  
-- Анализ раскладки: `…/simple/dietolog.html?mode=layout&items=slug:grams,…&days=1`  
-  (без граммов: `items=slug,slug&days=3` — количества подбираются)  
+- Анализ раскладки: `…/dietolog.html?mode=layout&items=slug:grams,…&days=1[&fastdegree=сухоядение]`  
+  (без граммов: `items=slug,slug&days=3`; `fastdegree` по умолчанию не задан = всё)  
 - или через Angular: заголовок «ДИЕТОЛОГ» → **«простой просмотр»**  
 - локально: `simple/dietolog.html` / `ng serve` → `/simple/dietolog.html`
 
@@ -48,7 +48,7 @@
 |-------|-----------|-----|
 | browse (по умолчанию) | нет | Ссылки на режимы + поиск → группа → продукт |
 | nutrients | `mode=nutrients` или `nutrients=1` | Список нутриентов; раскрытие → топ‑15 продуктов (содержание + % сут. min); ниже справочник |
-| layout | `mode=layout&items=…` [`&days=N`] | Раскладка на срок N сут. (по умолчанию 1); авто-кол-во без граммов; дефицит; рекомендации; примеры |
+| layout | `mode=layout&items=…` [`&days=N`] [`&fastdegree=…`] | Раскладка на срок N сут. (по умолчанию 1); фильтр поста; авто-кол-во; дефицит; рекомендации |
 
 **Формат `items` / `layout` (читаемый в URL):** латиница `slug:grams`, через запятую, напр. `yajco_kurinoe_celoe:100,grechiha_zerno:150`.  
 Альтернативы: JSON `[{"n":"slug","g":100}]`; точный id `id:193:100`.  
@@ -65,7 +65,7 @@
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
 | `nutrients` | **43** | id, name, units, min/max |
-| `products` | **1245** (в т.ч. 12 БАД) | id, name, fastdegree (посты), **group** (пищевая группа / БАД · …) |
+| `products` | **1275** (в т.ч. 36 БАД) | id, name, **fastdegree** (сухоядение/до масла/до рыбы/скоромное/БАД), **group** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
 Источник снимка: `static.datasource.ts` (= логика Postgres / dietolog_server). Ссылки `info` нутриентов: **edaplus.info**.
@@ -89,6 +89,13 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v24: степень поста fastdegree)
+
+- Поле **`fastdegree`** у всех продуктов: `сухоядение` / `до масла` / `до рыбы` / `скоромное` / `БАД`; поправлены морепродукты и часть мяса/яиц.
+- URL: `fastdegree` (алиасы `fast` / `post`); по умолчанию не задан — все продукты.
+- В анализе раскладки рядом со сроком — выбор **«Степень поста»** (Всё / Скоромное / До рыбы / До масла / Сухоядение).
+- При выборе убираются неподходящие продукты из раскладки; рекомендации и примеры считаются только из допустимых (БАД всегда можно).
 
 ### 2026-07-30 (v23: офлайн HTML с базой / Android)
 
@@ -284,6 +291,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v24: fastdegree URL+UI filter; seafood degrees fixed; USER #33 |
 | 2026-07-30 | v23: offline download button + README; USER #32 |
 | 2026-07-30 | v22: new list balances kcal without selection; USER #31 |
 | 2026-07-30 | v21: silicon sources + sea salt; salt usable for Na; USER #30 |
