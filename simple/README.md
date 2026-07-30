@@ -29,4 +29,4 @@ python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI **v15+**: layout — `days` (срок), диаграмма + поле срока; авто-кол-во без граммов; рекомендации select-all / корзина / новый список.
+UI **v16+**: рекомендации над нутриентами; «новый список» локально (offline) + обновление URL; `days`, диаграмма, select-all / корзина.
