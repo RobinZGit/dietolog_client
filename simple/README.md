@@ -29,4 +29,4 @@ python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI **v13+**: поиск → группа → продукт → нутриенты. 34 БАД (в т.ч. омега/масла без дублей с едой); в layout последний пример — с БАДами. См. `docs/BAD_SUPPLEMENTS.md`.
+UI **v13+**: поиск → группа → продукт → нутриенты. В `mode=layout`: рекомендации с чекбоксом / корзиной / «Создать новый список»; 34 БАД. См. `docs/BAD_SUPPLEMENTS.md`.

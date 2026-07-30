@@ -58,6 +58,40 @@ CSS_EXTRA = """
       max-width: 920px; margin: 0 auto 0.35rem; padding: 0 1.25rem;
       font-size: 0.85rem; color: var(--muted); font-weight: 600;
     }
+    .rec-head {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 1rem;
+      margin: 1rem 0 0.35rem; justify-content: space-between;
+    }
+    .rec-head .rec-title { margin: 0; font-size: 0.95rem; }
+    .btn-new-list {
+      border: none; cursor: pointer; font-weight: 700; font-size: 0.88rem;
+      padding: 0.45rem 0.9rem; border-radius: 8px;
+      background: #e8a317; color: #1c1408;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+    .btn-new-list:hover { filter: brightness(1.06); }
+    .btn-trash {
+      border: 1px solid var(--line); background: #fff; color: #8b1e1e;
+      border-radius: 6px; padding: 0.2rem 0.35rem; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .btn-trash:hover { background: #fde8e8; }
+    .rec-table .col-check, .rec-table .col-del { width: 2.2rem; text-align: center; }
+    .rec-check { width: 1.05rem; height: 1.05rem; cursor: pointer; accent-color: var(--accent); }
+    .exclude-bar {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
+      margin: 0.35rem 0 0.55rem; font-size: 0.82rem;
+    }
+    .exclude-label { color: var(--muted); margin-right: 0.15rem; }
+    .exclude-chip {
+      border: 1px solid #d4b4b4; background: #f8ecec; color: #6b3030;
+      border-radius: 999px; padding: 0.12rem 0.55rem; cursor: pointer; font-size: 0.78rem;
+    }
+    .exclude-chip:hover { background: #f0dada; }
+    .exclude-clear {
+      border: none; background: transparent; color: var(--accent);
+      cursor: pointer; font-size: 0.78rem; text-decoration: underline; padding: 0.1rem 0.25rem;
+    }
 """
 
 # ASCII-safe BODY (unicode escapes)
@@ -161,10 +195,23 @@ def main() -> None:
             flags=re.S,
         )
 
+    # Refresh mode CSS block (idempotent)
+    html = re.sub(
+        r"\n    #modePanel \{[\s\S]*?(?=\n  </style>)",
+        "\n" + CSS_EXTRA.rstrip() + "\n",
+        html,
+        count=1,
+    )
     if ".mode-card {" not in html:
         html = html.replace(
             "    .err { color: #8b1e1e; padding: 1rem; }\n  </style>",
             "    .err { color: #8b1e1e; padding: 1rem; }\n" + CSS_EXTRA + "  </style>",
+        )
+    if ".btn-new-list" not in html:
+        html = html.replace(
+            "  </style>",
+            CSS_EXTRA + "  </style>",
+            1,
         )
 
     html, n = re.subn(r"  <header>[\s\S]*?</main>\n", BODY_HEADER + "\n", html, count=1)

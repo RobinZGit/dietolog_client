@@ -11,6 +11,8 @@
 
 ---
 
+22. in the section we recommend adding make the delete button lines in each and the checkbox of choice when pressing the delete button it will be an icon like a basket you need to delete this product and calculate another that is, when deleting, we delete from the recommendations and recalculate add something else and we remind him that we deleted it so that in the future when calculating, it will not be repeated here further if we select checkbox and product then we will have to add it later namely after the words are recommended to add right on the right of it make a bright button create a new list or send a new list of products and when we click on it it should take the old products and those that we highlighted with checkboxes create a line from them for the parameter and call this service again angular, more precisely not angular, but html with a new line and recalculate maybe we need to add something else
+
 21. No, you misunderstood. First, leave the layout parameters as they were, which are in the example, in the URL. But the examples that you display, they are all with BADs. It is necessary that the example 1 and example 2 remain as they were, and the example 3 be made with some BADs.
 
 20. Look, there are also butter bars, fish fat, just a bar of omega-3, there is also olive oil, maybe pumpkin oil, some other oils, maybe grape seed oil, although I think we already have it, or if it is in the products, then do not put it in the BAD.
