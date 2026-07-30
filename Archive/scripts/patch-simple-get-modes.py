@@ -42,6 +42,22 @@ CSS_EXTRA = """
     .mode-table tr.ok td:last-child { color: #1f6b4a; font-weight: 700; }
     .mode-table tr.warn td:last-child { color: #8a6a12; font-weight: 700; }
     .mode-table tr.bad td:last-child { color: #8b1e1e; font-weight: 700; }
+    .nutr-table tr.nutr-ok { background: #e7f5ec; }
+    .nutr-table tr.nutr-low { background: #fce9e9; }
+    .nutr-table tr.nutr-cal {
+      box-shadow: inset 0 0 0 2px #2f5d50;
+      background: #d5f0e0;
+      font-weight: 600;
+    }
+    .nutr-table tr.nutr-cal.nutr-low {
+      background: #f8e4e4;
+      box-shadow: inset 0 0 0 2px #2f5d50;
+    }
+    .adjust-banner {
+      margin: 0.5rem 0 0.75rem; padding: 0.65rem 0.85rem;
+      border-radius: 8px; border: 1px solid #c5d9cc;
+      background: #eef7f1; color: #1c3d32; font-size: 0.9rem; line-height: 1.4;
+    }
     .miss { color: #8b1e1e; font-weight: 600; }
     .pill {
       display: inline-block; font-size: 0.72rem; font-weight: 700;
@@ -58,6 +74,10 @@ CSS_EXTRA = """
     .browse-title {
       max-width: 920px; margin: 0 auto 0.35rem; padding: 0 1.25rem;
       font-size: 0.85rem; color: var(--muted); font-weight: 600;
+    }
+    #toolbar {
+      max-width: 920px; margin: 0.75rem auto 0.5rem; padding: 0 1.25rem;
+      box-sizing: border-box;
     }
     .rec-head {
       display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 1rem;
@@ -136,20 +156,20 @@ BODY_HEADER = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v17</span></h1>\n'
+    '<span id="appVersion" class="ver">v19</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "
     "\u0412\u0441\u0435 \u0411\u0410\u0414\u044b \u0432 \u043e\u0434\u043d\u043e\u0439 \u0433\u0440\u0443\u043f\u043f\u0435 "
     "<b>\u0411\u0410\u0414</b>.</p>\n"
-    '    <div class="toolbar" id="toolbar">\n'
-    '      <input id="q" type="search" placeholder="'
-    "\u041f\u043e\u0438\u0441\u043a \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0430 \u0438\u043b\u0438 \u0433\u0440\u0443\u043f\u043f\u044b\u2026"
-    '" autocomplete="off" />\n'
-    '      <div id="status">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430\u2026</div>\n'
-    "    </div>\n"
     "  </header>\n"
     '  <div id="modePanel"></div>\n'
+    '  <div class="toolbar" id="toolbar">\n'
+    '    <input id="q" type="search" placeholder="'
+    "\u041f\u043e\u0438\u0441\u043a \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0430 \u0438\u043b\u0438 \u0433\u0440\u0443\u043f\u043f\u044b\u2026"
+    '" autocomplete="off" />\n'
+    '    <div id="status">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430\u2026</div>\n'
+    "  </div>\n"
     '  <p class="browse-title" id="browseTitle">'
     "\u0421\u043f\u0440\u0430\u0432\u043e\u0447\u043d\u0438\u043a \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u043e\u0432</p>\n"
     "  <main>\n"

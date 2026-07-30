@@ -634,6 +634,143 @@ function buildLayoutItemsParam(parts) {
     .join(',');
 }
 
+function findCalorieNutrient() {
+  return [...nutrientById.values()].find((n) => /^Калорийность$/i.test(String(n.name))) || null;
+}
+
+function layoutCaloriesTotal(parts, calorieN) {
+  if (!calorieN) return 0;
+  let sum = 0;
+  for (const row of parts) {
+    if (!row || !row.product || !(row.grams > 0)) continue;
+    sum += amountInPortion(row.product, calorieN.id, row.grams);
+  }
+  return sum;
+}
+
+/**
+ * Bring total calories for the period to daily-norm × days by scaling food amounts
+ * (БАД leave as-is). Returns { parts, reductions, increases, targetCal, finalCal }.
+ */
+function balancePartsToCalorieNorm(partsIn, targetDays) {
+  const days = Math.max(LAYOUT_DEFAULT_DAYS, Number(targetDays) || LAYOUT_DEFAULT_DAYS);
+  const calorieN = findCalorieNutrient();
+  const daily = calorieN ? nutrientMin(calorieN) : 2500;
+  const targetCal = days * daily;
+  const parts = (partsIn || [])
+    .filter((p) => p && p.product && p.grams > 0)
+    .map((p) => ({ product: p.product, grams: Number(p.grams), before: Number(p.grams) }));
+
+  if (!parts.length || !calorieN) {
+    return { parts, reductions: [], increases: [], targetCal, finalCal: 0 };
+  }
+
+  const bad = parts.filter((p) => p.product.section === 'bad');
+  const foods = parts.filter((p) => p.product.section !== 'bad');
+  const badCal = layoutCaloriesTotal(bad, calorieN);
+  let foodTarget = Math.max(0, targetCal - badCal);
+
+  const roundFood = (g) => {
+    const n = Math.round(Number(g) / 10) * 10;
+    return Math.max(10, n);
+  };
+
+  if (foods.length && foodTarget > 0) {
+    let foodCal = layoutCaloriesTotal(foods, calorieN);
+    if (foodCal > 0) {
+      const scale = foodTarget / foodCal;
+      if (Math.abs(scale - 1) > 0.02) {
+        for (const f of foods) {
+          f.grams = roundFood(f.before * scale);
+        }
+      }
+    }
+    // Fine-tune if still clearly over/under target
+    for (let iter = 0; iter < 40; iter++) {
+      foodCal = layoutCaloriesTotal(foods, calorieN);
+      const diff = foodCal - foodTarget;
+      if (Math.abs(diff) <= foodTarget * 0.02) break;
+      // Adjust the densest food first
+      let best = null;
+      let bestDens = 0;
+      for (const f of foods) {
+        const dens = amountInPortion(f.product, calorieN.id, 100) / 100;
+        if (dens > bestDens) {
+          bestDens = dens;
+          best = f;
+        }
+      }
+      if (!best || bestDens <= 0) break;
+      if (diff > 0) {
+        const step = Math.max(10, Math.ceil(diff / bestDens / 10) * 10);
+        best.grams = Math.max(10, best.grams - step);
+      } else {
+        const step = Math.max(10, Math.ceil((-diff) / bestDens / 10) * 10);
+        const maxG = Math.ceil(days) * maxPortionForProduct(best.product);
+        best.grams = Math.min(maxG, best.grams + step);
+      }
+    }
+  }
+
+  const reductions = [];
+  const increases = [];
+  for (const f of foods) {
+    const unit = 'г';
+    if (f.grams < f.before - 0.5) {
+      reductions.push({ name: f.product.name, from: f.before, to: f.grams, unit });
+    } else if (f.grams > f.before + 0.5) {
+      increases.push({ name: f.product.name, from: f.before, to: f.grams, unit });
+    }
+  }
+  const out = foods.concat(bad).map((p) => ({ product: p.product, grams: p.grams }));
+  return {
+    parts: out,
+    reductions,
+    increases,
+    targetCal,
+    finalCal: layoutCaloriesTotal(out, calorieN),
+  };
+}
+
+const LAYOUT_ADJUST_MSG_KEY = 'dietolog_layout_adjust_msg';
+
+function saveLayoutAdjustMessage(msg) {
+  try {
+    if (msg) sessionStorage.setItem(LAYOUT_ADJUST_MSG_KEY, msg);
+    else sessionStorage.removeItem(LAYOUT_ADJUST_MSG_KEY);
+  } catch (e) { /* ignore */ }
+}
+
+function takeLayoutAdjustMessage() {
+  try {
+    const m = sessionStorage.getItem(LAYOUT_ADJUST_MSG_KEY);
+    sessionStorage.removeItem(LAYOUT_ADJUST_MSG_KEY);
+    return m || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function formatAdjustMessage(reductions, increases, targetDays) {
+  const daysLabel = formatDays(targetDays);
+  const lines = [];
+  if (reductions && reductions.length) {
+    lines.push(
+      'Чтобы калорийность за ' + daysLabel + ' сут. соответствовала норме, ' +
+      'количества некоторых ранее выбранных продуктов уменьшены: ' +
+      reductions.map((r) => r.name + ' — ' + r.from + ' ' + r.unit + ' → ' + r.to + ' ' + r.unit).join('; ') + '.'
+    );
+  }
+  if (increases && increases.length) {
+    lines.push(
+      'Чтобы приблизить калорийность к норме за ' + daysLabel + ' сут., ' +
+      'количества некоторых продуктов увеличены: ' +
+      increases.map((r) => r.name + ' — ' + r.from + ' ' + r.unit + ' → ' + r.to + ' ' + r.unit).join('; ') + '.'
+    );
+  }
+  return lines.join(' ');
+}
+
 /** Polar → cartesian for SVG pie */
 function polarXY(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -774,6 +911,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   box.className = 'mode-card';
 
   let html = '<h2>Анализ раскладки продуктов</h2>';
+  const adjustMsg = takeLayoutAdjustMessage();
+  if (adjustMsg) {
+    html += '<div class="adjust-banner" role="status">' + escapeHtml(adjustMsg) + '</div>';
+  }
   html += '<p class="mode-note">Целевой срок раскладки: <b>' + formatDays(targetDays) + ' сут.</b> ' +
     '(параметр <code>days</code> / поле справа от диаграммы). ';
   if (inferred.durationNutrient) {
@@ -810,10 +951,14 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   html += '<div id="recSection"></div>';
 
   html += '<h3>Нутриенты на срок ' + formatDays(duration) + ' сут.</h3>';
-  html += '<table class="mode-table"><thead><tr><th>Нутриент</th><th>Есть</th><th>Нужно</th><th>Норма/сут</th><th>Дефицит</th><th>%</th></tr></thead><tbody>';
+  html += '<table class="mode-table nutr-table"><thead><tr><th>Нутриент</th><th>Есть</th><th>Нужно</th><th>Норма/сут</th><th>Дефицит</th><th>%</th></tr></thead><tbody>';
   for (const g of gaps) {
-    const cls = g.pct >= LAYOUT_COMPLETE_RATIO * 100 ? 'ok' : (g.pct >= 50 ? 'warn' : 'bad');
-    html += '<tr class="' + cls + '"><td>' + escapeHtml(g.n.name) + '</td>' +
+    const isCal = /^Калорийность$/i.test(String(g.n.name));
+    const ok = g.pct >= LAYOUT_COMPLETE_RATIO * 100;
+    const cls = (ok ? 'nutr-ok' : 'nutr-low') + (isCal ? ' nutr-cal' : '') +
+      (ok ? ' ok' : (g.pct >= 50 ? ' warn' : ' bad'));
+    html += '<tr class="' + cls + '"><td>' + escapeHtml(g.n.name) +
+      (isCal ? ' <span class="pill ok">главное</span>' : '') + '</td>' +
       '<td class="num">' + escapeHtml(formatValue(g.have, g.n.units)) + '</td>' +
       '<td class="num">' + escapeHtml(formatValue(g.need, g.n.units)) + '</td>' +
       '<td class="num">' + escapeHtml(formatValue(g.daily, g.n.units)) + '</td>' +
@@ -893,8 +1038,9 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       '<button type="button" class="btn-new-list" id="btnNewList" ' +
       'title="Пересчитать в этом файле (без сети) и обновить ссылку в адресной строке">' +
       'Создать новый список</button></div>';
-    rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, затем «Создать новый список» — ' +
-      'пересчёт <b>внутри страницы</b> (офлайн), адресная строка обновится. ' +
+      rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, затем «Создать новый список» — ' +
+      'пересчёт <b>внутри страницы</b> (офлайн). Калорийность за срок будет приведена к норме ' +
+      '(при необходимости количества ранее выбранных продуктов уменьшатся — без отдельного запроса). ' +
       'Корзина — убрать из рекомендаций и подобрать другое.</p>';
 
     if (exIds.size) {
@@ -1022,7 +1168,11 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
           alert('Отметьте галочкой хотя бы один продукт из рекомендаций, чтобы добавить его в новый список.');
           return;
         }
-        const items = buildLayoutItemsParam(baseParts.concat(checked));
+        const merged = baseParts.concat(checked);
+        const balanced = balancePartsToCalorieNorm(merged, targetDays);
+        const msg = formatAdjustMessage(balanced.reductions, balanced.increases, targetDays);
+        if (msg) saveLayoutAdjustMessage(msg);
+        const items = buildLayoutItemsParam(balanced.parts);
         replaceLayoutUrl(items, targetDays);
         renderLayoutMode(panel, items, targetDays);
       });
@@ -1087,7 +1237,7 @@ function applyModeUi(query) {
     renderNutrientsMode(panel);
     if (toolbar) toolbar.style.display = '';
   } else if (query.mode === 'layout') {
-    if (lead) lead.innerHTML = 'Режим: <b>анализ раскладки</b> из GET-параметра. Ниже — справочник продуктов.';
+    if (lead) lead.innerHTML = 'Режим: <b>анализ раскладки</b>. Сначала результат и примеры, ниже — поиск и справочник продуктов.';
     renderLayoutMode(panel, query.itemsRaw, query.days);
     if (toolbar) toolbar.style.display = '';
   } else {

@@ -17,8 +17,8 @@ REPO = ARCHIVE.parent
 SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
 SEED_PATH = REPO / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 17
-SOURCE = "dietolog_client · v17 root dietolog.html; Angular in Archive/"
+VERSION = 18
+SOURCE = "dietolog_client · v19 search above catalog; calorie balance on new list"
 CHUNK = 120000
 
 
