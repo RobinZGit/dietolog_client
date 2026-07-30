@@ -29,4 +29,4 @@ python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI **v13+**: поиск → группа → продукт → нутриенты. В `mode=layout`: рекомендации с чекбоксом / корзиной / «Создать новый список»; 34 БАД. См. `docs/BAD_SUPPLEMENTS.md`.
+UI **v14+**: поиск → группа → продукт. Layout: диаграмма покрытия норм; рекомендации — select-all / чекбокс / корзина / новый список. См. `docs/BAD_SUPPLEMENTS.md`.
