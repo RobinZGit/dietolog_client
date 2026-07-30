@@ -166,6 +166,7 @@
     }
     .err { color: #8b1e1e; padding: 1rem; }
 
+
     #modePanel { margin-bottom: 1rem; max-width: 920px; margin-left: auto; margin-right: auto; padding: 0 1.25rem; }
     .mode-card {
       border: 1px solid var(--line);
@@ -214,6 +215,41 @@
       max-width: 920px; margin: 0 auto 0.35rem; padding: 0 1.25rem;
       font-size: 0.85rem; color: var(--muted); font-weight: 600;
     }
+    .rec-head {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 1rem;
+      margin: 1rem 0 0.35rem; justify-content: space-between;
+    }
+    .rec-head .rec-title { margin: 0; font-size: 0.95rem; }
+    .btn-new-list {
+      border: none; cursor: pointer; font-weight: 700; font-size: 0.88rem;
+      padding: 0.45rem 0.9rem; border-radius: 8px;
+      background: #e8a317; color: #1c1408;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+    .btn-new-list:hover { filter: brightness(1.06); }
+    .btn-trash {
+      border: 1px solid var(--line); background: #fff; color: #8b1e1e;
+      border-radius: 6px; padding: 0.2rem 0.35rem; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .btn-trash:hover { background: #fde8e8; }
+    .rec-table .col-check, .rec-table .col-del { width: 2.2rem; text-align: center; }
+    .rec-check { width: 1.05rem; height: 1.05rem; cursor: pointer; accent-color: var(--accent); }
+    .exclude-bar {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
+      margin: 0.35rem 0 0.55rem; font-size: 0.82rem;
+    }
+    .exclude-label { color: var(--muted); margin-right: 0.15rem; }
+    .exclude-chip {
+      border: 1px solid #d4b4b4; background: #f8ecec; color: #6b3030;
+      border-radius: 999px; padding: 0.12rem 0.55rem; cursor: pointer; font-size: 0.78rem;
+    }
+    .exclude-chip:hover { background: #f0dada; }
+    .exclude-clear {
+      border: none; background: transparent; color: var(--accent);
+      cursor: pointer; font-size: 0.78rem; text-decoration: underline; padding: 0.1rem 0.25rem;
+    }
+
   </style>
 </head>
 <body>
@@ -230,6 +266,8 @@
   <main>
     <div id="list" class="list"><div class="loading">Загрузка групп…</div></div>
   </main>
+
+
 
 
 
@@ -988,12 +1026,17 @@ function cloneTotals(totals) {
  * Greedy fill.
  * options.preferBad = false → foods only (examples 1–2)
  * options.preferBad = true  → foods first, then BADs for leftover gaps (example 3 «с БАД»)
+ * options.excludeIds = Set|Array of product ids never to recommend
  */
 function recommendAdditions(baseTotals, duration, variantShift, options) {
   const preferBad = !!(options && options.preferBad);
   const totals = cloneTotals(baseTotals);
   const added = [];
   const usedIds = new Set();
+  const excludeIds = new Set(
+    (options && options.excludeIds) ? [...options.excludeIds].map(Number) : []
+  );
+  for (const id of excludeIds) usedIds.add(id);
   const skippedNutrientIds = new Set();
   for (let iter = 0; iter < LAYOUT_MAX_ITERS; iter++) {
     const gaps = shortagesForDuration(totals, duration);
@@ -1074,6 +1117,40 @@ function isLayoutComplete(totals, duration) {
     .every((g) => g.pct >= LAYOUT_COMPLETE_RATIO * 100);
 }
 
+const LAYOUT_EXCLUDE_KEY = 'dietolog_layout_exclude_ids';
+
+function loadLayoutExcludeIds() {
+  try {
+    const raw = sessionStorage.getItem(LAYOUT_EXCLUDE_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set((Array.isArray(arr) ? arr : []).map(Number).filter((n) => n > 0));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function saveLayoutExcludeIds(ids) {
+  try {
+    sessionStorage.setItem(LAYOUT_EXCLUDE_KEY, JSON.stringify([...ids]));
+  } catch (e) { /* ignore */ }
+}
+
+function buildLayoutItemsParam(parts) {
+  // parts: [{product, grams}, ...]
+  const map = new Map();
+  for (const row of parts) {
+    if (!row || !row.product) continue;
+    const id = row.product.id;
+    const g = Number(row.grams) || 0;
+    if (g <= 0) continue;
+    map.set(id, (map.get(id) || 0) + g);
+  }
+  return [...map.entries()]
+    .map(([id, g]) => 'id:' + id + ':' + g)
+    .join(',');
+}
+
 function renderLayoutMode(panel, itemsRaw) {
   if (!matchIndex.length) buildMatchIndex();
   if (!String(itemsRaw || '').trim()) {
@@ -1098,24 +1175,12 @@ function renderLayoutMode(panel, itemsRaw) {
   const totals = accumulateLayout(matched);
   const { duration, durationNutrient, durationAll, durationNutrientAll } = analyzeDuration(totals);
   const gaps = shortagesForDuration(totals, duration);
-  // Main recommendation + examples 1–2: foods only; example 3: foods + some BADs
-  const rec = recommendAdditions(totals, duration, 0, { preferBad: false });
+
   const exampleSpecs = [
     { shift: 0, preferBad: false, label: '' },
     { shift: 1, preferBad: false, label: '' },
     { shift: 0, preferBad: true, label: ' (с БАД)' },
   ];
-  const examples = exampleSpecs.map((spec) => {
-    const r = recommendAdditions(totals, duration, spec.shift, { preferBad: spec.preferBad });
-    return {
-      shift: spec.shift,
-      preferBad: spec.preferBad,
-      label: spec.label,
-      items: matched.filter((x) => x.product).map((x) => ({ product: x.product, grams: x.grams }))
-        .concat(r.added.map((a) => ({ product: a.product, grams: a.grams }))),
-      complete: isLayoutComplete(r.totals, duration),
-    };
-  });
 
   panel.innerHTML = '';
   const box = document.createElement('section');
@@ -1156,31 +1221,8 @@ function renderLayoutMode(panel, itemsRaw) {
   }
   html += '</tbody></table>';
 
-  html += '<h3>Рекомендуется добавить</h3>';
-  if (!rec.added.length) {
-    html += '<p class="mode-note">Раскладка уже достаточно полная на этот срок (или нечего подобрать).</p>';
-  } else {
-    html += '<table class="mode-table"><thead><tr><th>Продукт</th><th>Кол-во</th><th>Закрывает</th></tr></thead><tbody>';
-    for (const a of rec.added) {
-      html += '<tr><td>' + escapeHtml(a.product.name) + '</td><td class="num">' + a.grams +
-        (a.product.section === 'bad' ? ' шт.' : ' г') + '</td><td>' + escapeHtml(a.forNutrient) + '</td></tr>';
-    }
-    html += '</tbody></table>';
-  }
-
-  html += '<h3>Примеры более полных раскладок</h3>';
-  html += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты (как раньше); ' +
-    'пример <b>3</b> — с несколькими БАДами.</p>';
-  examples.forEach((ex, i) => {
-    html += '<div class="example-block"><h4>Пример ' + (i + 1) + escapeHtml(ex.label || '') +
-      (ex.complete ? ' <span class="pill ok">полный</span>' : ' <span class="pill warn">частичный</span>') +
-      '</h4><ul class="example-list">';
-    for (const it of ex.items) {
-      html += '<li>' + escapeHtml(it.product.name) + ' — <b>' + it.grams +
-        (it.product.section === 'bad' ? ' шт.' : ' г') + '</b></li>';
-    }
-    html += '</ul></div>';
-  });
+  html += '<div id="recSection"></div>';
+  html += '<div id="examplesSection"></div>';
 
   html += '<p class="mode-note"><b>Формат параметра items/layout:</b> ' +
     '<code>latin_slug:grams</code> · JSON · <code>id:N:g</code> (для БАД — шт.). ' +
@@ -1188,6 +1230,149 @@ function renderLayoutMode(panel, itemsRaw) {
 
   box.innerHTML = html;
   panel.appendChild(box);
+
+  const recMount = box.querySelector('#recSection');
+  const examplesMount = box.querySelector('#examplesSection');
+
+  function renderExamples(exIds) {
+    const examples = exampleSpecs.map((spec) => {
+      const r = recommendAdditions(totals, duration, spec.shift, {
+        preferBad: spec.preferBad,
+        excludeIds: exIds,
+      });
+      return {
+        label: spec.label,
+        items: matched.filter((x) => x.product).map((x) => ({ product: x.product, grams: x.grams }))
+          .concat(r.added.map((a) => ({ product: a.product, grams: a.grams }))),
+        complete: isLayoutComplete(r.totals, duration),
+      };
+    });
+    let ehtml = '<h3>Примеры более полных раскладок</h3>';
+    ehtml += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты (как раньше); ' +
+      'пример <b>3</b> — с несколькими БАДами. Исключённые из рекомендаций сюда тоже не попадают.</p>';
+    examples.forEach((ex, i) => {
+      ehtml += '<div class="example-block"><h4>Пример ' + (i + 1) + escapeHtml(ex.label || '') +
+        (ex.complete ? ' <span class="pill ok">полный</span>' : ' <span class="pill warn">частичный</span>') +
+        '</h4><ul class="example-list">';
+      for (const it of ex.items) {
+        ehtml += '<li>' + escapeHtml(it.product.name) + ' — <b>' + it.grams +
+          (it.product.section === 'bad' ? ' шт.' : ' г') + '</b></li>';
+      }
+      ehtml += '</ul></div>';
+    });
+    examplesMount.innerHTML = ehtml;
+  }
+
+  function renderRecommendations() {
+    const exIds = loadLayoutExcludeIds();
+    const rec = recommendAdditions(totals, duration, 0, { preferBad: false, excludeIds: exIds });
+    let rhtml = '<div class="rec-head">' +
+      '<h3 class="rec-title">Рекомендуется добавить</h3>' +
+      '<button type="button" class="btn-new-list" id="btnNewList" title="Старая раскладка + отмеченные рекомендации">' +
+      'Создать новый список</button></div>';
+    rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, затем нажмите «Создать новый список». ' +
+      'Корзина — убрать из рекомендаций и подобрать другое (больше не предлагать).</p>';
+
+    if (exIds.size) {
+      rhtml += '<div class="exclude-bar"><span class="exclude-label">Не предлагать снова:</span> ';
+      for (const id of exIds) {
+        const p = productsCache.find((x) => x.id === id);
+        const name = p ? p.name : ('#' + id);
+        rhtml += '<button type="button" class="exclude-chip" data-restore-id="' + id + '" title="Вернуть в рекомендации">' +
+          escapeHtml(name) + ' ×</button>';
+      }
+      rhtml += '<button type="button" class="exclude-clear" id="btnClearExclude">очистить</button></div>';
+    }
+
+    if (!rec.added.length) {
+      rhtml += '<p class="mode-note">Раскладка уже достаточно полная на этот срок (или нечего подобрать после исключений).</p>';
+    } else {
+      rhtml += '<table class="mode-table rec-table"><thead><tr>' +
+        '<th class="col-check"></th><th>Продукт</th><th>Кол-во</th><th>Закрывает</th><th class="col-del"></th>' +
+        '</tr></thead><tbody>';
+      for (const a of rec.added) {
+        const unit = a.product.section === 'bad' ? ' шт.' : ' г';
+        rhtml += '<tr data-pid="' + a.product.id + '" data-grams="' + a.grams + '">' +
+          '<td class="col-check"><input type="checkbox" class="rec-check" aria-label="Выбрать" /></td>' +
+          '<td>' + escapeHtml(a.product.name) +
+          (a.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') + '</td>' +
+          '<td class="num">' + a.grams + unit + '</td>' +
+          '<td>' + escapeHtml(a.forNutrient) + '</td>' +
+          '<td class="col-del"><button type="button" class="btn-trash" title="Удалить и подобрать другое" ' +
+          'aria-label="Удалить">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
+          '<line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>' +
+          '</svg></button></td></tr>';
+      }
+      rhtml += '</tbody></table>';
+    }
+    recMount.innerHTML = rhtml;
+
+    recMount.querySelectorAll('.btn-trash').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tr = btn.closest('tr');
+        const pid = Number(tr && tr.getAttribute('data-pid'));
+        if (!pid) return;
+        const next = loadLayoutExcludeIds();
+        next.add(pid);
+        saveLayoutExcludeIds(next);
+        renderRecommendations();
+        renderExamples(next);
+      });
+    });
+
+    recMount.querySelectorAll('.exclude-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const id = Number(chip.getAttribute('data-restore-id'));
+        const next = loadLayoutExcludeIds();
+        next.delete(id);
+        saveLayoutExcludeIds(next);
+        renderRecommendations();
+        renderExamples(next);
+      });
+    });
+
+    const clearBtn = recMount.querySelector('#btnClearExclude');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        saveLayoutExcludeIds(new Set());
+        renderRecommendations();
+        renderExamples(new Set());
+      });
+    }
+
+    const newBtn = recMount.querySelector('#btnNewList');
+    if (newBtn) {
+      newBtn.addEventListener('click', () => {
+        const baseParts = matched
+          .filter((x) => x.product)
+          .map((x) => ({ product: x.product, grams: x.grams }));
+        const checked = [];
+        recMount.querySelectorAll('tr[data-pid]').forEach((tr) => {
+          const cb = tr.querySelector('.rec-check');
+          if (cb && cb.checked) {
+            checked.push({
+              product: productsCache.find((p) => p.id === Number(tr.getAttribute('data-pid'))),
+              grams: Number(tr.getAttribute('data-grams')),
+            });
+          }
+        });
+        if (!checked.length) {
+          alert('Отметьте галочкой хотя бы один продукт из рекомендаций, чтобы добавить его в новый список.');
+          return;
+        }
+        const items = buildLayoutItemsParam(baseParts.concat(checked));
+        const url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(items);
+        location.assign(url);
+      });
+    }
+
+    renderExamples(exIds);
+  }
+
+  renderRecommendations();
 }
 
 function findBadProductByTitle(substr) {
@@ -1295,6 +1480,7 @@ async function main() {
 }
 
 main();
+
 
 
 
