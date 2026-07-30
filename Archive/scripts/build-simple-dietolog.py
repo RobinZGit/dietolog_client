@@ -17,8 +17,8 @@ REPO = ARCHIVE.parent
 SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
 SEED_PATH = REPO / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 21
-SOURCE = "dietolog_client · v21 silicon foods, sea salt, salt in recommendations"
+VERSION = 22
+SOURCE = "dietolog_client · v22 new list balances calories without selection"
 CHUNK = 120000
 
 

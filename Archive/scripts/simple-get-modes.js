@@ -808,6 +808,26 @@ function formatAdjustMessage(reductions, increases, targetDays) {
   return lines.join(' ');
 }
 
+/** Banner when new list only rebalances calories (no recommendation picks). */
+function formatCalorieOnlyMessage(balanced, targetDays, hadAdditions) {
+  const daysLabel = formatDays(targetDays);
+  const parts = [];
+  const adj = formatAdjustMessage(balanced.reductions, balanced.increases, targetDays);
+  if (adj) parts.push(adj);
+  else {
+    parts.push(
+      'Калорийность раскладки приведена к норме за ' + daysLabel + ' сут. ' +
+      '(цель ≈ ' + Math.round(balanced.targetCal) + ' ккал, сейчас ≈ ' + Math.round(balanced.finalCal) + ' ккал).'
+    );
+  }
+  if (!hadAdditions) {
+    parts.push(
+      'Продукты из рекомендаций не добавлялись. Если ниже остался дефицит — отметьте нужные позиции и снова нажмите «Создать новый список».'
+    );
+  }
+  return parts.join(' ');
+}
+
 /** Polar → cartesian for SVG pie */
 function polarXY(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -1091,10 +1111,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       '<button type="button" class="btn-new-list" id="btnNewList" ' +
       'title="Пересчитать в этом файле (без сети) и обновить ссылку в адресной строке">' +
       'Создать новый список</button></div>';
-      rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, при необходимости измените <b>количество</b>, затем «Создать новый список» — ' +
-      'пересчёт <b>внутри страницы</b> (офлайн) с учётом введённых количеств. Калорийность за срок будет приведена к норме ' +
-      '(при необходимости количества ранее выбранных продуктов уменьшатся — без отдельного запроса). ' +
-      'Корзина в рекомендациях — убрать предложение и подобрать другое; корзина в «Ваша раскладка» — удалить продукт и пересчитать.</p>';
+      rhtml += '<p class="mode-note">«Создать новый список» всегда приводит <b>калорийность за срок к норме</b> ' +
+      '(даже без галочек). Отметьте продукты и при необходимости измените <b>количество</b>, чтобы добавить их в список. ' +
+      'Пересчёт <b>внутри страницы</b> (офлайн). Если после балансировки останется дефицит — снова появятся рекомендации. ' +
+      'Корзина в рекомендациях — убрать предложение; корзина в «Ваша раскладка» — удалить продукт и пересчитать.</p>';
 
     if (exIds.size) {
       rhtml += '<div class="exclude-bar"><span class="exclude-label">Не предлагать снова:</span> ';
@@ -1222,6 +1242,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
         const baseParts = matched
           .filter((x) => x.product && x.grams > 0)
           .map((x) => ({ product: x.product, grams: x.grams }));
+        if (!baseParts.length) {
+          alert('В раскладке нет продуктов с количеством — нечего приводить к норме калорий.');
+          return;
+        }
         const checked = [];
         recMount.querySelectorAll('tr[data-pid]').forEach((tr) => {
           const cb = tr.querySelector('.rec-check');
@@ -1239,17 +1263,13 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
             });
           }
         });
-        if (!checked.length) {
-          alert('Отметьте галочкой хотя бы один продукт из рекомендаций, чтобы добавить его в новый список.');
-          return;
-        }
         if (checked.some((c) => !c.product || !(c.grams > 0))) {
           alert('У отмеченных продуктов укажите количество больше нуля.');
           return;
         }
         const merged = baseParts.concat(checked);
         const balanced = balancePartsToCalorieNorm(merged, targetDays);
-        const msg = formatAdjustMessage(balanced.reductions, balanced.increases, targetDays);
+        const msg = formatCalorieOnlyMessage(balanced, targetDays, checked.length > 0);
         if (msg) saveLayoutAdjustMessage(msg);
         const items = buildLayoutItemsParam(balanced.parts);
         replaceLayoutUrl(items, targetDays);
