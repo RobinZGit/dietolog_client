@@ -18,7 +18,7 @@ const LAYOUT_COMPLETE_RATIO = 0.92;
 const LAYOUT_MAX_ITERS = 35;
 const LAYOUT_MAX_ADD_G = 400;
 const LAYOUT_DEFAULT_DAYS = 1;
-const SPICE_NAME_RE = /сушен|молот(ый|ая|ое)|специ|перец\b|базилик|гвоздик|кориц|кардамон|куркум|орегано|тимьян|мята\b|лавровый|майоран|фенхель|имбирь|шалфей|укроп суш|петрушка суш|кориандр/i;
+const SPICE_NAME_RE = /сушен|молот(ый|ая|ое)|специ|перец\b|базилик|гвоздик|кориц|кардамон|куркум|орегано|тимьян|мята\b|лавровый|майоран|фенхель|имбирь|шалфей|укроп суш|петрушка суш|кориандр|\bсоль\b/i;
 
 function parseQuery() {
   const sp = new URLSearchParams(location.search);
@@ -478,6 +478,11 @@ function isFillableNutrient(n) {
 
 function maxPortionForProduct(product) {
   if (product.section === 'bad') return 5; // tablets
+  // Salt: ~10–15 g/day is enough to cover Na/Cl norms; spices stay tiny.
+  if (/соль\s+(поварен|морск)|йодированн.*(соль)|соль.*йод/i.test(product.name) ||
+      /^соль\b/i.test(product.name)) {
+    return 15;
+  }
   if ((product.group || '') === 'Специи и приправы' || SPICE_NAME_RE.test(product.name)) return 10;
   if (/печень|почки|устриц|мидии|трубач/i.test(product.name)) return 100;
   return 250;
@@ -556,13 +561,17 @@ function recommendAdditions(baseTotals, duration, variantShift, options) {
         if (isBad) {
           g = Math.max(1, Math.ceil(target / per100));
         } else {
+          const maxG0 = maxPortionForProduct(c.product);
           g = Math.ceil((target / per100) * 100);
-          g = Math.max(g, 20);
-          g = Math.ceil(g / 10) * 10;
+          // Do not force 20 g onto spices/salt whose max portion is smaller.
+          const minG = Math.min(20, maxG0);
+          g = Math.max(g, minG);
+          if (maxG0 >= 10) g = Math.ceil(g / 10) * 10;
+          else g = Math.max(1, Math.round(g));
         }
         const maxG = maxPortionForProduct(c.product);
         if (g > maxG) {
-          if (!isBad && maxG >= 20) {
+          if (!isBad && maxG >= 5) {
             const help = amountInPortion(c.product, worst.n.id, maxG);
             if (help < worst.shortage * 0.08) continue;
             g = maxG;

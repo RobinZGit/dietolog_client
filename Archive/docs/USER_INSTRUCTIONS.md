@@ -11,6 +11,8 @@
 
 ---
 
+30. Look for and add to the database as many sources of silicon as possible, because I can't get to its norm. And also sea salt, if it's not there yet. Look at its composition, if it's there. I see a lack of sodium in the solution, but for some reason salt is not used at all. And there is something else on it. And immediately put it in the repository.
+
 29. In the layout group, add the button to delete the basket on the left of your layout, and when deleting it, you need to re-calculate, it is recommended to add, and it is recommended to add, make the field of quantity editable. Well, and re-calculate, respectively, when he presses to create a new list of some number, which is actually entered. PushRepository
 
 28. block of product search, or rather control of product search move it down, right above the product reference this is in the layout analysis mode it should not be at the very top let it be right above the product reference that is, below, after the example and yes, push, commit, push, post and publish
