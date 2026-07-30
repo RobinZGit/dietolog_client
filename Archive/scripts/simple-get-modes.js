@@ -634,6 +634,34 @@ function buildLayoutItemsParam(parts) {
     .join(',');
 }
 
+/** Rebuild items= from matched layout rows (keeps unresolved originals). */
+function buildLayoutItemsParamFromMatched(matchedRows) {
+  const chunks = [];
+  const seenIds = new Map();
+  for (const it of matchedRows || []) {
+    if (!it) continue;
+    if (it.product && it.grams > 0) {
+      const id = it.product.id;
+      seenIds.set(id, (seenIds.get(id) || 0) + Number(it.grams));
+    } else if (it.original) {
+      const g = Number(it.grams);
+      chunks.push(g > 0 ? (it.original + ':' + g) : String(it.original));
+    }
+  }
+  for (const [id, g] of seenIds.entries()) {
+    chunks.push('id:' + id + ':' + g);
+  }
+  return chunks.join(',');
+}
+
+function trashIconSvg() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" ' +
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
+    '<line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>' +
+    '</svg>';
+}
+
 function findCalorieNutrient() {
   return [...nutrientById.values()].find((n) => /^Калорийность$/i.test(String(n.name))) || null;
 }
@@ -934,12 +962,16 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
     '<p class="cov-note">По умолчанию 1 сутки. Можно изменить — пересчитаем количества (если без граммов), покрытие и рекомендации.</p>' +
     '</div></div>';
 
-  html += '<h3>Ваша раскладка</h3><table class="mode-table"><thead><tr>' +
-    '<th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
-  for (const it of matched) {
+  html += '<h3>Ваша раскладка</h3><table class="mode-table layout-table"><thead><tr>' +
+    '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
+  for (let i = 0; i < matched.length; i++) {
+    const it = matched[i];
     const unit = it.product && it.product.section === 'bad' ? ' шт.' : ' г';
     const qtyNote = it.autoSized ? ' <span class="pill warn" title="Подобрано под срок">авто</span>' : '';
-    html += '<tr><td><code>' + escapeHtml(it.original) + '</code></td><td>' +
+    html += '<tr data-layout-idx="' + i + '">' +
+      '<td class="col-del"><button type="button" class="btn-trash btn-layout-trash" ' +
+      'title="Удалить из раскладки и пересчитать" aria-label="Удалить">' + trashIconSvg() + '</button></td>' +
+      '<td><code>' + escapeHtml(it.original) + '</code></td><td>' +
       (it.product
         ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '')
         : '<span class="miss">не найдено</span>') +
@@ -979,6 +1011,18 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
 
   box.innerHTML = html;
   panel.appendChild(box);
+
+  box.querySelectorAll('.btn-layout-trash').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tr = btn.closest('tr');
+      const idx = Number(tr && tr.getAttribute('data-layout-idx'));
+      if (!Number.isFinite(idx)) return;
+      const next = matched.filter((_, i) => i !== idx);
+      const items = buildLayoutItemsParamFromMatched(next);
+      replaceLayoutUrl(items, targetDays);
+      renderLayoutMode(panel, items, targetDays);
+    });
+  });
 
   const daysInput = box.querySelector('#layoutDaysInput');
   if (daysInput) {
@@ -1038,10 +1082,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
       '<button type="button" class="btn-new-list" id="btnNewList" ' +
       'title="Пересчитать в этом файле (без сети) и обновить ссылку в адресной строке">' +
       'Создать новый список</button></div>';
-      rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, затем «Создать новый список» — ' +
-      'пересчёт <b>внутри страницы</b> (офлайн). Калорийность за срок будет приведена к норме ' +
+      rhtml += '<p class="mode-note">Отметьте нужные продукты галочкой, при необходимости измените <b>количество</b>, затем «Создать новый список» — ' +
+      'пересчёт <b>внутри страницы</b> (офлайн) с учётом введённых количеств. Калорийность за срок будет приведена к норме ' +
       '(при необходимости количества ранее выбранных продуктов уменьшатся — без отдельного запроса). ' +
-      'Корзина — убрать из рекомендаций и подобрать другое.</p>';
+      'Корзина в рекомендациях — убрать предложение и подобрать другое; корзина в «Ваша раскладка» — удалить продукт и пересчитать.</p>';
 
     if (exIds.size) {
       rhtml += '<div class="exclude-bar"><span class="exclude-label">Не предлагать снова:</span> ';
@@ -1065,19 +1109,17 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
         '</tr></thead><tbody>';
       for (const a of rec.added) {
         const unit = a.product.section === 'bad' ? ' шт.' : ' г';
+        const step = a.product.section === 'bad' ? '1' : '10';
         rhtml += '<tr data-pid="' + a.product.id + '" data-grams="' + a.grams + '">' +
           '<td class="col-check"><input type="checkbox" class="rec-check" aria-label="Выбрать" /></td>' +
           '<td>' + escapeHtml(a.product.name) +
           (a.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') + '</td>' +
-          '<td class="num">' + a.grams + unit + '</td>' +
+          '<td class="num col-qty"><input type="number" class="rec-qty" min="1" step="' + step + '" ' +
+          'value="' + a.grams + '" title="Количество для нового списка" aria-label="Количество" />' +
+          '<span class="qty-unit">' + unit + '</span></td>' +
           '<td>' + escapeHtml(a.forNutrient) + '</td>' +
           '<td class="col-del"><button type="button" class="btn-trash" title="Удалить и подобрать другое" ' +
-          'aria-label="Удалить">' +
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" ' +
-          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-          '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
-          '<line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>' +
-          '</svg></button></td></tr>';
+          'aria-label="Удалить">' + trashIconSvg() + '</button></td></tr>';
       }
       rhtml += '</tbody></table>';
     }
@@ -1114,6 +1156,23 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
     if (prodHead) prodHead.addEventListener('click', toggleSelectAll);
     allRecChecks().forEach((b) => b.addEventListener('change', syncCheckAllState));
     syncCheckAllState();
+
+    recMount.querySelectorAll('.rec-qty').forEach((inp) => {
+      const sync = () => {
+        const tr = inp.closest('tr');
+        let v = Number(String(inp.value).replace(',', '.'));
+        if (!(v > 0) || !Number.isFinite(v)) v = 1;
+        inp.value = String(v);
+        if (tr) tr.setAttribute('data-grams', String(v));
+      };
+      inp.addEventListener('change', sync);
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sync();
+        }
+      });
+    });
 
     recMount.querySelectorAll('.btn-trash').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1158,14 +1217,25 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
         recMount.querySelectorAll('tr[data-pid]').forEach((tr) => {
           const cb = tr.querySelector('.rec-check');
           if (cb && cb.checked) {
+            const qtyEl = tr.querySelector('.rec-qty');
+            let grams = qtyEl
+              ? Number(String(qtyEl.value).replace(',', '.'))
+              : Number(tr.getAttribute('data-grams'));
+            if (!(grams > 0) || !Number.isFinite(grams)) {
+              grams = Number(tr.getAttribute('data-grams')) || 0;
+            }
             checked.push({
               product: productsCache.find((p) => p.id === Number(tr.getAttribute('data-pid'))),
-              grams: Number(tr.getAttribute('data-grams')),
+              grams,
             });
           }
         });
         if (!checked.length) {
           alert('Отметьте галочкой хотя бы один продукт из рекомендаций, чтобы добавить его в новый список.');
+          return;
+        }
+        if (checked.some((c) => !c.product || !(c.grams > 0))) {
+          alert('У отмеченных продуктов укажите количество больше нуля.');
           return;
         }
         const merged = baseParts.concat(checked);

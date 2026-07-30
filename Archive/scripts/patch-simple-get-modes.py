@@ -97,7 +97,16 @@ CSS_EXTRA = """
       display: inline-flex; align-items: center; justify-content: center;
     }
     .btn-trash:hover { background: #fde8e8; }
-    .rec-table .col-check, .rec-table .col-del { width: 2.2rem; text-align: center; }
+    .rec-table .col-check, .rec-table .col-del,
+    .layout-table .col-del { width: 2.2rem; text-align: center; }
+    .rec-qty {
+      width: 4.6rem; padding: 0.2rem 0.3rem; border: 1px solid var(--line);
+      border-radius: 6px; font: inherit; text-align: right;
+      font-variant-numeric: tabular-nums; background: #fff;
+    }
+    .rec-qty:focus { outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent); border-color: var(--accent); }
+    .qty-unit { margin-left: 0.25rem; color: var(--muted); font-size: 0.85em; }
+    .col-qty { white-space: nowrap; }
     .rec-check { width: 1.05rem; height: 1.05rem; cursor: pointer; accent-color: var(--accent); }
     .exclude-bar {
       display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
@@ -156,7 +165,7 @@ BODY_HEADER = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v19</span></h1>\n'
+    '<span id="appVersion" class="ver">v20</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "

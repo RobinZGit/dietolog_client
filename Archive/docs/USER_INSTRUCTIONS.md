@@ -11,6 +11,8 @@
 
 ---
 
+29. In the layout group, add the button to delete the basket on the left of your layout, and when deleting it, you need to re-calculate, it is recommended to add, and it is recommended to add, make the field of quantity editable. Well, and re-calculate, respectively, when he presses to create a new list of some number, which is actually entered. PushRepository
+
 28. block of product search, or rather control of product search move it down, right above the product reference this is in the layout analysis mode it should not be at the very top let it be right above the product reference that is, below, after the example and yes, push, commit, push, post and publish
 
 27. when creating a new list of products, you need to convert their calories over the current period, that is, the calorie should be the one that is according to the norm, and even this line with calories inside it can be highlighted with some pale green color, respectively, the task will be a little more difficult because it will be necessary not only to add, but also, perhaps, to reduce the number of products that the user chose earlier and, that is, it is necessary to do this, of course, that is, do not ask him to reduce he will tell him that when he presses create a new list some number of your products there were reduced in some such grammatically more correct style, express it, well, you can even paint over the nutrients with pale pink, which is a drawback, and pale green, which is the norm or excess, and the calories can be reduced so that it can be seen that this is the main thing, some kind of frame
