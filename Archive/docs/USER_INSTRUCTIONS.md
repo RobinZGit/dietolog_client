@@ -11,6 +11,8 @@
 
 ---
 
+37. Version 26 is hanging in the group is loading
+
 36. Add to the database some delicious products, like soy meat, soy cheese, if there is no such thing yet. Something from nuts, maybe waffles, from beans, something ready. Sea cabbage, if it is not there, but it is there. Add to the database some delicious products, like soy meat, soy cheese, if there is no such thing yet. It will collect it like it's first made.
 
 35. Don't write the degree of the post in the layout, just find the name of the product in the database and that's it. And immediately put it in the main.

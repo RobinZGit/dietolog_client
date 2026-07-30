@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v26: тофу, соевое мясо, хумус, фалафель, морская капуста, ореховые снеки
+**Последнее обновление:** 2026-07-30 — v27: фикс зависания «Загрузка групп» (восстановлен core UI)
 
 ---
 
@@ -89,6 +89,11 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v27: фикс зависания загрузки групп)
+
+- В v25/v26 из `dietolog.html` случайно выпал core UI (`openDb` / `renderList` / …) — страница зависала на «Загрузка групп…».
+- Восстановлен core из v24 + SEED v26/продукты + актуальные GET-режимы. Защита в `patch-simple-get-modes.py`.
 
 ### 2026-07-30 (v26: вкусные растительные продукты)
 
@@ -306,6 +311,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v27: fix hang loading groups (restore core UI); USER #37 |
 | 2026-07-30 | v26: tasty soy/legume/nut foods + sea cabbage; USER #36 |
 | 2026-07-30 | v25: one-file HTML, SEED comment, seed.json→Archive; USER #34 |
 | 2026-07-30 | v24: fastdegree URL+UI filter; seafood degrees fixed; USER #33 |

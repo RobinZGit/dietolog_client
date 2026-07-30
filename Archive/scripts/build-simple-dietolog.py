@@ -17,8 +17,8 @@ REPO = ARCHIVE.parent
 SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
 SEED_PATH = ARCHIVE / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 26
-SOURCE = "dietolog_client · v26 tasty soy/nut/legume foods + sea cabbage"
+VERSION = 27
+SOURCE = "dietolog_client · v27 fix hang: restore core UI + tasty foods SEED"
 CHUNK = 120000
 
 SEED_COMMENT = """\
