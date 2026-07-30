@@ -11,6 +11,12 @@
 
 ---
 
+21. No, you misunderstood. First, leave the layout parameters as they were, which are in the example, in the URL. But the examples that you display, they are all with BADs. It is necessary that the example 1 and example 2 remain as they were, and the example 3 be made with some BADs.
+
+20. Look, there are also butter bars, fish fat, just a bar of omega-3, there is also olive oil, maybe pumpkin oil, some other oils, maybe grape seed oil, although I think we already have it, or if it is in the products, then do not put it in the BAD.
+
+19. a little wrong, make only one example with BADs, and all the rest without BADs and which one with BADs at the end to put, the very last
+
 18. Also, in the example of the layout, specify one example with BADs, and more BADs, so that the minimum number of new products and the maximum number of BADs. You can look for some more BADs in the database and add them to the database.
 
 17. In your example, which you brought in parameter 2, there is a lot of very creamy stuff. Check if the numbers are correct and creamier in the products, namely in the database, in the products indicated by you. And also, accordingly, let's try to update all the numbers in all the products and nutrients. That is, you need to compare them with some other sources and verify. There may be errors purely because of tens, ten times, a hundred times, because of the dimensions, it may be micrograms, milligrams. Compare it with some other source or with several sources. Thank you.

@@ -1905,7 +1905,11 @@ private products: any =
 {"hint":"БАД|БАД-шаблон|Магний B6 (Mg 50 мг + B6 5 мг)|на 1 табл.: 50 мг+5 мг|value=dose*100","rownumber":1260,"_id":1277,"name":"БАД · БАД-шаблон · Магний B6 (Mg 50 мг + B6 5 мг) · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · магний b6 (mg 50 мг + b6 5 мг) · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
 {"hint":"БАД|БАД-шаблон|Магний B6 (Mg 100 мг + B6 10 мг)|на 1 табл.: 100 мг+10 мг|value=dose*100","rownumber":1261,"_id":1278,"name":"БАД · БАД-шаблон · Магний B6 (Mg 100 мг + B6 10 мг) · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · магний b6 (mg 100 мг + b6 10 мг) · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
 {"hint":"БАД|БАД-шаблон|Калий 200 мг|на 1 табл.: 200 мг|value=dose*100","rownumber":1262,"_id":1279,"name":"БАД · БАД-шаблон · Калий 200 мг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · калий 200 мг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
-{"hint":"БАД|БАД-шаблон|Хром 200 мкг|на 1 табл.: 200 мкг|value=dose*100","rownumber":1263,"_id":1280,"name":"БАД · БАД-шаблон · Хром 200 мкг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · хром 200 мкг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"}]
+{"hint":"БАД|БАД-шаблон|Хром 200 мкг|на 1 табл.: 200 мкг|value=dose*100","rownumber":1263,"_id":1280,"name":"БАД · БАД-шаблон · Хром 200 мкг · табл. (кол-во=шт.)","lowercase":"бад · бад-шаблон · хром 200 мкг · табл. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
+{"hint":"БАД|БАД-шаблон|Омега-3 1000 мг (EPA+DHA)|на 1 капс.: 1 г+5 мг|value=dose*100","rownumber":1264,"_id":1281,"name":"БАД · БАД-шаблон · Омега-3 1000 мг (EPA+DHA) · капс. (кол-во=шт.)","lowercase":"бад · бад-шаблон · омега-3 1000 мг (epa+dha) · капс. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
+{"hint":"БАД|БАД-шаблон|Омега-3 батончик|на 1 бат.: 3 г+5 мг|value=dose*100","rownumber":1265,"_id":1282,"name":"БАД · БАД-шаблон · Омега-3 батончик · бат. (кол-во=шт.)","lowercase":"бад · бад-шаблон · омега-3 батончик · бат. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
+{"hint":"БАД|БАД-шаблон|Тыквенное масло 1000 мг|на 1 капс.: 1 г+3 мг|value=dose*100","rownumber":1266,"_id":1283,"name":"БАД · БАД-шаблон · Тыквенное масло 1000 мг · капс. (кол-во=шт.)","lowercase":"бад · бад-шаблон · тыквенное масло 1000 мг · капс. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"},
+{"hint":"БАД|БАД-шаблон|Масло виноградных косточек 1000 мг|на 1 капс.: 1 г+10 мг|value=dose*100","rownumber":1267,"_id":1284,"name":"БАД · БАД-шаблон · Масло виноградных косточек 1000 мг · капс. (кол-во=шт.)","lowercase":"бад · бад-шаблон · масло виноградных косточек 1000 мг · капс. (кол-во=шт.)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"БАД","group":"БАД"}]
 ;
 
 
@@ -187079,6 +187083,62 @@ private info: any = [
       "product": 1280,
       "nutrient": 42,
       "value": "20000",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29203,
+      "product": 1281,
+      "nutrient": 1,
+      "value": "100",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29204,
+      "product": 1281,
+      "nutrient": 13,
+      "value": "500",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29205,
+      "product": 1282,
+      "nutrient": 1,
+      "value": "300",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29206,
+      "product": 1282,
+      "nutrient": 13,
+      "value": "500",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29207,
+      "product": 1283,
+      "nutrient": 1,
+      "value": "100",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29208,
+      "product": 1283,
+      "nutrient": 13,
+      "value": "300",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29209,
+      "product": 1284,
+      "nutrient": 1,
+      "value": "100",
+      "perc1on100gr": "0"
+  },
+  {
+      "_id": 29210,
+      "product": 1284,
+      "nutrient": 13,
+      "value": "1000",
       "perc1on100gr": "0"
   }
 ]

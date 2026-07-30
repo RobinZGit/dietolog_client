@@ -13,7 +13,7 @@ BODY = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v12</span></h1>\n'
+    '<span id="appVersion" class="ver">v13</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "
@@ -38,7 +38,7 @@ BODY = (
 
 TITLE_OK = (
     "<title>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 \u2014 "
-    "\u043f\u0440\u043e\u0441\u0442\u043e\u0439 v12</title>"
+    "\u043f\u0440\u043e\u0441\u0442\u043e\u0439 v13</title>"
 )
 
 

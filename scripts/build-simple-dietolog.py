@@ -17,8 +17,8 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 12
-SOURCE = "dietolog_client · v12 more BADs; layout prefers supplements"
+VERSION = 13
+SOURCE = "dietolog_client · v13 omega/oil BADs; skip oils already in foods"
 CHUNK = 120000
 
 

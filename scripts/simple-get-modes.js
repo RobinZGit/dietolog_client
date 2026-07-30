@@ -406,16 +406,16 @@ function cloneTotals(totals) {
 }
 
 /**
- * Greedy fill: prefer БАД (max supplements, min new foods).
- * variantShift: diversify which BAD/food among top candidates.
+ * Greedy fill.
+ * options.preferBad = false → foods only (examples 1–2)
+ * options.preferBad = true  → foods first, then BADs for leftover gaps (example 3 «с БАД»)
  */
-function recommendAdditions(baseTotals, duration, variantShift) {
+function recommendAdditions(baseTotals, duration, variantShift, options) {
+  const preferBad = !!(options && options.preferBad);
   const totals = cloneTotals(baseTotals);
   const added = [];
   const usedIds = new Set();
   const skippedNutrientIds = new Set();
-  let foodAdds = 0;
-  const MAX_FOOD_ADDS = 3; // keep new foods minimal
   for (let iter = 0; iter < LAYOUT_MAX_ITERS; iter++) {
     const gaps = shortagesForDuration(totals, duration);
     const worst = gaps.find((g) =>
@@ -429,14 +429,11 @@ function recommendAdditions(baseTotals, duration, variantShift) {
     const ranked = topProductsForNutrient(worst.n.id, 80);
     const badCandidates = ranked.filter((r) => r.product.section === 'bad');
     const foodCandidates = ranked.filter((r) => r.product.section !== 'bad');
-    // Prefer BADs; foods only if no BAD works and under food budget
-    const pools = foodAdds >= MAX_FOOD_ADDS
-      ? [badCandidates]
-      : [badCandidates, foodCandidates];
+    // foods only OR foods first + BADs for remaining gaps («немного БАД» in example 3)
+    const pools = preferBad ? [foodCandidates, badCandidates] : [foodCandidates];
 
     let chosen = null;
     let grams = 0;
-    let chosenIsBad = false;
     outer:
     for (const pool of pools) {
       if (!pool.length) continue;
@@ -465,7 +462,6 @@ function recommendAdditions(baseTotals, duration, variantShift) {
             if (help < worst.shortage * 0.08) continue;
             g = maxG;
           } else if (isBad) {
-            // take max tablets if still helpful
             const help = amountInPortion(c.product, worst.n.id, maxG);
             if (help < worst.shortage * 0.05) continue;
             g = maxG;
@@ -475,7 +471,6 @@ function recommendAdditions(baseTotals, duration, variantShift) {
         }
         chosen = c.product;
         grams = g;
-        chosenIsBad = isBad;
         break outer;
       }
     }
@@ -488,7 +483,6 @@ function recommendAdditions(baseTotals, duration, variantShift) {
       if (add) totals.set(n.id, (totals.get(n.id) || 0) + add);
     }
     usedIds.add(chosen.id);
-    if (!chosenIsBad) foodAdds += 1;
     added.push({ product: chosen, grams, forNutrient: worst.n.name });
     if (added.length >= 16) break;
   }
@@ -525,11 +519,19 @@ function renderLayoutMode(panel, itemsRaw) {
   const totals = accumulateLayout(matched);
   const { duration, durationNutrient, durationAll, durationNutrientAll } = analyzeDuration(totals);
   const gaps = shortagesForDuration(totals, duration);
-  const rec = recommendAdditions(totals, duration, 0);
-  const examples = [0, 1, 2].map((shift) => {
-    const r = recommendAdditions(totals, duration, shift);
+  // Main recommendation + examples 1–2: foods only; example 3: foods + some BADs
+  const rec = recommendAdditions(totals, duration, 0, { preferBad: false });
+  const exampleSpecs = [
+    { shift: 0, preferBad: false, label: '' },
+    { shift: 1, preferBad: false, label: '' },
+    { shift: 0, preferBad: true, label: ' (с БАД)' },
+  ];
+  const examples = exampleSpecs.map((spec) => {
+    const r = recommendAdditions(totals, duration, spec.shift, { preferBad: spec.preferBad });
     return {
-      shift,
+      shift: spec.shift,
+      preferBad: spec.preferBad,
+      label: spec.label,
       items: matched.filter((x) => x.product).map((x) => ({ product: x.product, grams: x.grams }))
         .concat(r.added.map((a) => ({ product: a.product, grams: a.grams }))),
       complete: isLayoutComplete(r.totals, duration),
@@ -588,8 +590,10 @@ function renderLayoutMode(panel, itemsRaw) {
   }
 
   html += '<h3>Примеры более полных раскладок</h3>';
+  html += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты (как раньше); ' +
+    'пример <b>3</b> — с несколькими БАДами.</p>';
   examples.forEach((ex, i) => {
-    html += '<div class="example-block"><h4>Пример ' + (i + 1) +
+    html += '<div class="example-block"><h4>Пример ' + (i + 1) + escapeHtml(ex.label || '') +
       (ex.complete ? ' <span class="pill ok">полный</span>' : ' <span class="pill warn">частичный</span>') +
       '</h4><ul class="example-list">';
     for (const it of ex.items) {
@@ -600,9 +604,8 @@ function renderLayoutMode(panel, itemsRaw) {
   });
 
   html += '<p class="mode-note"><b>Формат параметра items/layout:</b> ' +
-    '<code>latin_slug:grams,id:1251:1</code> · JSON <code>[{"n":"slug","g":100}]</code>. ' +
-    'Для БАД количество = <b>шт.</b> Добор дефицитов предпочитает БАДы (мало новых продуктов). ' +
-    'В таблице: исходное имя из ссылки и ближайший продукт из базы.</p>';
+    '<code>latin_slug:grams</code> · JSON · <code>id:N:g</code> (для БАД — шт.). ' +
+    'Демо-ссылка без БАД в URL; примеры 1–2 без БАД, пример 3 — с БАДами.</p>';
 
   box.innerHTML = html;
   panel.appendChild(box);
@@ -614,23 +617,8 @@ function findBadProductByTitle(substr) {
 }
 
 function exampleLayoutParam() {
-  // Short food base + several BADs (prefer supplements in the demo link).
-  const parts = ['yajco_kurinoe_celoe:100', 'grechiha_zerno:80'];
-  const badTitles = [
-    ['витамин d 10', 1],
-    ['йод 100', 1],
-    ['железо 10', 1],
-    ['витамин c 500', 1],
-    ['цинк 10', 1],
-    ['витамин b12 5', 1],
-    ['магний 200', 1],
-    ['селен 50', 1],
-  ];
-  for (const [title, qty] of badTitles) {
-    const p = findBadProductByTitle(title);
-    if (p) parts.push('id:' + p.id + ':' + qty);
-  }
-  return parts.join(',');
+  // Original demo URL (foods only) — do not put BADs in the example link.
+  return 'yajco_kurinoe_celoe:100,grechiha_zerno:150,moloko_suhoe_1:40,krupa_risovaya:100';
 }
 
 function renderDefaultModeLinks(panel) {
@@ -646,8 +634,8 @@ function renderDefaultModeLinks(panel) {
     '<a href="' + escapeHtml(urlNutrients) + '">' + escapeHtml(urlNutrients) + '</a></li>' +
     '<li><b>Анализ раскладки (пример):</b><br/>' +
     '<a href="' + escapeHtml(urlLayout) + '">' + escapeHtml(urlLayout) + '</a><br/>' +
-    '<span class="mode-note">Параметр <code>items</code> (или <code>layout</code>): еда + <b>БАДы</b> (<code>id:N:шт</code>). ' +
-    'Добор раскладки предпочитает БАДы (минимум новых продуктов). Пример: ' +
+    '<span class="mode-note">Параметр <code>items</code> (или <code>layout</code>): продукты (латиница <code>slug:g</code>). ' +
+    'В анализе: примеры 1–2 без БАД; пример <b>3 — с БАДами</b>. Демо URL: ' +
     '<code>' + escapeHtml(exampleLayoutParam()) + '</code></span></li>' +
     '</ol>' +
     '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
