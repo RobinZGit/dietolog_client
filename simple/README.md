@@ -29,4 +29,4 @@ python3 scripts/assign-product-groups.py
 python3 scripts/build-simple-dietolog.py
 ```
 
-UI **v12+**: поиск → группа → продукт → нутриенты. Seed v12 — 30 БАД; layout-пример с БАДами; добор предпочитает БАДы. См. `docs/BAD_SUPPLEMENTS.md`, `docs/NUTRIENT_SCALE_AUDIT.md`.
+UI **v13+**: поиск → группа → продукт → нутриенты. 34 БАД (в т.ч. омега/масла без дублей с едой); в layout последний пример — с БАДами. См. `docs/BAD_SUPPLEMENTS.md`.
