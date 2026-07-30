@@ -17,8 +17,8 @@ SRC = ROOT / "src" / "app" / "model" / "static.datasource.ts"
 OUT_DIR = ROOT / "simple"
 SEED_PATH = OUT_DIR / "seed.json"
 HTML_PATH = OUT_DIR / "dietolog.html"
-VERSION = 14
-SOURCE = "dietolog_client · v14 layout coverage chart; rec select-all"
+VERSION = 15
+SOURCE = "dietolog_client · v15 layout days param; auto qty; editable term"
 CHUNK = 120000
 
 

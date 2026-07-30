@@ -108,6 +108,21 @@ CSS_EXTRA = """
       font-variant-numeric: tabular-nums; line-height: 1.1;
     }
     .coverage-summary .cov-note { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.8rem; }
+    .coverage-days {
+      flex: 0 1 11rem; min-width: 9rem;
+      padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+      border-left: 1px dashed var(--line);
+    }
+    .days-label {
+      display: block; font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.25rem;
+    }
+    .days-input-row { display: flex; align-items: center; gap: 0.35rem; }
+    .days-input {
+      width: 4.5rem; font-size: 1.15rem; font-weight: 700; padding: 0.3rem 0.4rem;
+      border: 1px solid var(--line); border-radius: 6px; color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+    .days-unit { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
     .rec-table th.col-product {
       cursor: pointer; user-select: none;
     }
@@ -120,7 +135,7 @@ BODY_HEADER = (
     "    <h1>\u0414\u0438\u0435\u0442\u043e\u043b\u043e\u0433 "
     '<span style="font-weight:500;color:var(--muted);font-size:0.75em">'
     "\u043f\u0440\u043e\u0441\u0442\u043e\u0439</span> "
-    '<span id="appVersion" class="ver">v14</span></h1>\n'
+    '<span id="appVersion" class="ver">v15</span></h1>\n'
     '    <p class="lead" id="leadText">'
     "\u041f\u043e\u0438\u0441\u043a \u2192 <b>\u0433\u0440\u0443\u043f\u043f\u0430</b> \u2192 "
     "\u043f\u0440\u043e\u0434\u0443\u043a\u0442 \u2192 \u043d\u0443\u0442\u0440\u0438\u0435\u043d\u0442\u044b. "

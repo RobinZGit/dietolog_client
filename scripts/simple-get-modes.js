@@ -1,9 +1,11 @@
 /* === GET modes (v11) — injected into dietolog.html ===
  *
  * mode=nutrients  — list nutrients; expand → top TOP_N products with amount + % of daily min
- * mode=layout&items=slug:grams,slug:grams
+ * mode=layout&items=slug:grams,slug:grams&days=1
  *   or ?layout=slug:grams,...
  *   items may also be JSON: [{"n":"slug","g":100},{"n":"id:193","g":50}]
+ *   days|time — target duration in days (default 1). If set, items may omit quantity:
+ *     items=egg,buckwheat&days=3 → quantities are auto-sized for that period.
  *
  * Layout line format (readable in URL, Latin preferred):
  *   grechiha_zerno:150,yajco_kurinoe_celoe:100,moloko_suhoe_1:30
@@ -15,6 +17,7 @@ const TOP_N = 15;
 const LAYOUT_COMPLETE_RATIO = 0.92;
 const LAYOUT_MAX_ITERS = 35;
 const LAYOUT_MAX_ADD_G = 400;
+const LAYOUT_DEFAULT_DAYS = 1;
 const SPICE_NAME_RE = /сушен|молот(ый|ая|ое)|специ|перец\b|базилик|гвоздик|кориц|кардамон|куркум|орегано|тимьян|мята\b|лавровый|майоран|фенхель|имбирь|шалфей|укроп суш|петрушка суш|кориандр/i;
 
 function parseQuery() {
@@ -26,15 +29,31 @@ function parseQuery() {
   if (!mode && (nutrientsFlag === '1' || nutrientsFlag === 'true')) mode = 'nutrients';
   if (!mode && (layoutRaw || itemsRaw)) mode = 'layout';
   if (!mode) mode = 'browse';
+  const daysRaw = sp.get('days') || sp.get('time') || sp.get('d');
+  let days = null;
+  if (daysRaw != null && String(daysRaw).trim() !== '') {
+    const n = Number(String(daysRaw).trim().replace(',', '.'));
+    if (n > 0 && Number.isFinite(n)) days = n;
+  }
   return {
     mode,
     itemsRaw: itemsRaw || layoutRaw || '',
+    days,
   };
 }
 
 function pageBaseUrl() {
   // strip query/hash; keep path to this html
   return location.href.split('#')[0].split('?')[0];
+}
+
+function layoutUrl(itemsParam, days) {
+  let url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(itemsParam);
+  const d = Number(days);
+  if (d > 0 && Number.isFinite(d)) {
+    url += '&days=' + encodeURIComponent(String(d));
+  }
+  return url;
 }
 
 /** Cyrillic → Latin (passport-ish) for URL slugs */
@@ -184,6 +203,8 @@ function findProductByName(rawName) {
  * Parse layout line.
  * Formats:
  *  - slug:grams,slug:grams
+ *  - slug (no qty) → auto quantity when days is set
+ *  - id:N / id:N:qty
  *  - JSON array [{n|name|id, g|grams|q|qty}]
  */
 function parseLayoutItems(raw) {
@@ -192,10 +213,16 @@ function parseLayoutItems(raw) {
   if (text.startsWith('[')) {
     try {
       const arr = JSON.parse(text);
-      return arr.map((row) => ({
-        original: String(row.n || row.name || row.id || ''),
-        grams: Number(row.g || row.grams || row.q || row.qty || 0),
-      })).filter((x) => x.original && x.grams > 0);
+      return arr.map((row) => {
+        const original = String(row.n || row.name || (row.id != null ? 'id:' + row.id : '') || '');
+        const hasQty = row.g != null || row.grams != null || row.q != null || row.qty != null;
+        const grams = hasQty ? Number(row.g || row.grams || row.q || row.qty || 0) : 0;
+        return {
+          original,
+          grams: hasQty && grams > 0 ? grams : 0,
+          auto: !hasQty || !(grams > 0),
+        };
+      }).filter((x) => x.original);
     } catch (e) {
       console.warn('layout JSON parse failed', e);
     }
@@ -203,9 +230,17 @@ function parseLayoutItems(raw) {
   return text.split(/[,;|]+/).map((part) => {
     const p = part.trim();
     if (!p) return null;
-    const m = /^(.+?)[=:](\d+(?:\.\d+)?)$/.exec(p);
-    if (!m) return { original: p, grams: 100 };
-    return { original: m[1].trim(), grams: Number(m[2]) };
+    let m = /^id[:#]?(\d+)[=:](\d+(?:\.\d+)?)$/i.exec(p);
+    if (m) return { original: 'id:' + m[1], grams: Number(m[2]), auto: false };
+    m = /^id[:#]?(\d+)$/i.exec(p);
+    if (m) return { original: 'id:' + m[1], grams: 0, auto: true };
+    m = /^#(\d+)[=:](\d+(?:\.\d+)?)$/.exec(p);
+    if (m) return { original: 'id:' + m[1], grams: Number(m[2]), auto: false };
+    m = /^#(\d+)$/.exec(p);
+    if (m) return { original: 'id:' + m[1], grams: 0, auto: true };
+    m = /^(.+?)[=:](\d+(?:\.\d+)?)$/.exec(p);
+    if (m) return { original: m[1].trim(), grams: Number(m[2]), auto: false };
+    return { original: p, grams: 0, auto: true };
   }).filter(Boolean);
 }
 
@@ -310,13 +345,69 @@ function accumulateLayout(matchedItems) {
   const totals = new Map();
   for (const n of nutrientById.values()) totals.set(n.id, 0);
   for (const it of matchedItems) {
-    if (!it.product) continue;
+    if (!it.product || !(it.grams > 0)) continue;
     for (const n of nutrientById.values()) {
       const add = amountInPortion(it.product, n.id, it.grams);
       if (add) totals.set(n.id, (totals.get(n.id) || 0) + add);
     }
   }
   return totals;
+}
+
+/**
+ * When quantity omitted (auto) and target days known — pick amounts from listed products
+ * to cover calorie need for the period (split evenly), then recommendations fill the rest.
+ */
+function autoSizeLayoutPortions(matched, targetDays) {
+  const days = Math.max(LAYOUT_DEFAULT_DAYS, Number(targetDays) || LAYOUT_DEFAULT_DAYS);
+  const result = matched.map((m) => ({
+    ...m,
+    grams: m.auto ? 0 : (Number(m.grams) || 0),
+    autoSized: false,
+  }));
+  const autos = result.filter((r) => r.product && r.auto);
+  if (!autos.length) return result;
+
+  const fixed = result.filter((r) => r.product && !r.auto && r.grams > 0);
+  const totals = accumulateLayout(fixed);
+  const calorieN = [...nutrientById.values()].find((n) => /^Калорийность$/i.test(String(n.name)));
+  const calDaily = calorieN ? nutrientMin(calorieN) : 2500;
+  const calNeed = days * calDaily;
+  const calHave = calorieN ? (totals.get(calorieN.id) || 0) : 0;
+  let calLeft = Math.max(0, calNeed - calHave);
+
+  const dens = [];
+  for (const a of autos) {
+    const sampleG = a.product.section === 'bad' ? 1 : 100;
+    const kcal = calorieN ? amountInPortion(a.product, calorieN.id, sampleG) : 0;
+    const kcalPerUnit = a.product.section === 'bad' ? kcal : (kcal / 100);
+    dens.push({ row: a, kcalPerUnit });
+  }
+  const withCal = dens.filter((d) => d.kcalPerUnit > 0);
+  const share = withCal.length ? calLeft / withCal.length : 0;
+  for (const d of withCal) {
+    let g;
+    if (d.row.product.section === 'bad') {
+      g = Math.max(1, Math.ceil(share / d.kcalPerUnit));
+      g = Math.min(g, Math.max(1, Math.ceil(days)) * maxPortionForProduct(d.row.product));
+    } else {
+      g = Math.ceil(share / d.kcalPerUnit);
+      g = Math.max(40, Math.ceil(g / 10) * 10);
+      g = Math.min(g, Math.ceil(days) * maxPortionForProduct(d.row.product));
+      g = Math.min(g, Math.ceil(days) * 300);
+    }
+    d.row.grams = g;
+    d.row.autoSized = true;
+  }
+  for (const a of autos) {
+    if (!(a.grams > 0)) {
+      a.grams = a.product.section === 'bad'
+        ? Math.max(1, Math.ceil(days))
+        : Math.min(Math.ceil(days) * 100, Math.ceil(days) * maxPortionForProduct(a.product));
+      a.autoSized = true;
+    }
+  }
+  return result;
 }
 
 function analyzeDuration(totals) {
@@ -576,16 +667,18 @@ const COVERAGE_COLORS = [
 
 /**
  * Equal sectors per nutrient; filled arc fraction = min(pct,100)/100; rest white.
- * Returns { html, totalPct }.
+ * Returns { chartHtml, totalPct } — days control is separate.
  */
 function buildCoverageChartHtml(gaps) {
   const rows = (gaps || []).filter((g) => g && g.fillable !== false && g.daily > 0);
   if (!rows.length) {
     return {
-      html: '<div class="coverage-row"><div class="coverage-summary">' +
+      chartHtml:
+        '<div class="coverage-chart"></div>' +
+        '<div class="coverage-summary">' +
         '<p class="cov-label">Покрытие норм</p>' +
         '<p class="cov-pct">—</p>' +
-        '<p class="cov-note">Нет данных по нутриентам</p></div></div>',
+        '<p class="cov-note">Нет данных по нутриентам</p></div>',
       totalPct: 0,
     };
   }
@@ -599,19 +692,15 @@ function buildCoverageChartHtml(gaps) {
   const rInner = 28;
   let svg = '<svg class="coverage-svg" width="140" height="140" viewBox="0 0 140 140" ' +
     'role="img" aria-label="Покрытие суточных норм по нутриентам">';
-  // base white ring (unfilled)
   svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rOuter + '" fill="#ffffff" stroke="#e4ddd0" stroke-width="1"/>';
   svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#faf7f1"/>';
   for (let i = 0; i < n; i++) {
     const a0 = i * sector;
-    const a1 = (i + 1) * sector;
-    // separator tick (thin white slice edge)
     const filledSpan = sector * (caps[i] / 100);
     const color = COVERAGE_COLORS[i % COVERAGE_COLORS.length];
     if (filledSpan > 0.15) {
       svg += svgDonutSlice(cx, cy, rOuter, rInner, a0, a0 + filledSpan, color);
     }
-    // sector divider line
     const tip = polarXY(cx, cy, rOuter, a0);
     const inn = polarXY(cx, cy, rInner, a0);
     svg += '<line x1="' + inn.x.toFixed(2) + '" y1="' + inn.y.toFixed(2) +
@@ -621,40 +710,48 @@ function buildCoverageChartHtml(gaps) {
   svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#faf7f1"/>';
   svg += '</svg>';
 
-  const html = '<div class="coverage-row">' +
+  const chartHtml =
     '<div class="coverage-chart">' + svg + '</div>' +
     '<div class="coverage-summary">' +
     '<p class="cov-label">Покрытие суточных норм (на срок)</p>' +
     '<p class="cov-pct">' + Math.round(totalPct) + '%</p>' +
     '<p class="cov-note">Среднее по ' + n + ' нутриентам: сектор = нутриент; ' +
     'заливка — доля закрытой нормы, белое — дефицит.</p>' +
-    '</div></div>';
-  return { html, totalPct };
+    '</div>';
+  return { chartHtml, totalPct };
 }
 
-function renderLayoutMode(panel, itemsRaw) {
+function renderLayoutMode(panel, itemsRaw, daysFromQuery) {
   if (!matchIndex.length) buildMatchIndex();
   if (!String(itemsRaw || '').trim()) {
     panel.innerHTML =
       '<section class="mode-card"><h2>Анализ раскладки</h2>' +
       '<p class="err">Нет параметра <code>items</code> или <code>layout</code>.</p>' +
       '<p class="mode-note">Пример: <code>?mode=layout&amp;items=' +
-      escapeHtml(exampleLayoutParam()) + '</code></p></section>';
+      escapeHtml(exampleLayoutParam()) + '&amp;days=1</code></p></section>';
     return;
   }
+
+  let targetDays = Number(daysFromQuery);
+  if (!(targetDays > 0) || !Number.isFinite(targetDays)) targetDays = LAYOUT_DEFAULT_DAYS;
+
   const parsed = parseLayoutItems(itemsRaw);
-  const matched = parsed.map((row) => {
+  let matched = parsed.map((row) => {
     const m = findProductByName(row.original);
     return {
       original: row.original,
       grams: row.grams,
+      auto: !!row.auto,
       product: m.product,
       score: m.score,
+      autoSized: false,
     };
   });
+  matched = autoSizeLayoutPortions(matched, targetDays);
 
   const totals = accumulateLayout(matched);
-  const { duration, durationNutrient, durationAll, durationNutrientAll } = analyzeDuration(totals);
+  const inferred = analyzeDuration(totals);
+  const duration = targetDays;
   const gaps = shortagesForDuration(totals, duration);
 
   const exampleSpecs = [
@@ -668,31 +765,40 @@ function renderLayoutMode(panel, itemsRaw) {
   box.className = 'mode-card';
 
   let html = '<h2>Анализ раскладки продуктов</h2>';
-  html += '<p class="mode-note">Практическая длительность по <b>макросам</b>' +
-    (durationNutrient ? (' («' + escapeHtml(durationNutrient.name) + '»)') : '') +
-    ': <b>~' + duration.toFixed(2) + ' сут.</b>';
-  if (durationNutrientAll && durationAll > duration * 1.15) {
-    html += ' Абсолютный максимум по базе — «' + escapeHtml(durationNutrientAll.name) +
-      '» (~' + durationAll.toFixed(2) + ' сут.); для добора рациона берём срок по макросам.';
+  html += '<p class="mode-note">Целевой срок раскладки: <b>' + formatDays(targetDays) + ' сут.</b> ' +
+    '(параметр <code>days</code> / поле справа от диаграммы). ';
+  if (inferred.durationNutrient) {
+    html += 'По макросам текущий набор тянет примерно на ~' + inferred.duration.toFixed(2) +
+      ' сут. («' + escapeHtml(inferred.durationNutrient.name) + '»). ';
   }
-  html += ' Остальные нутриенты — с дефицитом на практический срок.</p>';
+  html += 'Дефициты и рекомендации считаются на целевой срок.</p>';
 
   const coverage = buildCoverageChartHtml(gaps);
-  html += coverage.html;
+  html += '<div class="coverage-row">' + coverage.chartHtml +
+    '<div class="coverage-days">' +
+    '<label class="days-label" for="layoutDaysInput">Срок</label>' +
+    '<div class="days-input-row">' +
+    '<input type="number" id="layoutDaysInput" class="days-input" min="0.1" step="0.5" ' +
+    'value="' + escapeHtml(String(targetDays)) + '" title="На сколько суток нужна раскладка" />' +
+    '<span class="days-unit">сут.</span></div>' +
+    '<p class="cov-note">По умолчанию 1 сутки. Можно изменить — пересчитаем количества (если без граммов), покрытие и рекомендации.</p>' +
+    '</div></div>';
 
   html += '<h3>Ваша раскладка</h3><table class="mode-table"><thead><tr>' +
     '<th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
   for (const it of matched) {
+    const unit = it.product && it.product.section === 'bad' ? ' шт.' : ' г';
+    const qtyNote = it.autoSized ? ' <span class="pill warn" title="Подобрано под срок">авто</span>' : '';
     html += '<tr><td><code>' + escapeHtml(it.original) + '</code></td><td>' +
       (it.product
         ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '')
         : '<span class="miss">не найдено</span>') +
-      '</td><td class="num">' + it.grams + (it.product && it.product.section === 'bad' ? ' шт.' : ' г') +
+      '</td><td class="num">' + (it.grams > 0 ? (it.grams + unit) : '—') + qtyNote +
       '</td><td class="num">' + (it.product ? Math.round(it.score) : '—') + '</td></tr>';
   }
   html += '</tbody></table>';
 
-  html += '<h3>Нутриенты на срок ~' + duration.toFixed(2) + ' сут.</h3>';
+  html += '<h3>Нутриенты на срок ' + formatDays(duration) + ' сут.</h3>';
   html += '<table class="mode-table"><thead><tr><th>Нутриент</th><th>Есть</th><th>Нужно</th><th>Норма/сут</th><th>Дефицит</th><th>%</th></tr></thead><tbody>';
   for (const g of gaps) {
     const cls = g.pct >= LAYOUT_COMPLETE_RATIO * 100 ? 'ok' : (g.pct >= 50 ? 'warn' : 'bad');
@@ -708,12 +814,39 @@ function renderLayoutMode(panel, itemsRaw) {
   html += '<div id="recSection"></div>';
   html += '<div id="examplesSection"></div>';
 
-  html += '<p class="mode-note"><b>Формат параметра items/layout:</b> ' +
-    '<code>latin_slug:grams</code> · JSON · <code>id:N:g</code> (для БАД — шт.). ' +
-    'Демо-ссылка без БАД в URL; примеры 1–2 без БАД, пример 3 — с БАДами.</p>';
+  html += '<p class="mode-note"><b>Формат:</b> <code>items</code> — <code>slug</code> или <code>slug:grams</code> · ' +
+    '<code>id:N</code> / <code>id:N:g</code>; <code>days</code> (или <code>time</code>) — срок в сутках. ' +
+    'Без количества при указанном сроке граммы/шт. подбираются автоматически.</p>';
 
   box.innerHTML = html;
   panel.appendChild(box);
+
+  const daysInput = box.querySelector('#layoutDaysInput');
+  if (daysInput) {
+    const applyDays = () => {
+      let v = Number(String(daysInput.value).replace(',', '.'));
+      if (!(v > 0) || !Number.isFinite(v)) v = LAYOUT_DEFAULT_DAYS;
+      daysInput.value = String(v);
+      try {
+        const sp = new URLSearchParams(location.search);
+        sp.set('mode', 'layout');
+        sp.set('items', itemsRaw);
+        sp.set('days', String(v));
+        sp.delete('layout');
+        sp.delete('time');
+        sp.delete('d');
+        history.replaceState(null, '', pageBaseUrl() + '?' + sp.toString());
+      } catch (e) { /* ignore */ }
+      renderLayoutMode(panel, itemsRaw, v);
+    };
+    daysInput.addEventListener('change', applyDays);
+    daysInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyDays();
+      }
+    });
+  }
 
   const recMount = box.querySelector('#recSection');
   const examplesMount = box.querySelector('#examplesSection');
@@ -726,14 +859,14 @@ function renderLayoutMode(panel, itemsRaw) {
       });
       return {
         label: spec.label,
-        items: matched.filter((x) => x.product).map((x) => ({ product: x.product, grams: x.grams }))
+        items: matched.filter((x) => x.product && x.grams > 0).map((x) => ({ product: x.product, grams: x.grams }))
           .concat(r.added.map((a) => ({ product: a.product, grams: a.grams }))),
         complete: isLayoutComplete(r.totals, duration),
       };
     });
     let ehtml = '<h3>Примеры более полных раскладок</h3>';
-    ehtml += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты (как раньше); ' +
-      'пример <b>3</b> — с несколькими БАДами. Исключённые из рекомендаций сюда тоже не попадают.</p>';
+    ehtml += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты; ' +
+      'пример <b>3</b> — с несколькими БАДами. На срок ' + formatDays(duration) + ' сут.</p>';
     examples.forEach((ex, i) => {
       ehtml += '<div class="example-block"><h4>Пример ' + (i + 1) + escapeHtml(ex.label || '') +
         (ex.complete ? ' <span class="pill ok">полный</span>' : ' <span class="pill warn">частичный</span>') +
@@ -814,7 +947,7 @@ function renderLayoutMode(panel, itemsRaw) {
       const boxes = allRecChecks();
       if (!boxes.length) return;
       const allOn = boxes.every((b) => b.checked);
-      const next = !allOn; // if all chosen → clear; otherwise select all
+      const next = !allOn;
       boxes.forEach((b) => { b.checked = next; });
       syncCheckAllState();
     }
@@ -866,7 +999,7 @@ function renderLayoutMode(panel, itemsRaw) {
     if (newBtn) {
       newBtn.addEventListener('click', () => {
         const baseParts = matched
-          .filter((x) => x.product)
+          .filter((x) => x.product && x.grams > 0)
           .map((x) => ({ product: x.product, grams: x.grams }));
         const checked = [];
         recMount.querySelectorAll('tr[data-pid]').forEach((tr) => {
@@ -883,8 +1016,7 @@ function renderLayoutMode(panel, itemsRaw) {
           return;
         }
         const items = buildLayoutItemsParam(baseParts.concat(checked));
-        const url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(items);
-        location.assign(url);
+        location.assign(layoutUrl(items, targetDays));
       });
     }
 
@@ -892,6 +1024,12 @@ function renderLayoutMode(panel, itemsRaw) {
   }
 
   renderRecommendations();
+}
+
+function formatDays(d) {
+  const n = Number(d);
+  if (!Number.isFinite(n)) return String(d);
+  return (Math.round(n * 100) / 100).toString();
 }
 
 function findBadProductByTitle(substr) {
@@ -907,7 +1045,11 @@ function exampleLayoutParam() {
 function renderDefaultModeLinks(panel) {
   const base = pageBaseUrl();
   const urlNutrients = base + '?mode=nutrients';
-  const urlLayout = base + '?mode=layout&items=' + encodeURIComponent(exampleLayoutParam());
+  const urlLayout = layoutUrl(exampleLayoutParam(), LAYOUT_DEFAULT_DAYS);
+  const urlLayoutAuto = layoutUrl(
+    'yajco_kurinoe_celoe,grechiha_zerno,moloko_suhoe_1,krupa_risovaya',
+    3
+  );
   panel.innerHTML =
     '<section class="mode-card mode-links">' +
     '<h2>Режимы по ссылке (GET)</h2>' +
@@ -917,9 +1059,10 @@ function renderDefaultModeLinks(panel) {
     '<a href="' + escapeHtml(urlNutrients) + '">' + escapeHtml(urlNutrients) + '</a></li>' +
     '<li><b>Анализ раскладки (пример):</b><br/>' +
     '<a href="' + escapeHtml(urlLayout) + '">' + escapeHtml(urlLayout) + '</a><br/>' +
-    '<span class="mode-note">Параметр <code>items</code> (или <code>layout</code>): продукты (латиница <code>slug:g</code>). ' +
-    'В анализе: примеры 1–2 без БАД; пример <b>3 — с БАДами</b>. Демо URL: ' +
-    '<code>' + escapeHtml(exampleLayoutParam()) + '</code></span></li>' +
+    '<span class="mode-note">Параметры: <code>items</code> (продукты), <code>days</code> (срок в сутках, по умолчанию 1). ' +
+    'Без граммов при <code>days</code> количества подбираются. Примеры 1–2 без БАД; пример <b>3 — с БАДами</b>.</span><br/>' +
+    '<span class="mode-note">Без количеств на 3 суток: <a href="' + escapeHtml(urlLayoutAuto) + '">' +
+    escapeHtml(urlLayoutAuto) + '</a></span></li>' +
     '</ol>' +
     '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
     '</section>';
@@ -937,7 +1080,7 @@ function applyModeUi(query) {
     if (toolbar) toolbar.style.display = '';
   } else if (query.mode === 'layout') {
     if (lead) lead.innerHTML = 'Режим: <b>анализ раскладки</b> из GET-параметра. Ниже — справочник продуктов.';
-    renderLayoutMode(panel, query.itemsRaw);
+    renderLayoutMode(panel, query.itemsRaw, query.days);
     if (toolbar) toolbar.style.display = '';
   } else {
     if (lead) lead.innerHTML = 'Поиск → <b>группа</b> → продукт → нутриенты. Все БАДы в одной группе <b>БАД</b>.';

@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v14: диаграмма покрытия норм; select-all в рекомендациях; bump версии при выкладке
+**Последнее обновление:** 2026-07-30 — v15: параметр `days` / срок на форме; авто-кол-во без граммов; выкладка
 
 ---
 
@@ -37,7 +37,8 @@
 **Открыть:**
 - Pages: https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
 - Нутриенты → топ продуктов: `…/simple/dietolog.html?mode=nutrients`  
-- Анализ раскладки: `…/simple/dietolog.html?mode=layout&items=slug:grams,…`  
+- Анализ раскладки: `…/simple/dietolog.html?mode=layout&items=slug:grams,…&days=1`  
+  (без граммов: `items=slug,slug&days=3` — количества подбираются)  
 - или через Angular: заголовок «ДИЕТОЛОГ» → **«простой просмотр»**  
 - локально: `simple/dietolog.html` / `ng serve` → `/simple/dietolog.html`
 
@@ -47,7 +48,7 @@
 |-------|-----------|-----|
 | browse (по умолчанию) | нет | Ссылки на режимы + поиск → группа → продукт |
 | nutrients | `mode=nutrients` или `nutrients=1` | Список нутриентов; раскрытие → топ‑15 продуктов (содержание + % сут. min); ниже справочник |
-| layout | `mode=layout&items=…` или `layout=…` | Раскладка, нутриенты/дефицит на срок, рекомендации, 3 примера полной раскладки |
+| layout | `mode=layout&items=…` [`&days=N`] | Раскладка на срок N сут. (по умолчанию 1); авто-кол-во без граммов; дефицит; рекомендации; примеры |
 
 **Формат `items` / `layout` (читаемый в URL):** латиница `slug:grams`, через запятую, напр. `yajco_kurinoe_celoe:100,grechiha_zerno:150`.  
 Альтернативы: JSON `[{"n":"slug","g":100}]`; точный id `id:193:100`.  
@@ -88,6 +89,13 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v15: срок days + авто-количество)
+
+- URL: `days` (или `time`) — на сколько суток нужна раскладка; по умолчанию **1**.
+- Без граммов в `items` при сроке — количества подбираются (по ккал), дальше рекомендации как обычно.
+- Справа от диаграммы покрытия — редактируемое поле «Срок (сут.)»; смена пересчитывает анализ и обновляет URL.
+- Seed/UI **v15**.
 
 ### 2026-07-30 (v14: покрытие норм + select-all)
 
@@ -233,6 +241,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v15: days/time URL + editable term; auto qty; USER #24 |
 | 2026-07-30 | v14: coverage pie + total %; rec select-all; USER #23 |
 | 2026-07-30 | layout recommendations: checkbox, trash exclude+recalc, new list button (USER #22) |
 | 2026-07-30 | v13: омега/масла БАД без дублей с едой (USER #20) |
