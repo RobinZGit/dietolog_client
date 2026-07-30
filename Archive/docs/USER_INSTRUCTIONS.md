@@ -11,6 +11,8 @@
 
 ---
 
+33. Or you can build a file seed right inside the main file, so that the database is in the main file. Divide it somewhere at the very bottom, put it somewhere, and comment, write comments to all the functions. And to this database.
+
 32. I want to download the HTML file with the database locally and make it work locally, including on the Android tablet. Because now I have download links to gitpages. And the database, as I understand it, is also not there, because it is small.
 
 31. The button to create a new list, even if nothing is selected, must calculate the calories for the current period, that is, for this period, bring everything to the calorie norm, and if suddenly there is a drawback, then you need to let him choose some more products, as usual.
