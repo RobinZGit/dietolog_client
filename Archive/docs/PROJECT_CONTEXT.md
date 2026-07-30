@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — раскладка: без бейджа fastdegree у имени продукта
+**Последнее обновление:** 2026-07-30 — v26: тофу, соевое мясо, хумус, фалафель, морская капуста, ореховые снеки
 
 ---
 
@@ -65,7 +65,7 @@
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
 | `nutrients` | **43** | id, name, units, min/max |
-| `products` | **1275** (в т.ч. 36 БАД) | id, name, **fastdegree** (сухоядение/до масла/до рыбы/скоромное/БАД), **group** |
+| `products` | **1294** (в т.ч. 36 БАД) | id, name, **fastdegree**, **group** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
 Источник снимка: `static.datasource.ts` (= логика Postgres / dietolog_server). Ссылки `info` нутриентов: **edaplus.info**.
@@ -89,6 +89,11 @@
 ---
 
 ## Что сделано
+
+### 2026-07-30 (v26: вкусные растительные продукты)
+
+- +19 позиций: тофу (твёрдый/шелковый), соевое мясо сухое и отварное, темпе, хумус, фалафель, нут/чечевица/фасоль варёные, фасоль в томате, морская капуста (консервы + сушёная), семена тыквы/подсолнечника, урбеч миндальный, козинак, вафли ореховые, соевый соус.
+- Скрипт: `Archive/scripts/enrich-tasty-plant-foods.py`. Seed **v26**, продуктов **1294**.
 
 ### 2026-07-30 (раскладка: только имя продукта)
 
@@ -301,6 +306,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-30 | v26: tasty soy/legume/nut foods + sea cabbage; USER #36 |
 | 2026-07-30 | v25: one-file HTML, SEED comment, seed.json→Archive; USER #34 |
 | 2026-07-30 | v24: fastdegree URL+UI filter; seafood degrees fixed; USER #33 |
 | 2026-07-30 | v23: offline download button + README; USER #32 |

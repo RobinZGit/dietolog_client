@@ -11,6 +11,8 @@
 
 ---
 
+36. Add to the database some delicious products, like soy meat, soy cheese, if there is no such thing yet. Something from nuts, maybe waffles, from beans, something ready. Sea cabbage, if it is not there, but it is there. Add to the database some delicious products, like soy meat, soy cheese, if there is no such thing yet. It will collect it like it's first made.
+
 35. Don't write the degree of the post in the layout, just find the name of the product in the database and that's it. And immediately put it in the main.
 
 34. I don't really understand I'm looking at the repository I see a file dietologist.ml and a seed.json We made it so that this seed is placed in front of the dietologist But I don't see it inside Is it reasonable to do this? I'd like it to be one file So that this seed, in the form of some object, can be placed somewhere down and share it with the rest of the community and write in the comments that this is a bad download and leave one file and press the seed If you can, do it like this and post it right away in the May branch
