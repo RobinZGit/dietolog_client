@@ -858,14 +858,14 @@ function productFamily(product) {
     [/фасол|нут|чечевиц|горох|со[еи]|тофу|темпе/, 'бобовые'],
     [/грецк|миндал|кешью|фундук|арахис|семена|тыкв.*семен|подсолнеч/, 'орехи'],
     [/курага|изюм|чернослив|финик|сушен.*(яблок|груш|персик|слив)/, 'сухофрукты'],
-    [/яйц/, 'яйца'],
+    [/яйц|желток|меланж|омлет|яичниц/, 'яйца'],
     [/говяд|телен|телятин/, 'говядина'],
     [/свинин|бекон|шпик|сало/, 'свинина'],
     [/курин|куриц|цыплен|индейк/, 'птица'],
-    [/рыб|треск|лосос|сельдь|минтай|скумбр|лещ/, 'рыба'],
-    [/сыр\b|творог|кефир|йогурт|молоко|сливки/, 'молочка'],
+    [/рыб|треск|лосос|сельдь|минтай|скумбр|лещ|икр/, 'рыба'],
+    [/сметан|сливк|сыр\b|творог|кефир|йогурт|молоко/, 'молочка'],
     [/масло|маргарин|жир\b/, 'жиры'],
-    [/шоколад|халва|карамель|печенье|вафл|конфет/, 'сладости'],
+    [/м[её]д(?!уз)|шоколад|халва|карамель|печенье|вафл|конфет/, 'сладости'],
     [/соль|перец|специ|паприка|кориц/, 'специи'],
   ];
   for (const [re, fam] of rules) {
@@ -888,11 +888,13 @@ function nutrientAmountInGrams(value, units) {
   return v;
 }
 
+/** Macro nutrient ids — boosted for analogue matching. */
+const ANALOGUE_MACRO_IDS = new Set([0, 1, 2, 3, 45]); // белки, жиры, углеводы, ккал, сахара
+
 /**
- * Composition vector for analogue similarity:
- * 1) convert to grams, 2) divide by daily min (also in grams)
- * → «доля суточной нормы на 100 г». Then cosine compares shapes fairly:
- * protein 0 vs 21 g matters, and mg-minerals no longer drown macros.
+ * Composition vector for analogues:
+ * grams → доля суточной нормы; макросы усилены; холестерин исключён
+ * (иначе яйцо ≈ сметана из‑за холестерина, мёд попадает как «другое семейство»).
  */
 function nutrientVector(productId) {
   const items = infoCache.get(productId) || [];
@@ -902,9 +904,11 @@ function nutrientVector(productId) {
     if (v <= 0) continue;
     const n = nutrientById.get(nid);
     if (!n) continue;
+    if (/холестерин/i.test(String(n.name))) continue;
     const grams = nutrientAmountInGrams(v, n.units);
     const dailyG = nutrientAmountInGrams(Number(n.min) || 0, n.units);
-    const w = dailyG > 0 ? grams / dailyG : grams;
+    let w = dailyG > 0 ? grams / dailyG : grams;
+    if (ANALOGUE_MACRO_IDS.has(Number(nid))) w *= 3;
     if (w > 0) vec.set(nid, w);
   }
   return vec;
@@ -926,8 +930,9 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 /**
- * Analogues of a recommended product: close by composition / group,
- * but diversified by family so the list is not 5 near-duplicates.
+ * Analogues: stay in the same food group (яйца→яйца, овёс→овсянка),
+ * optionally same name-family across a close group. Do NOT force
+ * unrelated «families» (яйцо / сметана / мёд).
  * Always includes `product` itself first (default radio).
  */
 function findAnalogues(product, options) {
@@ -943,6 +948,7 @@ function findAnalogues(product, options) {
 
   const baseVec = nutrientVector(product.id);
   const baseFam = productFamily(product);
+  const baseGroup = product.group || '';
   const scored = [];
   for (const p of productsCache) {
     if (p.id === product.id) continue;
@@ -951,37 +957,35 @@ function findAnalogues(product, options) {
     if (!productAllowedForFast(p, fastDegree)) continue;
     if (!productAllowedForTrail(p, trailOnly)) continue;
     if (nutrientId != null && productNutrientPerBase(p.id, nutrientId) <= 0) continue;
-    const sim = cosineSimilarity(baseVec, nutrientVector(p.id));
-    const sameGroup = (p.group || '') === (product.group || '');
-    // Threshold: same group can be a bit looser; otherwise need real composition match.
-    if (sim < (sameGroup ? 0.35 : 0.55) && !sameGroup) continue;
-    if (sim < 0.25) continue;
-    let score = sim + (sameGroup ? 0.12 : 0);
-    // Prefer same family as a close analogue, but not exclusively.
     const fam = productFamily(p);
-    if (fam === baseFam) score += 0.08;
-    scored.push({ product: p, sim, score, family: fam });
+    const sameGroup = (p.group || '') === baseGroup;
+    const sameFam = fam === baseFam;
+    // Cross-group only for the same culinary family (овёс↔овсянка).
+    if (!sameGroup && !sameFam) continue;
+    const sim = cosineSimilarity(baseVec, nutrientVector(p.id));
+    if (sameGroup && sim < 0.4) continue;
+    if (!sameGroup && sameFam && sim < 0.5) continue;
+    let score = sim + (sameGroup ? 0.15 : 0) + (sameFam ? 0.1 : 0);
+    scored.push({ product: p, sim, score, family: fam, sameGroup });
   }
   scored.sort((a, b) => b.score - a.score);
 
   const picked = [{ product: product, sim: 1, score: 1, family: baseFam, isOriginal: true }];
-  const usedFamilies = new Set([baseFam]);
-  // First pass: one close same-family option (e.g. oatmeal next to oat grain).
-  for (const c of scored) {
-    if (c.family === baseFam) {
-      picked.push({ ...c, isOriginal: false });
-      break;
-    }
-  }
-  // Second pass: diversify — different families.
+  // Prefer same-family peers first (желток / целое / перепелиное).
   for (const c of scored) {
     if (picked.length >= limit) break;
+    if (c.family !== baseFam) continue;
     if (picked.some((x) => x.product.id === c.product.id)) continue;
-    if (usedFamilies.has(c.family)) continue;
     picked.push({ ...c, isOriginal: false });
-    usedFamilies.add(c.family);
   }
-  // Fill if still short (allow another from known families with lower priority).
+  // Then other products from the same catalog group.
+  for (const c of scored) {
+    if (picked.length >= limit) break;
+    if (!c.sameGroup) continue;
+    if (picked.some((x) => x.product.id === c.product.id)) continue;
+    picked.push({ ...c, isOriginal: false });
+  }
+  // Last resort: same name-family but other group (редко).
   for (const c of scored) {
     if (picked.length >= limit) break;
     if (picked.some((x) => x.product.id === c.product.id)) continue;
@@ -1060,8 +1064,8 @@ function openAnalogModal(opts) {
 
   let body = '<div class="analog-dialog">' +
     '<h3 class="analog-title">Аналоги</h3>' +
-    '<p class="mode-note">Близкие по составу (нутриенты в граммах и доле суточной нормы) и группе; ' +
-    'в списке — разные «семейства», чтобы не дублировать одно и то же. Выберите один вариант (radio).</p>' +
+    '<p class="mode-note">Аналоги из той же группы продуктов (и близкого «семейства», напр. овёс↔овсянка), ' +
+    'по макросам и составу. Выберите один вариант (radio).</p>' +
     '<p class="analog-orig">Исходное предложение: <b>' + escapeHtml(product.name) + '</b>' +
     (nutrientName ? (' · закрывает: ' + escapeHtml(nutrientName)) : '') +
     '</p><form class="analog-form"><div class="analog-list">';

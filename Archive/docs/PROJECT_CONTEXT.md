@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-31 — v34: «Добавить в раскладку»
+**Последнее обновление:** 2026-07-31 — v35: аналоги только в своей группе
 
 ---
 

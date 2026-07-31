@@ -11,6 +11,8 @@
 
 ---
 
+47. It turns out very strange in the case of analogues. Look, an egg, a chicken yolk, an analogue of sour cream 20%, an analogue of cream, an analogue of honey, a bee. Why? Especially honey with eggs, there are generally, in my opinion, different compositions.
+
 46. "Создать новый список" - переименуй в "Добавить в раскладку" And then upload the version number and post it in the repository.
 
 45. No, the button to download the layout should be on the left Opposite the words of your layout That's one thing And secondly, highlight the block of your layout So that people pay attention to it Let it be circled Let the lines be separated by lines And when you upload it to the main, you only raise the version It all remains 32, and I asked to raise
