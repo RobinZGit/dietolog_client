@@ -11,6 +11,8 @@
 
 ---
 
+43. The suggested products are in the block I mean, it is recommended to add them in the block Make a button to show the analogues of each line, of each product and draw a separate form on it that contains this product as well as the ones close to the composition For example, oats, grain, and oatmeal Not grain, but oatmeal Here are some criteria Choose the similarities yourself And try to offer different products that are not similar to each other to this criteria Accordingly, in the layout they should not be very similar if we choose only one from this group Analogues are radio buttons We select only one of these analogues By default, the one you suggested is selected And, accordingly, by pressing the OK button on this new form the one you suggested is replaced by the one chosen again
+
 42. You can also add melted butter or cream cheese, but of course it doesn't fit in this recipe.
 
 41. The nuts looks good for trip. For example, peanuts are peeled and fried. Walnuts are peeled. Sun-dried pumpkin seeds and others are peeled. and dried fruits as well.

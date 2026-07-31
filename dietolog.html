@@ -197,6 +197,7 @@
 
 
 
+
     #modePanel { margin-bottom: 1rem; max-width: 920px; margin-left: auto; margin-right: auto; padding: 0 1.25rem; }
     .mode-card {
       border: 1px solid var(--line);
@@ -362,6 +363,56 @@
       cursor: pointer; user-select: none;
     }
     .rec-table th.col-product:hover { color: var(--accent); }
+    .rec-table .col-analog { width: 5.5rem; text-align: center; white-space: nowrap; }
+    .btn-analog {
+      border: 1px solid var(--line); background: #fff; color: var(--accent);
+      border-radius: 6px; padding: 0.2rem 0.45rem; cursor: pointer;
+      font: inherit; font-size: 0.78rem; font-weight: 600;
+    }
+    .btn-analog:hover { background: #eef5f2; }
+    .analog-overlay {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(28, 36, 32, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .analog-dialog {
+      width: min(28rem, 100%); max-height: min(85vh, 36rem);
+      overflow: auto; background: #fffef9; border: 1px solid var(--line);
+      border-radius: 12px; padding: 1rem 1.1rem 1.05rem;
+      box-shadow: 0 12px 40px rgba(20, 30, 25, 0.18);
+    }
+    .analog-title { margin: 0 0 0.35rem; font-size: 1.05rem; color: var(--accent); }
+    .analog-orig { margin: 0.35rem 0 0.65rem; font-size: 0.88rem; }
+    .analog-list { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.4rem 0 0.85rem; }
+    .analog-option {
+      display: flex; gap: 0.55rem; align-items: flex-start;
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.45rem 0.55rem; cursor: pointer; background: #fff;
+    }
+    .analog-option:has(input:checked) {
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+      background: #eef7f1;
+    }
+    .analog-option input { margin-top: 0.2rem; accent-color: var(--accent); }
+    .analog-option-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+    .analog-name { font-size: 0.9rem; font-weight: 600; }
+    .analog-meta { font-size: 0.78rem; color: var(--muted); }
+    .analog-actions {
+      display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.25rem;
+    }
+    .btn-analog-cancel, .btn-analog-ok {
+      border-radius: 8px; padding: 0.4rem 0.85rem; cursor: pointer;
+      font: inherit; font-weight: 700; font-size: 0.88rem;
+    }
+    .btn-analog-cancel {
+      border: 1px solid var(--line); background: #fff; color: var(--text);
+    }
+    .btn-analog-cancel:hover { background: #f5f2ea; }
+    .btn-analog-ok {
+      border: none; background: #2f5d50; color: #fff;
+    }
+    .btn-analog-ok:hover { background: #254a40; }
     .offline-bar {
       max-width: 920px; margin: 0.5rem auto 0; padding: 0.55rem 0.75rem;
       display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem;
@@ -398,6 +449,7 @@
   <main>
     <div id="list" class="list"><div class="loading">Загрузка групп…</div></div>
   </main>
+
 
 
 
@@ -1496,6 +1548,7 @@ function recommendAdditions(baseTotals, duration, variantShift, options) {
   const totals = cloneTotals(baseTotals);
   const added = [];
   const usedIds = new Set();
+  const usedFamilies = new Set();
   const excludeIds = new Set(
     (options && options.excludeIds) ? [...options.excludeIds].map(Number) : []
   );
@@ -1516,65 +1569,77 @@ function recommendAdditions(baseTotals, duration, variantShift, options) {
       .filter((r) => productAllowedForTrail(r.product, trailOnly));
     const badCandidates = ranked.filter((r) => r.product.section === 'bad');
     const foodCandidates = ranked.filter((r) => r.product.section !== 'bad');
-    // foods only OR foods first + BADs for remaining gaps («немного БАД» in example 3)
+    // foods only OR foods first + BADs for leftover gaps («немного БАД» in example 3)
     const pools = preferBad ? [foodCandidates, badCandidates] : [foodCandidates];
 
     let chosen = null;
     let grams = 0;
-    outer:
-    for (const pool of pools) {
-      if (!pool.length) continue;
-      const start = variantShift % pool.length;
-      for (let k = 0; k < pool.length; k++) {
-        const c = pool[(start + k) % pool.length];
-        if (usedIds.has(c.product.id)) continue;
-        const isBad = c.product.section === 'bad';
-        const per100 = isBad
-          ? (productNutrientPerBase(c.product.id, worst.n.id) / 100)
-          : productNutrientPerBase(c.product.id, worst.n.id);
-        if (per100 <= 0) continue;
-        const target = worst.shortage * 1.08;
-        let g;
-        if (isBad) {
-          g = Math.max(1, Math.ceil(target / per100));
-        } else {
-          const maxG0 = maxPortionForProduct(c.product);
-          g = Math.ceil((target / per100) * 100);
-          // Do not force 20 g onto spices/salt whose max portion is smaller.
-          const minG = Math.min(20, maxG0);
-          g = Math.max(g, minG);
-          if (maxG0 >= 10) g = Math.ceil(g / 10) * 10;
-          else g = Math.max(1, Math.round(g));
-        }
-        const maxG = maxPortionForProduct(c.product);
-        if (g > maxG) {
-          if (!isBad && maxG >= 5) {
-            const help = amountInPortion(c.product, worst.n.id, maxG);
-            if (help < worst.shortage * 0.08) continue;
-            g = maxG;
-          } else if (isBad) {
-            const help = amountInPortion(c.product, worst.n.id, maxG);
-            if (help < worst.shortage * 0.05) continue;
-            g = maxG;
+    // Prefer a different family than already recommended (analogues → one from group).
+    const tryPools = (preferNewFamily) => {
+      for (const pool of pools) {
+        if (!pool.length) continue;
+        const start = variantShift % pool.length;
+        for (let k = 0; k < pool.length; k++) {
+          const c = pool[(start + k) % pool.length];
+          if (usedIds.has(c.product.id)) continue;
+          const fam = productFamily(c.product);
+          if (preferNewFamily && usedFamilies.has(fam) && c.product.section !== 'bad') continue;
+          const isBad = c.product.section === 'bad';
+          const per100 = isBad
+            ? (productNutrientPerBase(c.product.id, worst.n.id) / 100)
+            : productNutrientPerBase(c.product.id, worst.n.id);
+          if (per100 <= 0) continue;
+          const target = worst.shortage * 1.08;
+          let g;
+          if (isBad) {
+            g = Math.max(1, Math.ceil(target / per100));
           } else {
-            continue;
+            const maxG0 = maxPortionForProduct(c.product);
+            g = Math.ceil((target / per100) * 100);
+            const minG = Math.min(20, maxG0);
+            g = Math.max(g, minG);
+            if (maxG0 >= 10) g = Math.ceil(g / 10) * 10;
+            else g = Math.max(1, Math.round(g));
           }
+          const maxG = maxPortionForProduct(c.product);
+          if (g > maxG) {
+            if (!isBad && maxG >= 5) {
+              const help = amountInPortion(c.product, worst.n.id, maxG);
+              if (help < worst.shortage * 0.08) continue;
+              g = maxG;
+            } else if (isBad) {
+              const help = amountInPortion(c.product, worst.n.id, maxG);
+              if (help < worst.shortage * 0.05) continue;
+              g = maxG;
+            } else {
+              continue;
+            }
+          }
+          return { product: c.product, grams: g, family: fam };
         }
-        chosen = c.product;
-        grams = g;
-        break outer;
       }
-    }
-    if (!chosen) {
+      return null;
+    };
+    let pick = tryPools(true) || tryPools(false);
+    if (!pick) {
       skippedNutrientIds.add(worst.n.id);
       continue;
     }
+    chosen = pick.product;
+    grams = pick.grams;
     for (const n of nutrientById.values()) {
       const add = amountInPortion(chosen, n.id, grams);
       if (add) totals.set(n.id, (totals.get(n.id) || 0) + add);
     }
     usedIds.add(chosen.id);
-    added.push({ product: chosen, grams, forNutrient: worst.n.name });
+    usedFamilies.add(pick.family);
+    added.push({
+      product: chosen,
+      grams,
+      forNutrient: worst.n.name,
+      forNutrientId: worst.n.id,
+      originalId: chosen.id,
+    });
     if (added.length >= 16) break;
   }
   return { added, totals };
@@ -1603,6 +1668,275 @@ function saveLayoutExcludeIds(ids) {
   try {
     sessionStorage.setItem(LAYOUT_EXCLUDE_KEY, JSON.stringify([...ids]));
   } catch (e) { /* ignore */ }
+}
+
+/** Recommendation row overrides: originalPid → replacementPid */
+const REC_OVERRIDE_KEY = 'dietolog_rec_analog_overrides';
+
+function loadRecOverrides() {
+  try {
+    const raw = sessionStorage.getItem(REC_OVERRIDE_KEY);
+    if (!raw) return {};
+    const o = JSON.parse(raw);
+    return o && typeof o === 'object' ? o : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveRecOverrides(map) {
+  try {
+    sessionStorage.setItem(REC_OVERRIDE_KEY, JSON.stringify(map || {}));
+  } catch (e) { /* ignore */ }
+}
+
+/** Coarse food family for diversifying analogues (oats vs oatmeal stay related). */
+function productFamily(product) {
+  const n = String(product && product.name || '').toLowerCase().replace(/ё/g, 'е');
+  const rules = [
+    [/греч/, 'греча'],
+    [/ов[еe]с|овсян|геркулес|толокно/, 'овес'],
+    [/рис\b|рисово|рисовая/, 'рис'],
+    [/пшен(?!иц)/, 'пшено'],
+    [/перлов|ячмен/, 'ячмень'],
+    [/пшениц|манн|булгур|кускус|спельт/, 'пшеница'],
+    [/кукуруз|маис|попкорн/, 'кукуруза'],
+    [/картоф|чипсы/, 'картофель'],
+    [/морков/, 'морковь'],
+    [/капуст|броккол|цветн/, 'капуста'],
+    [/фасол|нут|чечевиц|горох|со[еи]|тофу|темпе/, 'бобовые'],
+    [/грецк|миндал|кешью|фундук|арахис|семена|тыкв.*семен|подсолнеч/, 'орехи'],
+    [/курага|изюм|чернослив|финик|сушен.*(яблок|груш|персик|слив)/, 'сухофрукты'],
+    [/яйц/, 'яйца'],
+    [/говяд|телен|телятин/, 'говядина'],
+    [/свинин|бекон|шпик|сало/, 'свинина'],
+    [/курин|куриц|цыплен|индейк/, 'птица'],
+    [/рыб|треск|лосос|сельдь|минтай|скумбр|лещ/, 'рыба'],
+    [/сыр\b|творог|кефир|йогурт|молоко|сливки/, 'молочка'],
+    [/масло|маргарин|жир\b/, 'жиры'],
+    [/шоколад|халва|карамель|печенье|вафл|конфет/, 'сладости'],
+    [/соль|перец|специ|паприка|кориц/, 'специи'],
+  ];
+  for (const [re, fam] of rules) {
+    if (re.test(n)) return fam;
+  }
+  return (product.group || 'прочее').toLowerCase();
+}
+
+function nutrientVector(productId) {
+  const items = infoCache.get(productId) || [];
+  const vec = new Map();
+  for (const [nid, val] of items) {
+    const v = Number(val) || 0;
+    if (v > 0) vec.set(nid, v);
+  }
+  return vec;
+}
+
+function cosineSimilarity(vecA, vecB) {
+  if (!vecA.size || !vecB.size) return 0;
+  let dot = 0;
+  let na = 0;
+  let nb = 0;
+  for (const [k, va] of vecA) {
+    na += va * va;
+    const vb = vecB.get(k);
+    if (vb) dot += va * vb;
+  }
+  for (const vb of vecB.values()) nb += vb * vb;
+  if (na <= 0 || nb <= 0) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+/**
+ * Analogues of a recommended product: close by composition / group,
+ * but diversified by family so the list is not 5 near-duplicates.
+ * Always includes `product` itself first (default radio).
+ */
+function findAnalogues(product, options) {
+  const opts = options || {};
+  const limit = opts.limit || 7;
+  const fastDegree = normalizeFastDegree(opts.fastdegree);
+  const trailOnly = !!opts.trailOnly;
+  const nutrientId = opts.nutrientId != null ? Number(opts.nutrientId) : null;
+  const excludeIds = new Set(
+    (opts.excludeIds ? [...opts.excludeIds] : []).map(Number)
+  );
+  excludeIds.delete(product.id);
+
+  const baseVec = nutrientVector(product.id);
+  const baseFam = productFamily(product);
+  const scored = [];
+  for (const p of productsCache) {
+    if (p.id === product.id) continue;
+    if (excludeIds.has(p.id)) continue;
+    if ((p.section || 'food') !== (product.section || 'food')) continue;
+    if (!productAllowedForFast(p, fastDegree)) continue;
+    if (!productAllowedForTrail(p, trailOnly)) continue;
+    if (nutrientId != null && productNutrientPerBase(p.id, nutrientId) <= 0) continue;
+    const sim = cosineSimilarity(baseVec, nutrientVector(p.id));
+    const sameGroup = (p.group || '') === (product.group || '');
+    // Threshold: same group can be a bit looser; otherwise need real composition match.
+    if (sim < (sameGroup ? 0.35 : 0.55) && !sameGroup) continue;
+    if (sim < 0.25) continue;
+    let score = sim + (sameGroup ? 0.12 : 0);
+    // Prefer same family as a close analogue, but not exclusively.
+    const fam = productFamily(p);
+    if (fam === baseFam) score += 0.08;
+    scored.push({ product: p, sim, score, family: fam });
+  }
+  scored.sort((a, b) => b.score - a.score);
+
+  const picked = [{ product: product, sim: 1, score: 1, family: baseFam, isOriginal: true }];
+  const usedFamilies = new Set([baseFam]);
+  // First pass: one close same-family option (e.g. oatmeal next to oat grain).
+  for (const c of scored) {
+    if (c.family === baseFam) {
+      picked.push({ ...c, isOriginal: false });
+      break;
+    }
+  }
+  // Second pass: diversify — different families.
+  for (const c of scored) {
+    if (picked.length >= limit) break;
+    if (picked.some((x) => x.product.id === c.product.id)) continue;
+    if (usedFamilies.has(c.family)) continue;
+    picked.push({ ...c, isOriginal: false });
+    usedFamilies.add(c.family);
+  }
+  // Fill if still short (allow another from known families with lower priority).
+  for (const c of scored) {
+    if (picked.length >= limit) break;
+    if (picked.some((x) => x.product.id === c.product.id)) continue;
+    picked.push({ ...c, isOriginal: false });
+  }
+  return picked;
+}
+
+function nutrientIdByName(name) {
+  const s = String(name || '').toLowerCase();
+  for (const n of nutrientById.values()) {
+    if (String(n.name).toLowerCase() === s) return n.id;
+  }
+  return null;
+}
+
+/** Recalculate portion so analogue ≈ same amount of key nutrient as original portion. */
+function gramsMatchingNutrient(origProduct, origGrams, newProduct, nutrientId) {
+  if (!newProduct) return origGrams;
+  if (nutrientId == null) return origGrams;
+  const want = amountInPortion(origProduct, nutrientId, origGrams);
+  if (!(want > 0)) return origGrams;
+  const isBad = newProduct.section === 'bad';
+  const per = isBad
+    ? productNutrientPerBase(newProduct.id, nutrientId) / 100
+    : productNutrientPerBase(newProduct.id, nutrientId) / 100;
+  if (!(per > 0)) return origGrams;
+  let g = want / per;
+  const maxG = maxPortionForProduct(newProduct);
+  if (isBad) {
+    g = Math.max(1, Math.min(maxG, Math.ceil(g)));
+  } else {
+    g = Math.max(10, Math.min(maxG, Math.ceil(g / 10) * 10));
+  }
+  return g;
+}
+
+function closeAnalogModal() {
+  const el = document.getElementById('analogModal');
+  if (el) el.remove();
+}
+
+function openAnalogModal(opts) {
+  closeAnalogModal();
+  const product = opts.product;
+  const grams = opts.grams;
+  const nutrientName = opts.nutrientName || '';
+  const nutrientId = opts.nutrientId != null ? opts.nutrientId : nutrientIdByName(nutrientName);
+  const selectedId = opts.selectedId != null ? opts.selectedId : product.id;
+  const analogues = findAnalogues(product, {
+    fastdegree: opts.fastdegree,
+    trailOnly: opts.trailOnly,
+    nutrientId,
+    excludeIds: opts.excludeIds,
+    limit: 7,
+  });
+  // Ensure currently selected (after prior override) appears and is checked.
+  if (selectedId !== product.id) {
+    const sel = productsCache.find((p) => p.id === selectedId);
+    if (sel && !analogues.some((a) => a.product.id === selectedId)) {
+      analogues.splice(1, 0, {
+        product: sel,
+        sim: cosineSimilarity(nutrientVector(product.id), nutrientVector(sel.id)),
+        family: productFamily(sel),
+        isOriginal: false,
+      });
+    }
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'analogModal';
+  overlay.className = 'analog-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Аналоги продукта');
+
+  let body = '<div class="analog-dialog">' +
+    '<h3 class="analog-title">Аналоги</h3>' +
+    '<p class="mode-note">Близкие по составу и группе; в списке — разные «семейства», чтобы не дублировать одно и то же. ' +
+    'Выберите один вариант (radio).</p>' +
+    '<p class="analog-orig">Исходное предложение: <b>' + escapeHtml(product.name) + '</b>' +
+    (nutrientName ? (' · закрывает: ' + escapeHtml(nutrientName)) : '') +
+    '</p><form class="analog-form"><div class="analog-list">';
+
+  analogues.forEach((a) => {
+    const id = 'analogOpt_' + a.product.id;
+    const checked = a.product.id === selectedId ? ' checked' : '';
+    const mark = a.isOriginal || a.product.id === product.id
+      ? ' <span class="pill ok">предложение</span>'
+      : '';
+    const simPct = Math.round((a.sim || 0) * 100);
+    body += '<label class="analog-option" for="' + id + '">' +
+      '<input type="radio" name="analogPick" id="' + id + '" value="' + a.product.id + '"' + checked + ' />' +
+      '<span class="analog-option-text">' +
+      '<span class="analog-name">' + escapeHtml(a.product.name) + mark + '</span>' +
+      '<span class="analog-meta">' + escapeHtml(a.product.group || '') +
+      (a.product.id !== product.id ? (' · сходство ~' + simPct + '%') : '') +
+      '</span></span></label>';
+  });
+
+  body += '</div><div class="analog-actions">' +
+    '<button type="button" class="btn-analog-cancel" id="analogCancel">Отмена</button>' +
+    '<button type="submit" class="btn-analog-ok" id="analogOk">OK</button>' +
+    '</div></form></div>';
+
+  overlay.innerHTML = body;
+  document.body.appendChild(overlay);
+
+  const finish = (replacementId) => {
+    closeAnalogModal();
+    if (typeof opts.onOk === 'function' && replacementId) {
+      opts.onOk(Number(replacementId));
+    }
+  };
+
+  overlay.querySelector('#analogCancel').addEventListener('click', () => closeAnalogModal());
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeAnalogModal();
+  });
+  const form = overlay.querySelector('.analog-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const picked = form.querySelector('input[name="analogPick"]:checked');
+    if (!picked) return;
+    finish(picked.value);
+  });
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') {
+      document.removeEventListener('keydown', esc);
+      closeAnalogModal();
+    }
+  });
 }
 
 function buildLayoutItemsParam(parts) {
@@ -2189,12 +2523,40 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
 
   function renderRecommendations() {
     const exIds = loadLayoutExcludeIds();
+    const overrides = loadRecOverrides();
     const rec = recommendAdditions(totals, duration, 0, {
       preferBad: false,
       excludeIds: exIds,
       fastdegree: targetFast,
       trailOnly: targetTrail,
     });
+    // Apply analogue replacements chosen earlier (origId → replacementId).
+    const displayRows = rec.added.map((a) => {
+      const origId = a.originalId || a.product.id;
+      const replId = Number(overrides[String(origId)]);
+      let product = a.product;
+      let grams = a.grams;
+      if (replId && replId !== origId) {
+        const repl = productsCache.find((p) => p.id === replId);
+        if (repl) {
+          product = repl;
+          grams = gramsMatchingNutrient(
+            a.product, a.grams, repl,
+            a.forNutrientId != null ? a.forNutrientId : nutrientIdByName(a.forNutrient)
+          );
+        }
+      }
+      return {
+        product,
+        grams,
+        forNutrient: a.forNutrient,
+        forNutrientId: a.forNutrientId != null ? a.forNutrientId : nutrientIdByName(a.forNutrient),
+        originalId: origId,
+        originalProduct: a.product,
+        originalGrams: a.grams,
+      };
+    });
+
     let rhtml = '<div class="rec-head">' +
       '<h3 class="rec-title">Рекомендуется добавить</h3>' +
       '<button type="button" class="btn-new-list" id="btnNewList" ' +
@@ -2202,6 +2564,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       'Создать новый список</button></div>';
       rhtml += '<p class="mode-note">«Создать новый список» всегда приводит <b>калорийность за срок к норме</b> ' +
       '(даже без галочек). Отметьте продукты и при необходимости измените <b>количество</b>, чтобы добавить их в список. ' +
+      'Кнопка <b>Аналоги</b> — выбрать близкий по составу продукт вместо предложенного. ' +
       'Пересчёт <b>внутри страницы</b> (офлайн). Если после балансировки останется дефицит — снова появятся рекомендации. ' +
       'Корзина в рекомендациях — убрать предложение; корзина в «Ваша раскладка» — удалить продукт и пересчитать.</p>';
 
@@ -2216,26 +2579,34 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       rhtml += '<button type="button" class="exclude-clear" id="btnClearExclude">очистить</button></div>';
     }
 
-    if (!rec.added.length) {
+    if (!displayRows.length) {
       rhtml += '<p class="mode-note">Раскладка уже достаточно полная на этот срок (или нечего подобрать после исключений).</p>';
     } else {
       rhtml += '<table class="mode-table rec-table"><thead><tr>' +
         '<th class="col-check"><input type="checkbox" class="rec-check-all" id="recCheckAll" ' +
         'title="Выбрать всё / снять всё" aria-label="Выбрать всё" /></th>' +
         '<th class="col-product" id="recProductHead" title="Выбрать всё / снять всё">Продукт</th>' +
-        '<th>Кол-во</th><th>Закрывает</th><th class="col-del"></th>' +
+        '<th>Кол-во</th><th>Закрывает</th><th class="col-analog"></th><th class="col-del"></th>' +
         '</tr></thead><tbody>';
-      for (const a of rec.added) {
+      for (const a of displayRows) {
         const unit = a.product.section === 'bad' ? ' шт.' : ' г';
         const step = a.product.section === 'bad' ? '1' : '10';
-        rhtml += '<tr data-pid="' + a.product.id + '" data-grams="' + a.grams + '">' +
+        const swapped = a.product.id !== a.originalId;
+        rhtml += '<tr data-pid="' + a.product.id + '" data-grams="' + a.grams + '" ' +
+          'data-orig-pid="' + a.originalId + '" data-nutrient-id="' +
+          (a.forNutrientId != null ? a.forNutrientId : '') + '" ' +
+          'data-nutrient-name="' + escapeHtml(a.forNutrient || '') + '" ' +
+          'data-orig-grams="' + a.originalGrams + '">' +
           '<td class="col-check"><input type="checkbox" class="rec-check" aria-label="Выбрать" /></td>' +
-          '<td>' + escapeHtml(a.product.name) +
-          (a.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') + '</td>' +
+          '<td><span class="rec-pname">' + escapeHtml(a.product.name) + '</span>' +
+          (a.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') +
+          (swapped ? ' <span class="pill warn" title="Заменён аналогом">аналог</span>' : '') +
+          '</td>' +
           '<td class="num col-qty"><input type="number" class="rec-qty" min="1" step="' + step + '" ' +
           'value="' + a.grams + '" title="Количество для нового списка" aria-label="Количество" />' +
           '<span class="qty-unit">' + unit + '</span></td>' +
           '<td>' + escapeHtml(a.forNutrient) + '</td>' +
+          '<td class="col-analog"><button type="button" class="btn-analog" title="Показать аналоги по составу">Аналоги</button></td>' +
           '<td class="col-del"><button type="button" class="btn-trash" title="Удалить и подобрать другое" ' +
           'aria-label="Удалить">' + trashIconSvg() + '</button></td></tr>';
       }
@@ -2292,14 +2663,58 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       });
     });
 
+    recMount.querySelectorAll('.btn-analog').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tr = btn.closest('tr');
+        if (!tr) return;
+        const origId = Number(tr.getAttribute('data-orig-pid'));
+        const selectedId = Number(tr.getAttribute('data-pid'));
+        const nutrientIdRaw = tr.getAttribute('data-nutrient-id');
+        const nutrientId = nutrientIdRaw ? Number(nutrientIdRaw) : null;
+        const nutrientName = tr.getAttribute('data-nutrient-name') || '';
+        const origGrams = Number(tr.getAttribute('data-orig-grams')) ||
+          Number(tr.getAttribute('data-grams'));
+        const origProduct = productsCache.find((p) => p.id === origId);
+        if (!origProduct) return;
+        const layoutIds = matched
+          .filter((x) => x.product && x.grams > 0)
+          .map((x) => x.product.id);
+        openAnalogModal({
+          product: origProduct,
+          selectedId,
+          grams: origGrams,
+          nutrientName,
+          nutrientId,
+          fastdegree: targetFast,
+          trailOnly: targetTrail,
+          excludeIds: layoutIds,
+          onOk: (replacementId) => {
+            const ov = loadRecOverrides();
+            if (replacementId === origId) delete ov[String(origId)];
+            else ov[String(origId)] = replacementId;
+            saveRecOverrides(ov);
+            renderRecommendations();
+          },
+        });
+      });
+    });
+
     recMount.querySelectorAll('.btn-trash').forEach((btn) => {
       btn.addEventListener('click', () => {
         const tr = btn.closest('tr');
         const pid = Number(tr && tr.getAttribute('data-pid'));
         if (!pid) return;
+        const origId = Number(tr.getAttribute('data-orig-pid'));
         const next = loadLayoutExcludeIds();
         next.add(pid);
         saveLayoutExcludeIds(next);
+        if (origId) {
+          const ov = loadRecOverrides();
+          if (ov[String(origId)]) {
+            delete ov[String(origId)];
+            saveRecOverrides(ov);
+          }
+        }
         renderRecommendations();
         renderExamples(next);
       });
@@ -2548,6 +2963,7 @@ async function main() {
 }
 
 main();
+
 
 
 

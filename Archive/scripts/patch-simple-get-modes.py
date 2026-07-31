@@ -176,6 +176,56 @@ CSS_EXTRA = """
       cursor: pointer; user-select: none;
     }
     .rec-table th.col-product:hover { color: var(--accent); }
+    .rec-table .col-analog { width: 5.5rem; text-align: center; white-space: nowrap; }
+    .btn-analog {
+      border: 1px solid var(--line); background: #fff; color: var(--accent);
+      border-radius: 6px; padding: 0.2rem 0.45rem; cursor: pointer;
+      font: inherit; font-size: 0.78rem; font-weight: 600;
+    }
+    .btn-analog:hover { background: #eef5f2; }
+    .analog-overlay {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(28, 36, 32, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .analog-dialog {
+      width: min(28rem, 100%); max-height: min(85vh, 36rem);
+      overflow: auto; background: #fffef9; border: 1px solid var(--line);
+      border-radius: 12px; padding: 1rem 1.1rem 1.05rem;
+      box-shadow: 0 12px 40px rgba(20, 30, 25, 0.18);
+    }
+    .analog-title { margin: 0 0 0.35rem; font-size: 1.05rem; color: var(--accent); }
+    .analog-orig { margin: 0.35rem 0 0.65rem; font-size: 0.88rem; }
+    .analog-list { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.4rem 0 0.85rem; }
+    .analog-option {
+      display: flex; gap: 0.55rem; align-items: flex-start;
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.45rem 0.55rem; cursor: pointer; background: #fff;
+    }
+    .analog-option:has(input:checked) {
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+      background: #eef7f1;
+    }
+    .analog-option input { margin-top: 0.2rem; accent-color: var(--accent); }
+    .analog-option-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+    .analog-name { font-size: 0.9rem; font-weight: 600; }
+    .analog-meta { font-size: 0.78rem; color: var(--muted); }
+    .analog-actions {
+      display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.25rem;
+    }
+    .btn-analog-cancel, .btn-analog-ok {
+      border-radius: 8px; padding: 0.4rem 0.85rem; cursor: pointer;
+      font: inherit; font-weight: 700; font-size: 0.88rem;
+    }
+    .btn-analog-cancel {
+      border: 1px solid var(--line); background: #fff; color: var(--text);
+    }
+    .btn-analog-cancel:hover { background: #f5f2ea; }
+    .btn-analog-ok {
+      border: none; background: #2f5d50; color: #fff;
+    }
+    .btn-analog-ok:hover { background: #254a40; }
     .offline-bar {
       max-width: 920px; margin: 0.5rem auto 0; padding: 0.55rem 0.75rem;
       display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem;
