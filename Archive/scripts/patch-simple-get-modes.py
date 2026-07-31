@@ -60,6 +60,11 @@ CSS_EXTRA = """
     .yours-layout-block .layout-table tbody tr:nth-child(even) {
       background: #f7fbf8;
     }
+    .yours-layout-block .layout-empty-cell {
+      text-align: center; color: var(--muted); font-size: 0.88rem;
+      padding: 0.85rem 0.6rem; border-bottom: none !important;
+      background: #fff;
+    }
     .mode-note { color: var(--muted); font-size: 0.86rem; margin: 0.25rem 0 0.6rem; }
     .mode-note code, .mode-card code {
       font-size: 0.82em; background: #f0ebe1; padding: 0.05rem 0.3rem; border-radius: 4px;

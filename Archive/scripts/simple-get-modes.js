@@ -129,7 +129,8 @@ function pageBaseUrl() {
 }
 
 function layoutUrl(itemsParam, days, fastdegree, trailOnly) {
-  let url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(itemsParam);
+  // Always include items= (may be empty) so empty layout looks like a parameterized mode.
+  let url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(itemsParam == null ? '' : String(itemsParam));
   const d = Number(days);
   if (d > 0 && Number.isFinite(d)) {
     url += '&days=' + encodeURIComponent(String(d));
@@ -1536,14 +1537,6 @@ function buildCoverageChartHtml(gaps) {
 
 function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFromQuery) {
   if (!matchIndex.length) buildMatchIndex();
-  if (!String(itemsRaw || '').trim()) {
-    panel.innerHTML =
-      '<section class="mode-card"><h2>Анализ раскладки</h2>' +
-      '<p class="err">Нет параметра <code>items</code> или <code>layout</code>.</p>' +
-      '<p class="mode-note">Пример: <code>?mode=layout&amp;items=' +
-      escapeHtml(exampleLayoutParam()) + '&amp;days=1</code></p></section>';
-    return;
-  }
 
   let targetDays = Number(daysFromQuery);
   if (!(targetDays > 0) || !Number.isFinite(targetDays)) targetDays = LAYOUT_DEFAULT_DAYS;
@@ -1551,7 +1544,13 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
   let targetTrail = !!trailFromQuery;
   syncTrailCheckbox(targetTrail);
 
-  const parsed = parseLayoutItems(itemsRaw);
+  // Empty items= is a valid layout: same UI, empty product list, recommendations below.
+  itemsRaw = itemsRaw == null ? '' : String(itemsRaw);
+  const isEmptyLayout = !itemsRaw.trim();
+  const parsed = isEmptyLayout ? [] : parseLayoutItems(itemsRaw);
+  if (isEmptyLayout) {
+    replaceLayoutUrl('', targetDays, targetFast, targetTrail);
+  }
   let matched = parsed.map((row) => {
     const m = findProductByName(row.original);
     return {
@@ -1638,6 +1637,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
   if (adjustMsg) {
     html += '<div class="adjust-banner" role="status">' + escapeHtml(adjustMsg) + '</div>';
   }
+  if (isEmptyLayout) {
+    html += '<p class="mode-note">Раскладка <b>пустая</b> (<code>items=</code> без продуктов). ' +
+      'Ниже — параметры срока/поста, пустой список и <b>рекомендации</b>, с которых можно начать.</p>';
+  }
   html += '<p class="mode-note">Целевой срок раскладки: <b>' + formatDays(targetDays) + ' сут.</b> ' +
     '(параметр <code>days</code> / поле справа от диаграммы). ';
   if (targetFast) {
@@ -1646,7 +1649,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
   } else {
     html += 'Степень поста не задана — <b>все продукты</b>. ';
   }
-  if (inferred.durationNutrient) {
+  if (inferred.durationNutrient && !isEmptyLayout) {
     html += 'По макросам текущий набор тянет примерно на ~' + inferred.duration.toFixed(2) +
       ' сут. («' + escapeHtml(inferred.durationNutrient.name) + '»). ';
   }
@@ -1690,6 +1693,11 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     '</div>' +
     '<table class="mode-table layout-table"><thead><tr>' +
     '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
+  if (!matched.length) {
+    html += '<tr class="layout-empty-row"><td colspan="5" class="layout-empty-cell">' +
+      'Пока пусто — отметьте продукты в блоке «Рекомендуется добавить» ниже и нажмите «Добавить в раскладку».' +
+      '</td></tr>';
+  }
   for (let i = 0; i < matched.length; i++) {
     const it = matched[i];
     const unit = it.product && it.product.section === 'bad' ? ' шт.' : ' г';
@@ -1730,8 +1738,9 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
   html += '<p class="mode-note" id="layoutShareNote"><b>Ссылка (для копирования / когда снова будет сеть):</b><br/>' +
     '<code id="layoutShareUrl">' + escapeHtml(layoutUrl(itemsRaw, targetDays, targetFast, targetTrail)) + '</code></p>';
 
-  html += '<p class="mode-note"><b>Формат:</b> <code>items</code> — <code>slug</code> или <code>slug:grams</code> · ' +
-    '<code>id:N</code> / <code>id:N:g</code>; <code>days</code> (или <code>time</code>) — срок в сутках; ' +
+    html += '<p class="mode-note"><b>Формат:</b> <code>items</code> — <code>slug</code> или <code>slug:grams</code> · ' +
+    '<code>id:N</code> / <code>id:N:g</code> (можно пустым: <code>mode=layout&amp;items=</code>); ' +
+    '<code>days</code> (или <code>time</code>) — срок в сутках; ' +
     '<code>fastdegree</code> — степень поста (<code>сухоядение</code> / <code>до масла</code> / <code>до рыбы</code> / <code>скоромное</code>), по умолчанию не задана; ' +
     '<code>trail=1</code> — только походный запас (<code>istrail</code>). ' +
     'Без количества при указанном сроке граммы/шт. подбираются автоматически. ' +
@@ -2068,10 +2077,6 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
         const baseParts = matched
           .filter((x) => x.product && x.grams > 0)
           .map((x) => ({ product: x.product, grams: x.grams }));
-        if (!baseParts.length) {
-          alert('В раскладке нет продуктов с количеством — нечего приводить к норме калорий.');
-          return;
-        }
         const checked = [];
         recMount.querySelectorAll('tr[data-pid]').forEach((tr) => {
           const cb = tr.querySelector('.rec-check');
@@ -2091,6 +2096,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
         });
         if (checked.some((c) => !c.product || !(c.grams > 0))) {
           alert('У отмеченных продуктов укажите количество больше нуля.');
+          return;
+        }
+        if (!baseParts.length && !checked.length) {
+          alert('Раскладка пуста. Отметьте продукты в рекомендациях и нажмите «Добавить в раскладку».');
           return;
         }
         const merged = baseParts.concat(checked);
@@ -2154,6 +2163,9 @@ function renderDefaultModeLinks(panel) {
     '<code>fastdegree</code> (степень поста, по умолчанию не задана = всё), ' +
     '<code>trail=1</code> (походный запас). ' +
     'Без граммов при <code>days</code> количества подбираются. Примеры 1–2 без БАД; пример <b>3 — с БАДами</b>.</span><br/>' +
+    '<span class="mode-note">Пустая раскладка (с рекомендациями): <a href="' +
+    escapeHtml(layoutUrl('', LAYOUT_DEFAULT_DAYS)) + '">' +
+    escapeHtml(layoutUrl('', LAYOUT_DEFAULT_DAYS)) + '</a></span><br/>' +
     '<span class="mode-note">Без количеств на 3 суток: <a href="' + escapeHtml(urlLayoutAuto) + '">' +
     escapeHtml(urlLayoutAuto) + '</a></span><br/>' +
     '<span class="mode-note">Пост сухоядение: <a href="' +

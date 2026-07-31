@@ -11,6 +11,8 @@
 
 ---
 
+48. In the empty folder, export as if it had parameters But the output should be empty But a recommendation under Products should be here Export everything to the master
+
 47. It turns out very strange in the case of analogues. Look, an egg, a chicken yolk, an analogue of sour cream 20%, an analogue of cream, an analogue of honey, a bee. Why? Especially honey with eggs, there are generally, in my opinion, different compositions.
 
 46. "Создать новый список" - переименуй в "Добавить в раскладку" And then upload the version number and post it in the repository.
