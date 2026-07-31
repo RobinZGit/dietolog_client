@@ -216,9 +216,11 @@ NAME_RES: list[re.Pattern[str]] = [
     # dry grains / cereals (not bread/baked)
     re.compile(r"крупа|гречих|рис\b|овес|овёс|пшено|перлов|ячмен|киноа|"
                r"отруби|мука |манн"),
-    # nuts / seeds
-    re.compile(r"орех|миндаль|кешью|фундук|арахис|семена |кунжут|мак,|"
-               r"урбеч|желудь|каштан"),
+    # nuts / seeds (peeled, fried, dried — packable); «семена» with/without trailing text
+    re.compile(
+        r"орех|миндаль|кешью|фундук|арахис|семена|кунжут|мак,|"
+        r"урбеч|желудь|каштан|очищен"
+    ),
     # dry drinks / condensed
     re.compile(r"^чай |кофе |какао|молоко сухое|сливки сухие|"
                r"сгущен|сгущён"),
@@ -226,6 +228,11 @@ NAME_RES: list[re.Pattern[str]] = [
 
 GROUP_ALWAYS = {
     "БАД",  # supplements are packable
+}
+
+# Whole groups that are trail food (except fresh/cooked exclusions below).
+GROUP_TRAIL = {
+    "Орехи и семена",  # peanuts fried/peeled, walnuts, pumpkin seeds, …
 }
 
 # Dry seasonings in «Специи» (skip cooked veg misfiled there).
@@ -238,6 +245,16 @@ GROUP_NAME_EXTRA = {
     ),
 }
 
+# Nuts / dried fruit: never treat «жареный / без соли» as a skip.
+NUT_OR_SEED_RE = re.compile(
+    r"арахис|орех|миндаль|кешью|фундук|семена|кунжут|урбеч|каштан|желудь|мак,"
+)
+DRIED_FRUIT_RE = re.compile(
+    r"курага|изюм|чернослив|финик|"
+    r"(яблок|груш|персик|слив|инжир|клюкв|абрикос).{0,20}сушен|"
+    r"сушен.{0,20}(яблок|груш|персик|слив|инжир|клюкв|абрикос)"
+)
+
 
 def is_trail_product(p: dict) -> bool:
     name = norm(p.get("name", ""))
@@ -247,14 +264,34 @@ def is_trail_product(p: dict) -> bool:
         return True
     if group in GROUP_ALWAYS:
         return True
-    if EXCLUDE_RE.search(name) and "сушен" not in name and "сублим" not in name:
-        # allow «семена подсолнечника, поджаренные» etc. via nuts rule only if not cooked veg
-        if re.search(r"варен|мороженое|йогурт|пломбир", name):
+
+    # Dishes that merely contain nuts/raisins — not packable trail food.
+    if re.search(r"бублик|творож|мороженое|йогурт|пломбир|запекан|оладь", name):
+        return False
+
+    # Fresh coconut pulp etc. — not trail; oils in this group stay via «масло» rule.
+    if group in GROUP_TRAIL:
+        if re.search(r"свеж", name) and "сушен" not in name:
             return False
+        return True
+
+    # Dried fruits (all shelf-stable).
+    if DRIED_FRUIT_RE.search(name):
+        return True
+
+    if EXCLUDE_RE.search(name) and "сушен" not in name and "сублим" not in name:
+        # cooked dishes / dairy desserts — not trail
+        if re.search(r"варен|мороженое|йогурт|пломбир|запекан|оладь", name):
+            if not NUT_OR_SEED_RE.search(name):
+                return False
     for rx in NAME_RES:
         if rx.search(name):
-            # cooked potatoes «с солью» etc.
-            if re.search(r"варен|жарен.*без|свеж", name) and "сушен" not in name:
+            # cooked veg «вареный…» — skip; do NOT skip fried nuts «без соли»
+            if (
+                re.search(r"варен|свеж", name)
+                and "сушен" not in name
+                and not NUT_OR_SEED_RE.search(name)
+            ):
                 continue
             return True
     extra = GROUP_NAME_EXTRA.get(group)

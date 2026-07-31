@@ -17,8 +17,8 @@ REPO = ARCHIVE.parent
 SRC = ARCHIVE / "src" / "app" / "model" / "static.datasource.ts"
 SEED_PATH = ARCHIVE / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 30
-SOURCE = "dietolog_client · v30 trail foods (istrail / походный запас)"
+VERSION = 31
+SOURCE = "dietolog_client · v31 trail: nuts, seeds, dried fruits"
 CHUNK = 120000
 
 SEED_COMMENT = """\
