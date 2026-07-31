@@ -55,7 +55,14 @@ def fmt_info(rows: list) -> str:
     )
 
 
-def product(pid: int, row: int, name: str, group: str, fastdegree: str = "сухоядение") -> dict:
+def product(
+    pid: int,
+    row: int,
+    name: str,
+    group: str,
+    fastdegree: str = "сухоядение",
+    istrail: int = 1,
+) -> dict:
     return {
         "hint": "",
         "rownumber": row,
@@ -68,8 +75,31 @@ def product(pid: int, row: int, name: str, group: str, fastdegree: str = "сух
         "excluded": 0,
         "fastdegree": fastdegree,
         "group": group,
-        "istrail": 1,
+        "istrail": istrail,
     }
+
+
+# Non-trail dairy (in catalog, not for hiking — need cold).
+NEW_NON_TRAIL: list[dict] = [
+    {
+        "product": product(
+            0, 0, "Масло топлёное (гхи)", "Жиры и масла", "скоромное", istrail=0
+        ),
+        "nutrients": {
+            KCAL: 892, PROT: 0.2, FAT: 99.0, CARB: 0.0,
+            CA: 6, P: 20, NA: 5, A: 600, E: 2.5, D: 0.5,
+        },
+    },
+    {
+        "product": product(
+            0, 0, "Сыр сливочный Cream Cheese", "Молочные продукты", "скоромное", istrail=0
+        ),
+        "nutrients": {
+            KCAL: 342, PROT: 5.9, FAT: 34.0, CARB: 4.1, SUGAR: 3.2,
+            NA: 321, K: 138, CA: 98, P: 106, MG: 9, A: 366, B2: 0.2, B12: 0.4, E: 0.9,
+        },
+    },
+]
 
 
 # Missing trail foods (per 100 g dry / as sold).
@@ -178,7 +208,7 @@ NAME_RES: list[re.Pattern[str]] = [
     ),
     # cookies / crackers / wafers
     re.compile(r"печенье|галет|крекер|вафл"),
-    # butter / oils / margarine
+    # butter / oils / margarine (топлёное/гхи исключаются отдельно — не для похода)
     re.compile(r"\bмасло\b|маргарин"),
     # lard
     re.compile(r"\bсало\b|\bшпик\b"),
@@ -269,6 +299,11 @@ def is_trail_product(p: dict) -> bool:
     if re.search(r"бублик|творож|мороженое|йогурт|пломбир|запекан|оладь", name):
         return False
 
+    # Soft / melted dairy fats — in the catalog, but not for hiking (need cold).
+    if re.search(r"масло топлен|топленое масло|топлёное масло|\bгхи\b|"
+                 r"сыр сливочн|cream cheese|филадельф|маскарпоне", name):
+        return False
+
     # Fresh coconut pulp etc. — not trail; oils in this group stay via «масло» rule.
     if group in GROUP_TRAIL:
         if re.search(r"свеж", name) and "сушен" not in name:
@@ -318,7 +353,7 @@ def main() -> None:
     max_row = max(int(p.get("rownumber") or 0) for p in products)
 
     added = 0
-    for item in NEW_FOODS:
+    for item in NEW_FOODS + NEW_NON_TRAIL:
         name = item["product"]["name"]
         if name in existing or norm(name) in existing_norm:
             print("skip existing", name)
@@ -345,7 +380,7 @@ def main() -> None:
                 }
             )
         added += 1
-        print("+", max_pid, name)
+        print("+", max_pid, name, "istrail", p.get("istrail"))
 
     for p in products:
         p["istrail"] = 1 if is_trail_product(p) else 0

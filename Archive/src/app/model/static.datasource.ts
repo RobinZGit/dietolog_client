@@ -874,7 +874,7 @@ private products: any =
 {"hint":"","rownumber":104,"_id":107,"name":"Оливковое масло, рафинированное","lowercase":"оливковое масло","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"до масла","group":"Овощи","istrail":1},
 {"hint":"","rownumber":106,"_id":109,"name":"Подсолнечное масло","lowercase":"подсолнечное масло","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"до масла","group":"Жиры и масла","istrail":1},
 {"hint":"","rownumber":107,"_id":110,"name":"Масло соевое","lowercase":"масло соевое","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"до масла","group":"Бобовые","istrail":1},
-{"hint":"","rownumber":108,"_id":111,"name":"Масло топленое","lowercase":"масло топленое","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Жиры и масла","istrail":1},
+{"hint":"","rownumber":108,"_id":111,"name":"Масло топленое","lowercase":"масло топленое","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Жиры и масла","istrail":0},
 {"hint":"","rownumber":109,"_id":112,"name":"Сало свинина","lowercase":"сало свинина","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Мясо и мясные продукты","istrail":1},
 {"hint":"","rownumber":110,"_id":113,"name":"Шпик свинина","lowercase":"шпик свинина","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Мясо и мясные продукты","istrail":1},
 {"hint":"","rownumber":111,"_id":114,"name":"Сало соленое, свинина","lowercase":"сало соленое, свинина","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Мясо и мясные продукты","istrail":1},
@@ -1974,7 +1974,9 @@ private products: any =
 {"hint":"","rownumber":1346,"_id":1346,"name":"Суп овощной сублимированный","lowercase":"суп овощной сублимированный","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение","group":"Овощи","istrail":1},
 {"hint":"","rownumber":1347,"_id":1347,"name":"Каша гречневая сублимированная","lowercase":"каша гречневая сублимированная","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"сухоядение","group":"Зерновые и хлеб","istrail":1},
 {"hint":"","rownumber":1348,"_id":1348,"name":"Мясо сублимированное (говядина)","lowercase":"мясо сублимированное (говядина)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Мясо","istrail":1},
-{"hint":"","rownumber":1349,"_id":1349,"name":"Яйцо сублимированное","lowercase":"яйцо сублимированное","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Яйца","istrail":1}]
+{"hint":"","rownumber":1349,"_id":1349,"name":"Яйцо сублимированное","lowercase":"яйцо сублимированное","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Яйца","istrail":1},
+{"hint":"","rownumber":1350,"_id":1350,"name":"Масло топлёное (гхи)","lowercase":"масло топлёное (гхи)","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Жиры и масла","istrail":0},
+{"hint":"","rownumber":1351,"_id":1351,"name":"Сыр сливочный Cream Cheese","lowercase":"сыр сливочный cream cheese","val":0,"isrecommended":0,"isnotrecommended":0,"excluded":0,"fastdegree":"скоромное","group":"Молочные продукты","istrail":0}]
 ;
 
 
@@ -29607,5 +29609,28 @@ private info: any = [
 {"product":1349,"nutrient":9,"value":"150","perc1on100gr":"0","rownumber":27612,"_id":27612},
 {"product":1349,"nutrient":4,"value":"500","perc1on100gr":"0","rownumber":27613,"_id":27613},
 {"product":1349,"nutrient":12,"value":"5","perc1on100gr":"0","rownumber":27614,"_id":27614},
-{"product":1349,"nutrient":13,"value":"5","perc1on100gr":"0","rownumber":27615,"_id":27615}]
+{"product":1349,"nutrient":13,"value":"5","perc1on100gr":"0","rownumber":27615,"_id":27615},
+{"product":1350,"nutrient":3,"value":"892","perc1on100gr":"0","rownumber":27616,"_id":27616},
+{"product":1350,"nutrient":0,"value":"0.2","perc1on100gr":"0","rownumber":27617,"_id":27617},
+{"product":1350,"nutrient":1,"value":"99","perc1on100gr":"0","rownumber":27618,"_id":27618},
+{"product":1350,"nutrient":19,"value":"6","perc1on100gr":"0","rownumber":27619,"_id":27619},
+{"product":1350,"nutrient":24,"value":"20","perc1on100gr":"0","rownumber":27620,"_id":27620},
+{"product":1350,"nutrient":22,"value":"5","perc1on100gr":"0","rownumber":27621,"_id":27621},
+{"product":1350,"nutrient":4,"value":"600","perc1on100gr":"0","rownumber":27622,"_id":27622},
+{"product":1350,"nutrient":13,"value":"2.5","perc1on100gr":"0","rownumber":27623,"_id":27623},
+{"product":1350,"nutrient":12,"value":"0.5","perc1on100gr":"0","rownumber":27624,"_id":27624},
+{"product":1351,"nutrient":3,"value":"342","perc1on100gr":"0","rownumber":27625,"_id":27625},
+{"product":1351,"nutrient":0,"value":"5.9","perc1on100gr":"0","rownumber":27626,"_id":27626},
+{"product":1351,"nutrient":1,"value":"34","perc1on100gr":"0","rownumber":27627,"_id":27627},
+{"product":1351,"nutrient":2,"value":"4.1","perc1on100gr":"0","rownumber":27628,"_id":27628},
+{"product":1351,"nutrient":45,"value":"3.2","perc1on100gr":"0","rownumber":27629,"_id":27629},
+{"product":1351,"nutrient":22,"value":"321","perc1on100gr":"0","rownumber":27630,"_id":27630},
+{"product":1351,"nutrient":18,"value":"138","perc1on100gr":"0","rownumber":27631,"_id":27631},
+{"product":1351,"nutrient":19,"value":"98","perc1on100gr":"0","rownumber":27632,"_id":27632},
+{"product":1351,"nutrient":24,"value":"106","perc1on100gr":"0","rownumber":27633,"_id":27633},
+{"product":1351,"nutrient":21,"value":"9","perc1on100gr":"0","rownumber":27634,"_id":27634},
+{"product":1351,"nutrient":4,"value":"366","perc1on100gr":"0","rownumber":27635,"_id":27635},
+{"product":1351,"nutrient":6,"value":"0.2","perc1on100gr":"0","rownumber":27636,"_id":27636},
+{"product":1351,"nutrient":10,"value":"0.4","perc1on100gr":"0","rownumber":27637,"_id":27637},
+{"product":1351,"nutrient":13,"value":"0.9","perc1on100gr":"0","rownumber":27638,"_id":27638}]
 }
