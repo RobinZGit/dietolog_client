@@ -1497,12 +1497,7 @@ function findBadProductByTitle(substr) {
 }
 
 function exampleLayoutParam() {
-  // Original demo URL (foods only) — do not put BADs in the example link.
-  return 'yajco_kurinoe_celoe:100,grechiha_zerno:150,moloko_suhoe_1:40,krupa_risovaya:100';
-}
-
-/** Раскладка для Насти (внучка) — с сушёными овощами из каталога. */
-function nastyaLayoutParam() {
+  // Demo URL (foods only) — базовые продукты + сушёные овощи; без БАД.
   return (
     'yajco_kurinoe_celoe:100,grechiha_zerno:150,moloko_suhoe_1:40,krupa_risovaya:100,' +
     'morkov_sushenaya:30,perec_sladkij_sushenyj:20,luk_repchatyj_sushenyj:20,' +
@@ -1515,9 +1510,10 @@ function renderDefaultModeLinks(panel) {
   const base = pageBaseUrl();
   const urlNutrients = base + '?mode=nutrients';
   const urlLayout = layoutUrl(exampleLayoutParam(), LAYOUT_DEFAULT_DAYS);
-  const urlNastya = layoutUrl(nastyaLayoutParam(), LAYOUT_DEFAULT_DAYS);
   const urlLayoutAuto = layoutUrl(
-    'yajco_kurinoe_celoe,grechiha_zerno,moloko_suhoe_1,krupa_risovaya',
+    'yajco_kurinoe_celoe,grechiha_zerno,moloko_suhoe_1,krupa_risovaya,' +
+    'morkov_sushenaya,perec_sladkij_sushenyj,luk_repchatyj_sushenyj,' +
+    'svekla_sushenaya,kapusta_belokochannaya_sushenaya,tomaty_vyalenye',
     3
   );
   panel.innerHTML =
@@ -1539,8 +1535,6 @@ function renderDefaultModeLinks(panel) {
     '<span class="mode-note">Пост сухоядение: <a href="' +
     escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '">' +
     escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '</a></span></li>' +
-    '<li><b>Раскладка Насти</b> (сушёные овощи + базовые продукты):<br/>' +
-    '<a href="' + escapeHtml(urlNastya) + '">' + escapeHtml(urlNastya) + '</a></li>' +
     '</ol>' +
     '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
     '</section>';
