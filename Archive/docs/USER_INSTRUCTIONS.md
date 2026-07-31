@@ -11,6 +11,8 @@
 
 ---
 
+49. And at the end, after the product list, make a list of nutrients So that each nutrient unfolds, and the main products containing it come under it But not so much, but not so little, 20-30 products for each nutrient Also, in this list of products, as well as in the list of products above in the product list You need to make a button for each product and add it to the layout And by pressing it, it would be added with any amount at your discretion Upload it to the master right away.
+
 48. In the empty folder, export as if it had parameters But the output should be empty But a recommendation under Products should be here Export everything to the master
 
 47. It turns out very strange in the case of analogues. Look, an egg, a chicken yolk, an analogue of sour cream 20%, an analogue of cream, an analogue of honey, a bee. Why? Especially honey with eggs, there are generally, in my opinion, different compositions.
