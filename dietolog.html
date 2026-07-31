@@ -200,6 +200,7 @@
 
 
 
+
     #modePanel { margin-bottom: 1rem; max-width: 920px; margin-left: auto; margin-right: auto; padding: 0 1.25rem; }
     .mode-card {
       border: 1px solid var(--line);
@@ -451,6 +452,7 @@
   <main>
     <div id="list" class="list"><div class="loading">Загрузка групп…</div></div>
   </main>
+
 
 
 
@@ -2169,6 +2171,124 @@ function formatCalorieOnlyMessage(balanced, targetDays, hadAdditions) {
   return parts.join(' ');
 }
 
+/**
+ * Standalone HTML snapshot of the current layout — same green/pink nutrient
+ * colours as on the page, without changing the live UI chrome.
+ */
+function downloadLayoutReport(opts) {
+  const o = opts || {};
+  const matched = o.matched || [];
+  const gaps = o.gaps || [];
+  const days = o.days != null ? o.days : 1;
+  const fastdegree = o.fastdegree || '';
+  const trailOnly = !!o.trailOnly;
+  const itemsRaw = o.itemsRaw || '';
+  const shareUrl = o.shareUrl || '';
+  const coveragePct = o.coveragePct;
+  const stamp = new Date();
+  const pad = (n) => (n < 10 ? '0' : '') + n;
+  const fileStamp =
+    stamp.getFullYear() + '-' + pad(stamp.getMonth() + 1) + '-' + pad(stamp.getDate()) +
+    '_' + pad(stamp.getHours()) + pad(stamp.getMinutes());
+
+  let productsRows = '';
+  for (const it of matched) {
+    if (!it || !it.product || !(it.grams > 0)) continue;
+    const unit = it.product.section === 'bad' ? ' шт.' : ' г';
+    productsRows +=
+      '<tr><td>' + escapeHtml(it.product.name) +
+      (it.product.section === 'bad' ? ' <span class="badge">БАД</span>' : '') +
+      '</td><td class="num">' + it.grams + unit + '</td></tr>';
+  }
+  if (!productsRows) {
+    productsRows = '<tr><td colspan="2">Нет продуктов с количеством</td></tr>';
+  }
+
+  let nutrRows = '';
+  for (const g of gaps) {
+    const isCal = /^Калорийность$/i.test(String(g.n.name));
+    const ok = g.pct >= LAYOUT_COMPLETE_RATIO * 100;
+    const cls = (ok ? 'ok' : 'low') + (isCal ? ' cal' : '');
+    nutrRows +=
+      '<tr class="' + cls + '"><td>' + escapeHtml(g.n.name) +
+      (isCal ? ' <span class="badge">главное</span>' : '') + '</td>' +
+      '<td class="num">' + escapeHtml(formatValue(g.have, g.n.units)) + '</td>' +
+      '<td class="num">' + escapeHtml(formatValue(g.need, g.n.units)) + '</td>' +
+      '<td class="num">' + escapeHtml(formatValue(g.daily, g.n.units)) + '</td>' +
+      '<td class="num">' + escapeHtml(formatValue(g.shortage, g.n.units)) + '</td>' +
+      '<td class="num">' + g.pct.toFixed(0) + '%</td></tr>';
+  }
+
+  const metaBits = ['срок ' + formatDays(days) + ' сут.'];
+  if (fastdegree) metaBits.push('пост: ' + fastDegreeLabel(fastdegree));
+  else metaBits.push('пост: все продукты');
+  if (trailOnly) metaBits.push('походный запас');
+  if (coveragePct != null && Number.isFinite(coveragePct)) {
+    metaBits.push('покрытие ≈ ' + Math.round(coveragePct) + '%');
+  }
+
+  const css =
+    'body{font-family:Georgia,"Times New Roman",serif;color:#1c2420;background:#faf7f1;' +
+    'margin:0;padding:1.25rem;line-height:1.4}' +
+    'h1{margin:0 0 .35rem;font-size:1.35rem;color:#2f5d50}' +
+    'h2{margin:1.25rem 0 .4rem;font-size:1.05rem;color:#2f5d50}' +
+    '.meta{color:#5a6560;font-size:.9rem;margin:0 0 1rem}' +
+    'table{width:100%;border-collapse:collapse;font-size:.9rem;margin:.35rem 0 .75rem}' +
+    'th,td{padding:.3rem .4rem;border-bottom:1px solid #ddd4c4;text-align:left;vertical-align:top}' +
+    'th{color:#5a6560;font-size:.78rem}' +
+    'td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}' +
+    'tr.ok{background:#e7f5ec}' +
+    'tr.low{background:#fce9e9}' +
+    'tr.cal{box-shadow:inset 0 0 0 2px #2f5d50;font-weight:600}' +
+    'tr.cal.ok{background:#d5f0e0}' +
+    'tr.cal.low{background:#f8e4e4}' +
+    '.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:.1rem .4rem;' +
+    'border-radius:999px;background:#d8f0e4;color:#1f6b4a;vertical-align:middle}' +
+    '.note{color:#5a6560;font-size:.84rem;margin:.5rem 0}' +
+    'code{font-size:.82em;background:#f0ebe1;padding:.05rem .3rem;border-radius:4px;' +
+    'word-break:break-all}' +
+    '.banner{margin:.5rem 0 .75rem;padding:.65rem .85rem;border-radius:8px;' +
+    'border:1px solid #c5d9cc;background:#eef7f1;color:#1c3d32;font-size:.9rem}';
+
+  const html =
+    '<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"/>' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1"/>' +
+    '<title>Раскладка — Диетолог v' + SEED.version + '</title>' +
+    '<style>' + css + '</style></head><body>' +
+    '<h1>Раскладка продуктов</h1>' +
+    '<p class="meta">Диетолог простой v' + SEED.version + ' · ' +
+    escapeHtml(stamp.toLocaleString('ru-RU')) + ' · ' + escapeHtml(metaBits.join(' · ')) +
+    '</p>' +
+    '<div class="banner">Снимок раскладки (тот же стиль таблицы нутриентов: зелёный — норма, ' +
+    'розовый — дефицит). Файл можно открыть офлайн или распечатать.</div>' +
+    '<h2>Продукты</h2>' +
+    '<table><thead><tr><th>Продукт</th><th>Кол-во</th></tr></thead><tbody>' +
+    productsRows + '</tbody></table>' +
+    '<h2>Нутриенты на ' + escapeHtml(formatDays(days)) + ' сут.</h2>' +
+    '<table><thead><tr><th>Нутриент</th><th>Есть</th><th>Нужно</th><th>Норма/сут</th>' +
+    '<th>Дефицит</th><th>%</th></tr></thead><tbody>' + nutrRows + '</tbody></table>' +
+    (shareUrl
+      ? ('<h2>Ссылка для повторного открытия</h2><p class="note"><code>' +
+        escapeHtml(shareUrl) + '</code></p>')
+      : '') +
+    (itemsRaw
+      ? ('<p class="note"><b>items=</b> <code>' + escapeHtml(itemsRaw) + '</code></p>')
+      : '') +
+    '</body></html>';
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dietolog-layout-' + fileStamp + '.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
+  }, 2500);
+}
+
 /** Polar → cartesian for SVG pie */
 function polarXY(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -2364,7 +2484,11 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
   const box = document.createElement('section');
   box.className = 'mode-card';
 
-  let html = '<h2>Анализ раскладки продуктов</h2>';
+  let html = '<div class="layout-head">' +
+    '<h2 class="layout-title">Анализ раскладки продуктов</h2>' +
+    '<button type="button" class="btn-download-layout" id="btnDownloadLayout" ' +
+    'title="Скачать снимок раскладки (HTML, тот же цветной стиль нутриентов)">' +
+    'Скачать раскладку</button></div>';
   const adjustMsg = takeLayoutAdjustMessage();
   if (adjustMsg) {
     html += '<div class="adjust-banner" role="status">' + escapeHtml(adjustMsg) + '</div>';
@@ -2468,6 +2592,22 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     const t = nextTrail == null ? targetTrail : !!nextTrail;
     replaceLayoutUrl(nextItems, nextDays, nextFast, t);
     renderLayoutMode(panel, nextItems, nextDays, nextFast, t);
+  }
+
+  const dlBtn = box.querySelector('#btnDownloadLayout');
+  if (dlBtn) {
+    dlBtn.addEventListener('click', () => {
+      downloadLayoutReport({
+        matched,
+        gaps,
+        days: targetDays,
+        fastdegree: targetFast,
+        trailOnly: targetTrail,
+        itemsRaw,
+        shareUrl: layoutUrl(itemsRaw, targetDays, targetFast, targetTrail),
+        coveragePct: coverage.totalPct,
+      });
+    });
   }
 
   box.querySelectorAll('.btn-layout-trash').forEach((btn) => {
@@ -2993,6 +3133,7 @@ async function main() {
 }
 
 main();
+
 
 
 
