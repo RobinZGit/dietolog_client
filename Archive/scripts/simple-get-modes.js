@@ -1501,10 +1501,21 @@ function exampleLayoutParam() {
   return 'yajco_kurinoe_celoe:100,grechiha_zerno:150,moloko_suhoe_1:40,krupa_risovaya:100';
 }
 
+/** Раскладка для Насти (внучка) — с сушёными овощами из каталога. */
+function nastyaLayoutParam() {
+  return (
+    'yajco_kurinoe_celoe:100,grechiha_zerno:150,moloko_suhoe_1:40,krupa_risovaya:100,' +
+    'morkov_sushenaya:30,perec_sladkij_sushenyj:20,luk_repchatyj_sushenyj:20,' +
+    'svekla_sushenaya:20,kapusta_belokochannaya_sushenaya:25,tomaty_vyalenye:30,' +
+    'tykva_sushenaya:25,shpinat_sushenyj:15,brokkoli_sushenaya:15'
+  );
+}
+
 function renderDefaultModeLinks(panel) {
   const base = pageBaseUrl();
   const urlNutrients = base + '?mode=nutrients';
   const urlLayout = layoutUrl(exampleLayoutParam(), LAYOUT_DEFAULT_DAYS);
+  const urlNastya = layoutUrl(nastyaLayoutParam(), LAYOUT_DEFAULT_DAYS);
   const urlLayoutAuto = layoutUrl(
     'yajco_kurinoe_celoe,grechiha_zerno,moloko_suhoe_1,krupa_risovaya',
     3
@@ -1528,6 +1539,8 @@ function renderDefaultModeLinks(panel) {
     '<span class="mode-note">Пост сухоядение: <a href="' +
     escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '">' +
     escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '</a></span></li>' +
+    '<li><b>Раскладка Насти</b> (сушёные овощи + базовые продукты):<br/>' +
+    '<a href="' + escapeHtml(urlNastya) + '">' + escapeHtml(urlNastya) + '</a></li>' +
     '</ol>' +
     '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
     '</section>';

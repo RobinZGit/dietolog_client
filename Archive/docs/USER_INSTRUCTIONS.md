@@ -11,6 +11,8 @@
 
 ---
 
+38. add to the database with products dried carrots, dried bell peppers, some more dried vegetables, if they are not there, and put them right in the mine. / I mean my grandchild, my main grandchild, Nastya.
+
 37. Version 26 is hanging in the group is loading
 
 36. Add to the database some delicious products, like soy meat, soy cheese, if there is no such thing yet. Something from nuts, maybe waffles, from beans, something ready. Sea cabbage, if it is not there, but it is there. Add to the database some delicious products, like soy meat, soy cheese, if there is no such thing yet. It will collect it like it's first made.

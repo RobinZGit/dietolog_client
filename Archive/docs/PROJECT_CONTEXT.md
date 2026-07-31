@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-30 — v27: фикс зависания «Загрузка групп» (восстановлен core UI)
+**Последнее обновление:** 2026-07-31 — v28: сушёные овощи + раскладка Насти
 
 ---
 
@@ -65,7 +65,7 @@
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
 | `nutrients` | **43** | id, name, units, min/max |
-| `products` | **1294** (в т.ч. 36 БАД) | id, name, **fastdegree**, **group** |
+| `products` | **1306** (в т.ч. 36 БАД) | id, name, **fastdegree**, **group** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
 Источник снимка: `static.datasource.ts` (= логика Postgres / dietolog_server). Ссылки `info` нутриентов: **edaplus.info**.
@@ -89,6 +89,12 @@
 ---
 
 ## Что сделано
+
+### 2026-07-31 (v28: сушёные овощи + раскладка Насти)
+
+- В каталог добавлены **12 сушёных овощей** (если ещё не было): морковь, перец сладкий, лук репчатый, свёкла, капуста белокочанная, томаты вяленые, кабачок, баклажан, тыква, сельдерей, шпинат, брокколи.
+- Скрипт: `Archive/scripts/enrich-dried-vegetables.py`. Seed **v28**, продуктов **1306**.
+- На главной — отдельная ссылка **«Раскладка Насти»** (базовые продукты + сушёные овощи). Старый демо-URL раскладки не менялся.
 
 ### 2026-07-30 (v27: фикс зависания загрузки групп)
 
@@ -311,6 +317,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-31 | v28: dried vegetables + Nastya layout link; USER #38 |
 | 2026-07-30 | v27: fix hang loading groups (restore core UI); USER #37 |
 | 2026-07-30 | v26: tasty soy/legume/nut foods + sea cabbage; USER #36 |
 | 2026-07-30 | v25: one-file HTML, SEED comment, seed.json→Archive; USER #34 |
