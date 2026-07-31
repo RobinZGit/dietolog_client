@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-31 — v29: БАДы GLS Pharmaceuticals
+**Последнее обновление:** 2026-07-31 — v30: походный запас (`istrail`)
 
 ---
 
@@ -65,7 +65,7 @@
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
 | `nutrients` | **43** | id, name, units, min/max |
-| `products` | **1322** (в т.ч. 52 БАД) | id, name, **fastdegree**, **group** |
+| `products` | **1332** (в т.ч. 52 БАД) | id, name, **fastdegree**, **group**, **istrail** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
 Источник снимка: `static.datasource.ts` (= логика Postgres / dietolog_server). Ссылки `info` нутриентов: **edaplus.info**.
@@ -89,6 +89,13 @@
 ---
 
 ## Что сделано
+
+### 2026-07-31 (v30: походный запас / istrail)
+
+- У продуктов поле **`istrail`** (0/1): shelf-stable / компактный рацион («примерно подходит для похода»).
+- Отмечены: все сушёные овощи, печенье/галеты/вафли, масла и маргарин, сало/шпик, крепкий алкоголь, шоколад/сладости/халва, специи и соли, крупы, орехи, сухофрукты, сушёные грибы, БАД; плюс новые: чипсы, сушёное мясо/рыба, сублиматы.
+- Скрипт: `Archive/scripts/enrich-trail-foods.py`. Seed **v30**, продуктов **1332**, с флагом **~302**.
+- На форме чекбокс **«Походный запас»** (по умолчанию выкл.): в справочнике / рекомендациях / URL `trail=1` остаются только продукты с `istrail`.
 
 ### 2026-07-31 (v29: БАДы GLS Pharmaceuticals)
 
@@ -322,6 +329,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-31 | v30: istrail / походный запас + checkbox + new dried/sublim; USER #40 |
 | 2026-07-31 | v29: GLS Pharmaceuticals BADs; USER #39 |
 | 2026-07-31 | v28: dried vegetables in catalog + main layout demo; USER #38 |
 | 2026-07-30 | v27: fix hang loading groups (restore core UI); USER #37 |

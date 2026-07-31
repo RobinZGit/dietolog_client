@@ -11,6 +11,8 @@
 
 ---
 
+40. In the database, you can add a sign like Approximately suitable for hiking It means that you can take them with you They are stored for a long time and weigh a lot You need to leave this sign for all dried vegetables Also, it can be for cookies, for all types of butter, for lard And look at what else you can add Some sublimated products Dried meat, dried fish That is, add this sign to the database And the corresponding products, which are not there yet Also, you can add a checkbox to the form Suitable for travel, suitable for hiking or something like that It can be more scientific It is turned off by default But when it is turned on, you need to select only those that have this sign Also suitable for hiking, but I think Strong alcoholic drinks Also chocolate, sweets, halvah Crisps Dried vegetables, all of them Dried meat Spices, salt, pepper, sea salt
+
 39. Also add BADs from GLS company. GLS. Look, there are a lot of them and they are good. Push in master
 
 38. add to the database with products dried carrots, dried bell peppers, some more dried vegetables, if they are not there, and put them right in the mine. / I didn't say any Nastya or Vukov. Just add dried vegetables to the spread, as I used to write, and put it all in the repository in the master branch.

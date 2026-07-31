@@ -1,7 +1,7 @@
 /* === GET modes (v11) — injected into dietolog.html ===
  *
  * mode=nutrients  — list nutrients; expand → top TOP_N products with amount + % of daily min
- * mode=layout&items=slug:grams,slug:grams&days=1[&fastdegree=…]
+ * mode=layout&items=slug:grams,slug:grams&days=1[&fastdegree=…][&trail=1]
  *   or ?layout=slug:grams,...
  *   items may also be JSON: [{"n":"slug","g":100},{"n":"id:193","g":50}]
  *   days|time — target duration in days (default 1). If set, items may omit quantity:
@@ -9,6 +9,7 @@
  *   fastdegree|fast|post — степень поста (по умолчанию не задана = всё разрешено):
  *     сухоядение | до масла | до рыбы | скоромное
  *     (aliases: dry/strict, oil, fish, meat/none)
+ *   trail|istrail|hike — 1/true: только продукты с istrail (походный запас); по умолчанию выкл.
  *
  * Layout line format (readable in URL, Latin preferred):
  *   grechiha_zerno:150,yajco_kurinoe_celoe:100,moloko_suhoe_1:30
@@ -78,6 +79,18 @@ function productAllowedForFast(product, fastDegree) {
   return prodRank <= dayRank;
 }
 
+function parseTrailFlag(raw) {
+  if (raw == null) return false;
+  const s = String(raw).trim().toLowerCase();
+  return s === '1' || s === 'true' || s === 'yes' || s === 'on' || s === 'да';
+}
+
+function productAllowedForTrail(product, trailOnly) {
+  if (!trailOnly) return true;
+  if (!product) return true;
+  return !!product.istrail;
+}
+
 function fastDegreeLabel(fastDegree) {
   if (!fastDegree) return 'Всё';
   const opt = FAST_DEGREE_OPTIONS.find((o) => o.value === fastDegree);
@@ -100,11 +113,13 @@ function parseQuery() {
     if (n > 0 && Number.isFinite(n)) days = n;
   }
   const fastRaw = sp.get('fastdegree') || sp.get('fast') || sp.get('post');
+  const trailRaw = sp.get('trail') || sp.get('istrail') || sp.get('hike');
   return {
     mode,
     itemsRaw: itemsRaw || layoutRaw || '',
     days,
     fastdegree: normalizeFastDegree(fastRaw),
+    trail: parseTrailFlag(trailRaw),
   };
 }
 
@@ -113,7 +128,7 @@ function pageBaseUrl() {
   return location.href.split('#')[0].split('?')[0];
 }
 
-function layoutUrl(itemsParam, days, fastdegree) {
+function layoutUrl(itemsParam, days, fastdegree, trailOnly) {
   let url = pageBaseUrl() + '?mode=layout&items=' + encodeURIComponent(itemsParam);
   const d = Number(days);
   if (d > 0 && Number.isFinite(d)) {
@@ -123,15 +138,37 @@ function layoutUrl(itemsParam, days, fastdegree) {
   if (fd) {
     url += '&fastdegree=' + encodeURIComponent(fd);
   }
+  if (trailOnly) {
+    url += '&trail=1';
+  }
   return url;
 }
 
 /** Update browser address bar without navigation (works offline). */
-function replaceLayoutUrl(itemsParam, days, fastdegree) {
-  const url = layoutUrl(itemsParam, days, fastdegree);
+function replaceLayoutUrl(itemsParam, days, fastdegree, trailOnly) {
+  const url = layoutUrl(itemsParam, days, fastdegree, trailOnly);
   try {
     history.replaceState(null, '', url);
   } catch (e) { /* file:// or restricted */ }
+  return url;
+}
+
+function syncTrailCheckbox(trailOnly) {
+  const el = document.getElementById('trailOnly');
+  if (el) el.checked = !!trailOnly;
+}
+
+function browseUrl(trailOnly) {
+  let url = pageBaseUrl();
+  if (trailOnly) url += (url.indexOf('?') >= 0 ? '&' : '?') + 'trail=1';
+  return url;
+}
+
+function replaceBrowseUrl(trailOnly) {
+  const url = browseUrl(trailOnly);
+  try {
+    history.replaceState(null, '', url);
+  } catch (e) { /* file:// */ }
   return url;
 }
 
@@ -415,8 +452,10 @@ function amountInPortion(product, nutrientId, grams) {
 function topProductsForNutrient(nutrientId, limit) {
   const n = nutrientById.get(nutrientId);
   const daily = nutrientMin(n);
+  const trailOnly = typeof trailFilterOn === 'function' ? trailFilterOn() : false;
   const rows = [];
   for (const p of productsCache) {
+    if (trailOnly && !p.istrail) continue;
     const per = productNutrientPerBase(p.id, nutrientId);
     if (!per) continue;
     const show = p.section === 'bad' ? per / 100 : per;
@@ -651,10 +690,12 @@ function cloneTotals(totals) {
  * options.preferBad = true  → foods first, then BADs for leftover gaps (example 3 «с БАД»)
  * options.excludeIds = Set|Array of product ids never to recommend
  * options.fastdegree = string|null — Orthodox fasting day allowance
+ * options.trailOnly = boolean — only istrail products
  */
 function recommendAdditions(baseTotals, duration, variantShift, options) {
   const preferBad = !!(options && options.preferBad);
   const fastDegree = normalizeFastDegree(options && options.fastdegree);
+  const trailOnly = !!(options && options.trailOnly);
   const totals = cloneTotals(baseTotals);
   const added = [];
   const usedIds = new Set();
@@ -674,7 +715,8 @@ function recommendAdditions(baseTotals, duration, variantShift, options) {
     if (!worst) break;
 
     const ranked = topProductsForNutrient(worst.n.id, 80)
-      .filter((r) => productAllowedForFast(r.product, fastDegree));
+      .filter((r) => productAllowedForFast(r.product, fastDegree))
+      .filter((r) => productAllowedForTrail(r.product, trailOnly));
     const badCandidates = ranked.filter((r) => r.product.section === 'bad');
     const foodCandidates = ranked.filter((r) => r.product.section !== 'bad');
     // foods only OR foods first + BADs for remaining gaps («немного БАД» in example 3)
@@ -1062,7 +1104,7 @@ function buildCoverageChartHtml(gaps) {
   return { chartHtml, totalPct };
 }
 
-function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
+function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFromQuery) {
   if (!matchIndex.length) buildMatchIndex();
   if (!String(itemsRaw || '').trim()) {
     panel.innerHTML =
@@ -1076,6 +1118,8 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
   let targetDays = Number(daysFromQuery);
   if (!(targetDays > 0) || !Number.isFinite(targetDays)) targetDays = LAYOUT_DEFAULT_DAYS;
   let targetFast = normalizeFastDegree(fastFromQuery);
+  let targetTrail = !!trailFromQuery;
+  syncTrailCheckbox(targetTrail);
 
   const parsed = parseLayoutItems(itemsRaw);
   let matched = parsed.map((row) => {
@@ -1112,7 +1156,33 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
         removedNames.length + ' — ' + shown +
         '. Ниже — новый расчёт и рекомендации из допустимых продуктов.'
       );
-      replaceLayoutUrl(itemsFiltered, targetDays, targetFast);
+      replaceLayoutUrl(itemsFiltered, targetDays, targetFast, targetTrail);
+    }
+  }
+
+  // Drop products without istrail when «Походный запас» is on.
+  if (targetTrail) {
+    const kept = [];
+    const removedNames = [];
+    for (const row of matched) {
+      if (!row.product || productAllowedForTrail(row.product, true)) {
+        kept.push(row);
+      } else {
+        removedNames.push(row.product.name);
+      }
+    }
+    if (removedNames.length) {
+      matched = kept;
+      const itemsFiltered = buildLayoutItemsParamFromMatched(matched);
+      itemsRaw = itemsFiltered;
+      const shown = removedNames.slice(0, 8).join(', ') +
+        (removedNames.length > 8 ? '…' : '');
+      saveLayoutAdjustMessage(
+        'Фильтр «Походный запас»: убрано из раскладки ' +
+        removedNames.length + ' — ' + shown +
+        '. Рекомендации — только из продуктов длительного хранения.'
+      );
+      replaceLayoutUrl(itemsFiltered, targetDays, targetFast, targetTrail);
     }
   }
 
@@ -1173,6 +1243,12 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
     '<select id="layoutFastInput" class="fast-select" title="Ограничение по православному посту">' +
     fastOpts + '</select>' +
     '<p class="cov-note">По умолчанию — всё. При выборе убираются неподходящие продукты и строится новый список.</p>' +
+    '</div>' +
+    '<div class="coverage-trail">' +
+    '<label class="trail-check" for="layoutTrailInput" title="Только продукты длительного хранения / компактный рацион">' +
+    '<input type="checkbox" id="layoutTrailInput"' + (targetTrail ? ' checked' : '') + ' /> ' +
+    'Походный запас</label>' +
+    '<p class="cov-note">По умолчанию выкл. Вкл. — только shelf-stable (сушёное, крупы, орехи, специи…).</p>' +
     '</div></div></div>';
 
   html += '<h3>Ваша раскладка</h3><table class="mode-table layout-table"><thead><tr>' +
@@ -1215,20 +1291,22 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
   html += '<div id="examplesSection"></div>';
 
   html += '<p class="mode-note" id="layoutShareNote"><b>Ссылка (для копирования / когда снова будет сеть):</b><br/>' +
-    '<code id="layoutShareUrl">' + escapeHtml(layoutUrl(itemsRaw, targetDays, targetFast)) + '</code></p>';
+    '<code id="layoutShareUrl">' + escapeHtml(layoutUrl(itemsRaw, targetDays, targetFast, targetTrail)) + '</code></p>';
 
   html += '<p class="mode-note"><b>Формат:</b> <code>items</code> — <code>slug</code> или <code>slug:grams</code> · ' +
     '<code>id:N</code> / <code>id:N:g</code>; <code>days</code> (или <code>time</code>) — срок в сутках; ' +
-    '<code>fastdegree</code> — степень поста (<code>сухоядение</code> / <code>до масла</code> / <code>до рыбы</code> / <code>скоромное</code>), по умолчанию не задана. ' +
+    '<code>fastdegree</code> — степень поста (<code>сухоядение</code> / <code>до масла</code> / <code>до рыбы</code> / <code>скоромное</code>), по умолчанию не задана; ' +
+    '<code>trail=1</code> — только походный запас (<code>istrail</code>). ' +
     'Без количества при указанном сроке граммы/шт. подбираются автоматически. ' +
     'Все расчёты и «Создать новый список» работают <b>локально в этом файле</b> (без запроса к серверу).</p>';
 
   box.innerHTML = html;
   panel.appendChild(box);
 
-  function refreshLayout(nextItems, nextDays, nextFast) {
-    replaceLayoutUrl(nextItems, nextDays, nextFast);
-    renderLayoutMode(panel, nextItems, nextDays, nextFast);
+  function refreshLayout(nextItems, nextDays, nextFast, nextTrail) {
+    const t = nextTrail == null ? targetTrail : !!nextTrail;
+    replaceLayoutUrl(nextItems, nextDays, nextFast, t);
+    renderLayoutMode(panel, nextItems, nextDays, nextFast, t);
   }
 
   box.querySelectorAll('.btn-layout-trash').forEach((btn) => {
@@ -1238,7 +1316,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
       if (!Number.isFinite(idx)) return;
       const next = matched.filter((_, i) => i !== idx);
       const items = buildLayoutItemsParamFromMatched(next);
-      refreshLayout(items, targetDays, targetFast);
+      refreshLayout(items, targetDays, targetFast, targetTrail);
     });
   });
 
@@ -1248,7 +1326,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
       let v = Number(String(daysInput.value).replace(',', '.'));
       if (!(v > 0) || !Number.isFinite(v)) v = LAYOUT_DEFAULT_DAYS;
       daysInput.value = String(v);
-      refreshLayout(itemsRaw, v, targetFast);
+      refreshLayout(itemsRaw, v, targetFast, targetTrail);
     };
     daysInput.addEventListener('change', applyDays);
     daysInput.addEventListener('keydown', (e) => {
@@ -1263,7 +1341,15 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
   if (fastInput) {
     fastInput.addEventListener('change', () => {
       const nextFast = normalizeFastDegree(fastInput.value);
-      refreshLayout(itemsRaw, targetDays, nextFast);
+      refreshLayout(itemsRaw, targetDays, nextFast, targetTrail);
+    });
+  }
+
+  const trailInput = box.querySelector('#layoutTrailInput');
+  if (trailInput) {
+    trailInput.addEventListener('change', () => {
+      syncTrailCheckbox(trailInput.checked);
+      refreshLayout(itemsRaw, targetDays, targetFast, trailInput.checked);
     });
   }
 
@@ -1276,6 +1362,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
         preferBad: spec.preferBad,
         excludeIds: exIds,
         fastdegree: targetFast,
+        trailOnly: targetTrail,
       });
       return {
         label: spec.label,
@@ -1288,6 +1375,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
     ehtml += '<p class="mode-note">Примеры <b>1</b> и <b>2</b> — только продукты; ' +
       'пример <b>3</b> — с несколькими БАДами. На срок ' + formatDays(duration) + ' сут.' +
       (targetFast ? (' С учётом поста «' + escapeHtml(fastDegreeLabel(targetFast)) + '».') : '') +
+      (targetTrail ? ' Только походный запас.' : '') +
       '</p>';
     examples.forEach((ex, i) => {
       ehtml += '<div class="example-block"><h4>Пример ' + (i + 1) + escapeHtml(ex.label || '') +
@@ -1308,6 +1396,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
       preferBad: false,
       excludeIds: exIds,
       fastdegree: targetFast,
+      trailOnly: targetTrail,
     });
     let rhtml = '<div class="rec-head">' +
       '<h3 class="rec-title">Рекомендуется добавить</h3>' +
@@ -1475,7 +1564,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery) {
         const msg = formatCalorieOnlyMessage(balanced, targetDays, checked.length > 0);
         if (msg) saveLayoutAdjustMessage(msg);
         const items = buildLayoutItemsParam(balanced.parts);
-        refreshLayout(items, targetDays, targetFast);
+        refreshLayout(items, targetDays, targetFast, targetTrail);
       });
     }
 
@@ -1528,15 +1617,19 @@ function renderDefaultModeLinks(panel) {
     '<li><b>Анализ раскладки (пример):</b><br/>' +
     '<a href="' + escapeHtml(urlLayout) + '">' + escapeHtml(urlLayout) + '</a><br/>' +
     '<span class="mode-note">Параметры: <code>items</code> (продукты), <code>days</code> (срок, по умолчанию 1), ' +
-    '<code>fastdegree</code> (степень поста, по умолчанию не задана = всё). ' +
+    '<code>fastdegree</code> (степень поста, по умолчанию не задана = всё), ' +
+    '<code>trail=1</code> (походный запас). ' +
     'Без граммов при <code>days</code> количества подбираются. Примеры 1–2 без БАД; пример <b>3 — с БАДами</b>.</span><br/>' +
     '<span class="mode-note">Без количеств на 3 суток: <a href="' + escapeHtml(urlLayoutAuto) + '">' +
     escapeHtml(urlLayoutAuto) + '</a></span><br/>' +
     '<span class="mode-note">Пост сухоядение: <a href="' +
     escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '">' +
-    escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '</a></span></li>' +
+    escapeHtml(layoutUrl(exampleLayoutParam(), 1, 'сухоядение')) + '</a></span><br/>' +
+    '<span class="mode-note">Походный запас: <a href="' +
+    escapeHtml(layoutUrl(exampleLayoutParam(), 1, null, true)) + '">' +
+    escapeHtml(layoutUrl(exampleLayoutParam(), 1, null, true)) + '</a></span></li>' +
     '</ol>' +
-    '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты.</p>' +
+    '<p class="mode-note">Ниже — обычный просмотр: поиск → группа → продукт → нутриенты. Чекбокс «Походный запас» фильтрует справочник.</p>' +
     '</section>';
 }
 
@@ -1546,13 +1639,15 @@ function applyModeUi(query) {
   const toolbar = document.getElementById('toolbar');
   if (!panel) return;
 
+  syncTrailCheckbox(!!query.trail);
+
   if (query.mode === 'nutrients') {
     if (lead) lead.innerHTML = 'Режим: <b>нутриенты</b> → топ продуктов по содержанию и % суточной нормы. Ниже — полный список продуктов.';
     renderNutrientsMode(panel);
     if (toolbar) toolbar.style.display = '';
   } else if (query.mode === 'layout') {
     if (lead) lead.innerHTML = 'Режим: <b>анализ раскладки</b>. Сначала результат и примеры, ниже — поиск и справочник продуктов.';
-    renderLayoutMode(panel, query.itemsRaw, query.days, query.fastdegree);
+    renderLayoutMode(panel, query.itemsRaw, query.days, query.fastdegree, query.trail);
     if (toolbar) toolbar.style.display = '';
   } else {
     if (lead) lead.innerHTML = 'Поиск → <b>группа</b> → продукт → нутриенты. Все БАДы в одной группе <b>БАД</b>.';

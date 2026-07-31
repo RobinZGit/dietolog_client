@@ -79,6 +79,15 @@ CSS_EXTRA = """
       max-width: 920px; margin: 0.75rem auto 0.5rem; padding: 0 1.25rem;
       box-sizing: border-box;
     }
+    .trail-check {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.88rem; color: var(--text); white-space: nowrap;
+      cursor: pointer; user-select: none;
+    }
+    .trail-check input {
+      width: 1.05rem; height: 1.05rem; accent-color: var(--accent); cursor: pointer;
+    }
+    .coverage-trail { margin-top: 0.55rem; }
     .rec-head {
       display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 1rem;
       margin: 1rem 0 0.35rem; justify-content: space-between;
@@ -217,6 +226,13 @@ BODY_HEADER = (
     '    <input id="q" type="search" placeholder="'
     "\u041f\u043e\u0438\u0441\u043a \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0430 \u0438\u043b\u0438 \u0433\u0440\u0443\u043f\u043f\u044b\u2026"
     '" autocomplete="off" />\n'
+    '    <label class="trail-check" for="trailOnly" title="'
+    "\u0414\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435 / "
+    "\u043a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u044b\u0439 \u0440\u0430\u0446\u0438\u043e\u043d (\u043f\u043e\u0445\u043e\u0434)"
+    '">'
+    '<input type="checkbox" id="trailOnly" /> '
+    "\u041f\u043e\u0445\u043e\u0434\u043d\u044b\u0439 \u0437\u0430\u043f\u0430\u0441"
+    "</label>\n"
     '    <div id="status">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430\u2026</div>\n'
     "  </div>\n"
     '  <p class="browse-title" id="browseTitle">'
@@ -240,11 +256,33 @@ MAIN_REPLACEMENT = (
     "}\n"
     "\nfunction wireUi() {\n"
     "  const q = document.getElementById('q');\n"
+    "  const trail = document.getElementById('trailOnly');\n"
+    "  const rerender = () => {\n"
+    "    const text = q ? q.value : '';\n"
+    "    renderList(text);\n"
+    "  };\n"
     "  if (q) {\n"
     "    let t = null;\n"
     "    q.addEventListener('input', () => {\n"
     "      clearTimeout(t);\n"
-    "      t = setTimeout(() => renderList(q.value), 80);\n"
+    "      t = setTimeout(rerender, 80);\n"
+    "    });\n"
+    "  }\n"
+    "  if (trail) {\n"
+    "    trail.addEventListener('change', () => {\n"
+    "      const on = !!trail.checked;\n"
+    "      const mode = (typeof parseQuery === 'function') ? parseQuery().mode : 'browse';\n"
+    "      if (mode === 'browse' && typeof replaceBrowseUrl === 'function') {\n"
+    "        replaceBrowseUrl(on);\n"
+    "      } else if (mode === 'layout' && typeof replaceLayoutUrl === 'function') {\n"
+    "        const pq = parseQuery();\n"
+    "        replaceLayoutUrl(pq.itemsRaw || '', pq.days, pq.fastdegree, on);\n"
+    "        if (typeof renderLayoutMode === 'function') {\n"
+    "          const panel = document.getElementById('modePanel');\n"
+    "          if (panel) renderLayoutMode(panel, pq.itemsRaw || '', pq.days, pq.fastdegree, on);\n"
+    "        }\n"
+    "      }\n"
+    "      rerender();\n"
     "    });\n"
     "  }\n"
     "  if (typeof wireOfflineDownload === 'function') wireOfflineDownload();\n"
