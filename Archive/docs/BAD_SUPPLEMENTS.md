@@ -16,8 +16,8 @@
 
 ## Компания
 
-Сейчас в именах стоит шаблон **`БАД-шаблон`**.  
-Когда выберете бренд — `COMPANY` в `scripts/add-bad-supplements.py` и перезапуск скрипта.
+- Шаблонные дозировки: **`БАД-шаблон`** (`scripts/add-bad-supplements.py`).
+- Бренд **GLS Pharmaceuticals**: **`БАД · GLS · …`** (`scripts/enrich-gls-supplements.py`, v29 — 16 позиций).
 
 ## Как считается количество
 

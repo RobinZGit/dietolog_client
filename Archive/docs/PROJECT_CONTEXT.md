@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-31 — v28: сушёные овощи в каталоге и в основной раскладке
+**Последнее обновление:** 2026-07-31 — v29: БАДы GLS Pharmaceuticals
 
 ---
 
@@ -65,7 +65,7 @@
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
 | `nutrients` | **43** | id, name, units, min/max |
-| `products` | **1306** (в т.ч. 36 БАД) | id, name, **fastdegree**, **group** |
+| `products` | **1322** (в т.ч. 52 БАД) | id, name, **fastdegree**, **group** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
 Источник снимка: `static.datasource.ts` (= логика Postgres / dietolog_server). Ссылки `info` нутриентов: **edaplus.info**.
@@ -89,6 +89,11 @@
 ---
 
 ## Что сделано
+
+### 2026-07-31 (v29: БАДы GLS Pharmaceuticals)
+
+- В каталог БАД добавлены **16 позиций GLS** (бренд в имени): D3 2000 МЕ, C 900, цинк/железо хелат, селен, магний хелат и цитрат+B6, калий+магний, Ca+Mg+Zn+D3, омега-3 / омега-3+D3, коллаген+C, витамины для беременных, женская формула, 50+, детские мультивитамины.
+- Дозы — на **1 капсулу** (как у шаблонных БАД). Скрипт: `Archive/scripts/enrich-gls-supplements.py`. Seed **v29**, продуктов **1322** (БАД **52**). Шаблоны «БАД-шаблон» сохранены.
 
 ### 2026-07-31 (v28: сушёные овощи в каталоге и в основной раскладке)
 
@@ -317,6 +322,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-31 | v29: GLS Pharmaceuticals BADs; USER #39 |
 | 2026-07-31 | v28: dried vegetables in catalog + main layout demo; USER #38 |
 | 2026-07-30 | v27: fix hang loading groups (restore core UI); USER #37 |
 | 2026-07-30 | v26: tasty soy/legume/nut foods + sea cabbage; USER #36 |

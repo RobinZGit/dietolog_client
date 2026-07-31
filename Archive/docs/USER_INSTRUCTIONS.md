@@ -11,6 +11,8 @@
 
 ---
 
+39. Also add BADs from GLS company. GLS. Look, there are a lot of them and they are good. Push in master
+
 38. add to the database with products dried carrots, dried bell peppers, some more dried vegetables, if they are not there, and put them right in the mine. / I didn't say any Nastya or Vukov. Just add dried vegetables to the spread, as I used to write, and put it all in the repository in the master branch.
 
 37. Version 26 is hanging in the group is loading
