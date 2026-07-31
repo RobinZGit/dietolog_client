@@ -17,7 +17,7 @@
  *   Names: Latin translit of Russian catalog names, or Russian, or id:123 / #123.
  */
 
-const TOP_N = 15;
+const TOP_N = 25; // 20–30 главных продуктов на нутриент
 const LAYOUT_COMPLETE_RATIO = 0.92;
 const LAYOUT_MAX_ITERS = 35;
 const LAYOUT_MAX_ADD_G = 400;
@@ -467,17 +467,133 @@ function topProductsForNutrient(nutrientId, limit) {
   return rows.slice(0, limit || TOP_N);
 }
 
-function renderNutrientsMode(panel) {
+/** Default portion when adding a product to the layout from catalog / nutrients. */
+function defaultAddPortion(product) {
+  if (!product) return 0;
+  if (product.section === 'bad') return 1;
+  if (/соль\s+(поварен|морск)|йодированн.*(соль)|соль.*йод/i.test(product.name) ||
+      /^соль\b/i.test(product.name)) {
+    return 5;
+  }
+  if ((product.group || '') === 'Специи и приправы' || SPICE_NAME_RE.test(product.name)) {
+    return 5;
+  }
+  return 100;
+}
+
+function addProductToLayout(product) {
+  if (!product) return;
+  const q = parseQuery();
+  const days = (q.days > 0 && Number.isFinite(q.days)) ? q.days : LAYOUT_DEFAULT_DAYS;
+  const fast = q.fastdegree;
+  const trail = !!q.trail;
+  const addG = defaultAddPortion(product);
+  if (!(addG > 0)) return;
+
+  if (!matchIndex.length) buildMatchIndex();
+  const parsed = parseLayoutItems(q.mode === 'layout' ? (q.itemsRaw || '') : '');
+  let matched = parsed.map((row) => {
+    const m = findProductByName(row.original);
+    return {
+      original: row.original,
+      grams: row.grams,
+      auto: !!row.auto,
+      product: m.product,
+      score: m.score,
+      autoSized: false,
+    };
+  });
+
+  let found = matched.find((m) => m.product && m.product.id === product.id);
+  if (found) {
+    found.grams = (Number(found.grams) || 0) + addG;
+    found.auto = false;
+  } else {
+    matched.push({
+      original: 'id:' + product.id,
+      grams: addG,
+      auto: false,
+      product: product,
+      score: 100,
+      autoSized: false,
+    });
+  }
+
+  const items = buildLayoutItemsParamFromMatched(matched);
+  replaceLayoutUrl(items, days, fast, trail);
+  const panel = document.getElementById('modePanel');
+  const lead = document.getElementById('leadText');
+  if (lead) {
+    lead.innerHTML = 'Режим: <b>анализ раскладки</b>. Сначала результат и примеры, ниже — поиск и справочник продуктов.';
+  }
+  if (panel) renderLayoutMode(panel, items, days, fast, trail);
+  renderNutrientCatalog();
+  const unit = product.section === 'bad' ? ' шт.' : ' г';
+  const status = document.getElementById('status');
+  if (status) {
+    status.textContent = 'Добавлено в раскладку: ' + product.name + ' +' + addG + unit;
+  }
+}
+
+function makeAddToLayoutButton(product) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn-add-layout';
+  const g = defaultAddPortion(product);
+  const unit = product.section === 'bad' ? ' шт.' : ' г';
+  b.title = 'Добавить в раскладку (+' + g + unit + ')';
+  b.setAttribute('aria-label', 'Добавить в раскладку');
+  b.textContent = '+ в раскладку';
+  b.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    addProductToLayout(product);
+  });
+  return b;
+}
+
+function fillNutrientExpandBody(body, nutrient) {
+  const tops = topProductsForNutrient(nutrient.id, TOP_N);
+  if (!tops.length) {
+    body.innerHTML = '<div class="empty">Нет продуктов с этим нутриентом</div>';
+    return;
+  }
+  let html = '<table class="mode-table nutr-prod-table"><thead><tr>' +
+    '<th></th><th>Продукт</th><th>Содержание</th><th>% нормы</th></tr></thead><tbody>';
+  for (const row of tops) {
+    html += '<tr data-add-pid="' + row.product.id + '">' +
+      '<td class="col-add"><button type="button" class="btn-add-layout" title="Добавить в раскладку">+ в раскладку</button></td>' +
+      '<td>' + escapeHtml(row.product.name) +
+      (row.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') +
+      '</td><td class="num">' + escapeHtml(formatValue(row.amount, nutrient.units)) +
+      '</td><td class="num">' + (row.pct ? row.pct.toFixed(0) + '%' : '—') +
+      '</td></tr>';
+  }
+  html += '</tbody></table>';
+  body.innerHTML = html;
+  body.querySelectorAll('tr[data-add-pid]').forEach((tr) => {
+    const pid = Number(tr.getAttribute('data-add-pid'));
+    const btn = tr.querySelector('.btn-add-layout');
+    const p = productsCache.find((x) => x.id === pid);
+    if (btn && p) {
+      btn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        addProductToLayout(p);
+      });
+    }
+  });
+}
+
+function buildNutrientAccordion(title, note) {
   const nutrients = Array.from(nutrientById.values()).slice().sort((a, b) =>
     String(a.name).localeCompare(String(b.name), 'ru')
   );
-  panel.innerHTML = '';
   const box = document.createElement('section');
-  box.className = 'mode-card';
+  box.className = 'mode-card nutrient-catalog-card';
   box.innerHTML =
-    '<h2>Содержание нутриентов — главные продукты</h2>' +
-    '<p class="mode-note">Раскройте нутриент: до ' + TOP_N +
-    ' продуктов с наибольшим содержанием и % от суточного минимума (на 100 г / 1 шт. для БАД).</p>';
+    '<h2>' + escapeHtml(title) + '</h2>' +
+    '<p class="mode-note">' + note + '</p>';
   const list = document.createElement('div');
   list.className = 'list mode-list';
   for (const n of nutrients) {
@@ -491,29 +607,14 @@ function renderNutrientsMode(panel) {
     btn.querySelector('.gname').textContent = n.name;
     const daily = nutrientMin(n);
     btn.querySelector('.pmeta').textContent =
-      daily ? ('норма min ' + formatValue(daily, n.units)) : '';
+      daily ? ('норма min ' + formatValue(daily, n.units) + ' · топ ' + TOP_N) : ('топ ' + TOP_N);
     const body = document.createElement('div');
     body.className = 'group-body';
     body.dataset.loaded = '0';
     btn.addEventListener('click', () => {
       const open = wrap.classList.toggle('open');
       if (!open || body.dataset.loaded === '1') return;
-      const tops = topProductsForNutrient(n.id, TOP_N);
-      if (!tops.length) {
-        body.innerHTML = '<div class="empty">Нет продуктов с этим нутриентом</div>';
-      } else {
-        let html = '<table class="mode-table"><thead><tr>' +
-          '<th>Продукт</th><th>Содержание</th><th>% нормы</th></tr></thead><tbody>';
-        for (const row of tops) {
-          html += '<tr><td>' + escapeHtml(row.product.name) +
-            (row.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '') +
-            '</td><td class="num">' + escapeHtml(formatValue(row.amount, n.units)) +
-            '</td><td class="num">' + (row.pct ? row.pct.toFixed(0) + '%' : '—') +
-            '</td></tr>';
-        }
-        html += '</tbody></table>';
-        body.innerHTML = html;
-      }
+      fillNutrientExpandBody(body, n);
       body.dataset.loaded = '1';
     });
     wrap.appendChild(btn);
@@ -521,7 +622,57 @@ function renderNutrientsMode(panel) {
     list.appendChild(wrap);
   }
   box.appendChild(list);
-  panel.appendChild(box);
+  return box;
+}
+
+function renderNutrientsMode(panel) {
+  panel.innerHTML = '';
+  panel.appendChild(buildNutrientAccordion(
+    'Содержание нутриентов — главные продукты',
+    'Раскройте нутриент: до <b>' + TOP_N +
+    '</b> продуктов с наибольшим содержанием и % от суточного минимума (на 100 г / 1 шт. для БАД). ' +
+    'Кнопка <b>+ в раскладку</b> добавляет порцию (обычно 100 г или 1 шт. БАД).'
+  ));
+}
+
+/** Expandable nutrients block under the product catalog. */
+function renderNutrientCatalog() {
+  const mount = document.getElementById('nutrientCatalog');
+  if (!mount) return;
+  const q = typeof parseQuery === 'function' ? parseQuery() : { mode: 'browse' };
+  // Show after the product list in layout (and browse — can start a layout from here).
+  if (q.mode === 'nutrients') {
+    mount.innerHTML = '';
+    mount.hidden = true;
+    return;
+  }
+  mount.hidden = false;
+  mount.innerHTML = '';
+  mount.appendChild(buildNutrientAccordion(
+    'Нутриенты — главные источники',
+    'После справочника продуктов: раскройте нутриент (топ <b>' + TOP_N +
+    '</b>). У каждого продукта — <b>+ в раскладку</b> (порция на ваше усмотрение: обычно 100 г / 1 шт.).'
+  ));
+}
+
+/** Patch catalog rows: add «+ в раскладку» next to each product. */
+function patchMakeProductRowWithAddButton() {
+  if (typeof makeProductRow !== 'function') return;
+  if (makeProductRow.__withAdd) return;
+  const orig = makeProductRow;
+  function patched(p) {
+    const wrap = orig(p);
+    const head = wrap.querySelector('.product-head');
+    if (!head) return wrap;
+    const row = document.createElement('div');
+    row.className = 'product-row-bar';
+    head.replaceWith(row);
+    row.appendChild(head);
+    row.appendChild(makeAddToLayoutButton(p));
+    return wrap;
+  }
+  patched.__withAdd = true;
+  makeProductRow = patched;
 }
 
 function accumulateLayout(matchedItems) {
@@ -2186,6 +2337,7 @@ function applyModeUi(query) {
   if (!panel) return;
 
   syncTrailCheckbox(!!query.trail);
+  patchMakeProductRowWithAddButton();
 
   if (query.mode === 'nutrients') {
     if (lead) lead.innerHTML = 'Режим: <b>нутриенты</b> → топ продуктов по содержанию и % суточной нормы. Ниже — полный список продуктов.';
@@ -2196,8 +2348,10 @@ function applyModeUi(query) {
     renderLayoutMode(panel, query.itemsRaw, query.days, query.fastdegree, query.trail);
     if (toolbar) toolbar.style.display = '';
   } else {
-    if (lead) lead.innerHTML = 'Поиск → <b>группа</b> → продукт → нутриенты. Все БАДы в одной группе <b>БАД</b>.';
+    if (lead) lead.innerHTML = 'Поиск → <b>группа</b> → продукт → нутриенты. Все БАДы в одной группе <b>БАД</b>. ' +
+      'Кнопка <b>+ в раскладку</b> добавляет продукт в анализ раскладки.';
     renderDefaultModeLinks(panel);
     if (toolbar) toolbar.style.display = '';
   }
+  renderNutrientCatalog();
 }

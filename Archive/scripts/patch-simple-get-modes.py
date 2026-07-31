@@ -283,6 +283,25 @@ CSS_EXTRA = """
     .btn-download:disabled { opacity: 0.6; cursor: wait; }
     .offline-note { flex: 1 1 14rem; color: #1c3d32; font-size: 0.84rem; line-height: 1.35; }
     .offline-note a { color: #2f5d50; font-weight: 600; }
+    .nutrient-catalog {
+      max-width: 920px; margin: 0.5rem auto 1.5rem; padding: 0 1.25rem;
+      box-sizing: border-box;
+    }
+    .nutrient-catalog .nutrient-catalog-card { margin-bottom: 0; }
+    .product-row-bar {
+      display: flex; flex-wrap: wrap; align-items: stretch; gap: 0.35rem;
+    }
+    .product-row-bar .product-head { flex: 1 1 12rem; min-width: 0; }
+    .btn-add-layout {
+      border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+      background: #fff; color: var(--accent); cursor: pointer;
+      font: inherit; font-weight: 700; font-size: 0.78rem;
+      padding: 0.28rem 0.5rem; border-radius: 6px; white-space: nowrap;
+      align-self: center;
+    }
+    .btn-add-layout:hover { background: #eef5f2; }
+    .nutr-prod-table .col-add { width: 6.5rem; white-space: nowrap; }
+    .nutr-prod-table .btn-add-layout { width: 100%; }
 """
 
 # ASCII-safe BODY (unicode escapes)
@@ -335,6 +354,7 @@ BODY_HEADER = (
     "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0433\u0440\u0443\u043f\u043f\u2026"
     "</div></div>\n"
     "  </main>\n"
+    '  <div id="nutrientCatalog" class="nutrient-catalog" hidden></div>\n'
 )
 
 MAIN_REPLACEMENT = (
@@ -376,6 +396,7 @@ MAIN_REPLACEMENT = (
     "        }\n"
     "      }\n"
     "      rerender();\n"
+    "      if (typeof renderNutrientCatalog === 'function') renderNutrientCatalog();\n"
     "    });\n"
     "  }\n"
     "  if (typeof wireOfflineDownload === 'function') wireOfflineDownload();\n"
