@@ -1,5 +1,9 @@
 /* === GET modes (v11) — injected into dietolog.html ===
  *
+ * Default (no ?mode=): empty layout — same UI as mode=layout&items= (0% coverage,
+ * chart, empty «Ваша раскладка», recommendations for 1 day, post/trail controls).
+ * Explicit ?mode=browse — links to GET modes + product catalog only.
+ *
  * mode=nutrients  — list nutrients; expand → top TOP_N products with amount + % of daily min
  * mode=layout&items=slug:grams,slug:grams&days=1[&fastdegree=…][&trail=1]
  *   or ?layout=slug:grams,...
@@ -102,10 +106,13 @@ function parseQuery() {
   let mode = (sp.get('mode') || '').trim().toLowerCase();
   const nutrientsFlag = sp.get('nutrients');
   const layoutRaw = sp.get('layout');
-  const itemsRaw = sp.get('items');
+  // Prefer has('items'): empty items= is a valid empty layout.
+  const hasItems = sp.has('items');
+  const itemsRaw = hasItems ? (sp.get('items') || '') : null;
   if (!mode && (nutrientsFlag === '1' || nutrientsFlag === 'true')) mode = 'nutrients';
-  if (!mode && (layoutRaw || itemsRaw)) mode = 'layout';
-  if (!mode) mode = 'browse';
+  if (!mode && (layoutRaw != null || hasItems)) mode = 'layout';
+  // Bare dietolog.html → empty layout (0% + recommendations), not catalog-only browse.
+  if (!mode) mode = 'layout';
   const daysRaw = sp.get('days') || sp.get('time') || sp.get('d');
   let days = null;
   if (daysRaw != null && String(daysRaw).trim() !== '') {
@@ -116,7 +123,7 @@ function parseQuery() {
   const trailRaw = sp.get('trail') || sp.get('istrail') || sp.get('hike');
   return {
     mode,
-    itemsRaw: itemsRaw || layoutRaw || '',
+    itemsRaw: itemsRaw != null ? itemsRaw : (layoutRaw || ''),
     days,
     fastdegree: normalizeFastDegree(fastRaw),
     trail: parseTrailFlag(trailRaw),
@@ -2302,6 +2309,10 @@ function renderDefaultModeLinks(panel) {
   panel.innerHTML =
     '<section class="mode-card mode-links">' +
     '<h2>Режимы по ссылке (GET)</h2>' +
+    '<p class="mode-note"><b>Старт:</b> без параметров открывается <a href="' +
+    escapeHtml(layoutUrl('', LAYOUT_DEFAULT_DAYS)) +
+    '">пустая раскладка</a> (0% покрытия, рекомендации на сутки). ' +
+    'Этот экран — справочник ссылок (<code>mode=browse</code>).</p>' +
     '<p class="mode-note"><b>Офлайн:</b> один файл <code>dietolog.html</code> уже содержит всю базу (~' +
     escapeHtml(formatSeedSizeHint()) +
     '). Кнопка «Скачать HTML с базой» сверху — для телефона/планшета Android без GitHub Pages.</p>' +
@@ -2344,7 +2355,12 @@ function applyModeUi(query) {
     renderNutrientsMode(panel);
     if (toolbar) toolbar.style.display = '';
   } else if (query.mode === 'layout') {
-    if (lead) lead.innerHTML = 'Режим: <b>анализ раскладки</b>. Сначала результат и примеры, ниже — поиск и справочник продуктов.';
+    const empty = !(query.itemsRaw && String(query.itemsRaw).trim());
+    if (lead) {
+      lead.innerHTML = empty
+        ? 'Пустая раскладка: покрытие <b>0%</b>, круг-диаграмма, срок/пост/походный запас, пустой список и <b>рекомендации на сутки</b>. Ниже — справочник.'
+        : 'Режим: <b>анализ раскладки</b>. Сначала результат и примеры, ниже — поиск и справочник продуктов.';
+    }
     renderLayoutMode(panel, query.itemsRaw, query.days, query.fastdegree, query.trail);
     if (toolbar) toolbar.style.display = '';
   } else {
