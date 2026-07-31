@@ -1060,8 +1060,8 @@ function openAnalogModal(opts) {
 
   let body = '<div class="analog-dialog">' +
     '<h3 class="analog-title">Аналоги</h3>' +
-    '<p class="mode-note">Близкие по составу и группе; в списке — разные «семейства», чтобы не дублировать одно и то же. ' +
-    'Выберите один вариант (radio).</p>' +
+    '<p class="mode-note">Близкие по составу (нутриенты в граммах и доле суточной нормы) и группе; ' +
+    'в списке — разные «семейства», чтобы не дублировать одно и то же. Выберите один вариант (radio).</p>' +
     '<p class="analog-orig">Исходное предложение: <b>' + escapeHtml(product.name) + '</b>' +
     (nutrientName ? (' · закрывает: ' + escapeHtml(nutrientName)) : '') +
     '</p><form class="analog-form"><div class="analog-list">';
