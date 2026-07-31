@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-07-31 — v31: орехи, семена и сухофрукты в походном запасе
+**Последнее обновление:** 2026-07-31 — v32: топлёное масло / Cream Cheese (не для похода)
 
 ---
 
@@ -65,7 +65,7 @@
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
 | `nutrients` | **43** | id, name, units, min/max |
-| `products` | **1332** (в т.ч. 52 БАД) | id, name, **fastdegree**, **group**, **istrail** |
+| `products` | **1334** (в т.ч. 52 БАД) | id, name, **fastdegree**, **group**, **istrail** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
 Источник снимка: `static.datasource.ts` (= логика Postgres / dietolog_server). Ссылки `info` нутриентов: **edaplus.info**.
@@ -89,6 +89,11 @@
 ---
 
 ## Что сделано
+
+### 2026-07-31 (v32: топлёное масло и Cream Cheese вне похода)
+
+- В каталог: **Масло топлёное (гхи)**, **Сыр сливочный Cream Cheese** (уже были «Масло топленое» и «Сыр сливочный»).
+- Явно **не** `istrail`: топлёное/гхи и сливочные сыры (нужен холод) — в походный фильтр не попадают. Обычное сливочное/растительное масло для похода остаётся. Seed **v32**, продуктов **1334**.
 
 ### 2026-07-31 (v31: орехи, семена, сухофрукты в istrail)
 
@@ -334,6 +339,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-07-31 | v32: ghee + cream cheese in catalog, not trail; USER #42 |
 | 2026-07-31 | v31: trail nuts/seeds/dried fruits; USER #41 |
 | 2026-07-31 | v30: istrail / походный запас + checkbox + new dried/sublim; USER #40 |
 | 2026-07-31 | v29: GLS Pharmaceuticals BADs; USER #39 |

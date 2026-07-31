@@ -11,6 +11,8 @@
 
 ---
 
+42. You can also add melted butter or cream cheese, but of course it doesn't fit in this recipe.
+
 41. The nuts looks good for trip. For example, peanuts are peeled and fried. Walnuts are peeled. Sun-dried pumpkin seeds and others are peeled. and dried fruits as well.
 
 40. In the database, you can add a sign like Approximately suitable for hiking It means that you can take them with you They are stored for a long time and weigh a lot You need to leave this sign for all dried vegetables Also, it can be for cookies, for all types of butter, for lard And look at what else you can add Some sublimated products Dried meat, dried fish That is, add this sign to the database And the corresponding products, which are not there yet Also, you can add a checkbox to the form Suitable for travel, suitable for hiking or something like that It can be more scientific It is turned off by default But when it is turned on, you need to select only those that have this sign Also suitable for hiking, but I think Strong alcoholic drinks Also chocolate, sweets, halvah Crisps Dried vegetables, all of them Dried meat Spices, salt, pepper, sea salt
