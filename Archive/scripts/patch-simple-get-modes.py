@@ -22,18 +22,44 @@ CSS_EXTRA = """
     .mode-card h2 { margin: 0 0 0.4rem; font-size: 1.05rem; color: var(--accent); }
     .mode-card h3 { margin: 1rem 0 0.35rem; font-size: 0.95rem; }
     .mode-card h4 { margin: 0.5rem 0 0.25rem; font-size: 0.9rem; }
-    .layout-head {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem 0.85rem;
-      justify-content: space-between; margin: 0 0 0.4rem;
+    .yours-layout-block {
+      margin: 1rem 0 0.85rem;
+      padding: 0.7rem 0.8rem 0.55rem;
+      border: 2px solid #2f5d50;
+      border-radius: 10px;
+      background: #f3f8f5;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f5d50 18%, transparent);
     }
-    .layout-head .layout-title { margin: 0; font-size: 1.05rem; color: var(--accent); }
+    .yours-layout-head {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 1rem;
+      margin: 0 0 0.55rem; justify-content: flex-start;
+    }
+    .yours-layout-head .yours-layout-title {
+      margin: 0; font-size: 0.95rem; color: var(--accent);
+    }
     .btn-download-layout {
       border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
       background: #fff; color: var(--accent); cursor: pointer;
       font: inherit; font-weight: 700; font-size: 0.84rem;
       padding: 0.4rem 0.75rem; border-radius: 8px; white-space: nowrap;
+      order: 0;
     }
     .btn-download-layout:hover { background: #eef5f2; }
+    .yours-layout-block .layout-table {
+      margin: 0; background: #fff;
+      border: 1px solid color-mix(in srgb, #2f5d50 28%, var(--line));
+      border-radius: 8px; overflow: hidden;
+    }
+    .yours-layout-block .layout-table th,
+    .yours-layout-block .layout-table td {
+      border-bottom: 1px solid #c9d7cf;
+    }
+    .yours-layout-block .layout-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .yours-layout-block .layout-table tbody tr:nth-child(even) {
+      background: #f7fbf8;
+    }
     .mode-note { color: var(--muted); font-size: 0.86rem; margin: 0.25rem 0 0.6rem; }
     .mode-note code, .mode-card code {
       font-size: 0.82em; background: #f0ebe1; padding: 0.05rem 0.3rem; border-radius: 4px;

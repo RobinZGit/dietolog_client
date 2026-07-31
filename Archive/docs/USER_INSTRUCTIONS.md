@@ -11,6 +11,8 @@
 
 ---
 
+45. No, the button to download the layout should be on the left Opposite the words of your layout That's one thing And secondly, highlight the block of your layout So that people pay attention to it Let it be circled Let the lines be separated by lines And when you upload it to the main, you only raise the version It all remains 32, and I asked to raise
+
 44. I don't know if you've ever seen a log of your layout Maybe you've seen it in some color I like this style I don't want to spoil it But I want your layout to be visible And I want you to be able to download it I'll make a button on the top right And I'll download it in some form
 
 43. The suggested products are in the block I mean, it is recommended to add them in the block Make a button to show the analogues of each line, of each product and draw a separate form on it that contains this product as well as the ones close to the composition For example, oats, grain, and oatmeal Not grain, but oatmeal Here are some criteria Choose the similarities yourself And try to offer different products that are not similar to each other to this criteria Accordingly, in the layout they should not be very similar if we choose only one from this group Analogues are radio buttons We select only one of these analogues By default, the one you suggested is selected And, accordingly, by pressing the OK button on this new form the one you suggested is replaced by the one chosen again

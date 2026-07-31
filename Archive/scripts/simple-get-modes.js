@@ -1629,11 +1629,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
   const box = document.createElement('section');
   box.className = 'mode-card';
 
-  let html = '<div class="layout-head">' +
-    '<h2 class="layout-title">Анализ раскладки продуктов</h2>' +
-    '<button type="button" class="btn-download-layout" id="btnDownloadLayout" ' +
-    'title="Скачать снимок раскладки (HTML, тот же цветной стиль нутриентов)">' +
-    'Скачать раскладку</button></div>';
+  let html = '<h2>Анализ раскладки продуктов</h2>';
   const adjustMsg = takeLayoutAdjustMessage();
   if (adjustMsg) {
     html += '<div class="adjust-banner" role="status">' + escapeHtml(adjustMsg) + '</div>';
@@ -1681,7 +1677,14 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     '<p class="cov-note">По умолчанию выкл. Вкл. — только shelf-stable (сушёное, крупы, орехи, специи…).</p>' +
     '</div></div></div>';
 
-  html += '<h3>Ваша раскладка</h3><table class="mode-table layout-table"><thead><tr>' +
+  html += '<div class="yours-layout-block">' +
+    '<div class="yours-layout-head">' +
+    '<button type="button" class="btn-download-layout" id="btnDownloadLayout" ' +
+    'title="Скачать снимок раскладки (HTML, тот же цветной стиль нутриентов)">' +
+    'Скачать раскладку</button>' +
+    '<h3 class="yours-layout-title">Ваша раскладка</h3>' +
+    '</div>' +
+    '<table class="mode-table layout-table"><thead><tr>' +
     '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
   for (let i = 0; i < matched.length; i++) {
     const it = matched[i];
@@ -1697,7 +1700,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       '</td><td class="num">' + (it.grams > 0 ? (it.grams + unit) : '—') + qtyNote +
       '</td><td class="num">' + (it.product ? Math.round(it.score) : '—') + '</td></tr>';
   }
-  html += '</tbody></table>';
+  html += '</tbody></table></div>';
 
   html += '<div id="recSection"></div>';
 
