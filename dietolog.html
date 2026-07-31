@@ -198,6 +198,8 @@
 
 
 
+
+
     #modePanel { margin-bottom: 1rem; max-width: 920px; margin-left: auto; margin-right: auto; padding: 0 1.25rem; }
     .mode-card {
       border: 1px solid var(--line);
@@ -449,6 +451,8 @@
   <main>
     <div id="list" class="list"><div class="loading">Загрузка групп…</div></div>
   </main>
+
+
 
 
 
@@ -1723,12 +1727,38 @@ function productFamily(product) {
   return (product.group || 'прочее').toLowerCase();
 }
 
+/**
+ * Bring nutrient amounts to grams so мг/мкг/г are comparable.
+ * кКал → «граммовый» эквивалент энергии (≈4 ккал/г, как у углеводов).
+ */
+function nutrientAmountInGrams(value, units) {
+  const v = Number(value) || 0;
+  const u = String(units || '').trim();
+  if (u === 'г') return v;
+  if (u === 'мг') return v * 1e-3;
+  if (u === 'мкг') return v * 1e-6;
+  if (/ккал/i.test(u)) return v / 4;
+  return v;
+}
+
+/**
+ * Composition vector for analogue similarity:
+ * 1) convert to grams, 2) divide by daily min (also in grams)
+ * → «доля суточной нормы на 100 г». Then cosine compares shapes fairly:
+ * protein 0 vs 21 g matters, and mg-minerals no longer drown macros.
+ */
 function nutrientVector(productId) {
   const items = infoCache.get(productId) || [];
   const vec = new Map();
   for (const [nid, val] of items) {
     const v = Number(val) || 0;
-    if (v > 0) vec.set(nid, v);
+    if (v <= 0) continue;
+    const n = nutrientById.get(nid);
+    if (!n) continue;
+    const grams = nutrientAmountInGrams(v, n.units);
+    const dailyG = nutrientAmountInGrams(Number(n.min) || 0, n.units);
+    const w = dailyG > 0 ? grams / dailyG : grams;
+    if (w > 0) vec.set(nid, w);
   }
   return vec;
 }
@@ -1883,8 +1913,8 @@ function openAnalogModal(opts) {
 
   let body = '<div class="analog-dialog">' +
     '<h3 class="analog-title">Аналоги</h3>' +
-    '<p class="mode-note">Близкие по составу и группе; в списке — разные «семейства», чтобы не дублировать одно и то же. ' +
-    'Выберите один вариант (radio).</p>' +
+    '<p class="mode-note">Близкие по составу (нутриенты в граммах и доле суточной нормы) и группе; ' +
+    'в списке — разные «семейства», чтобы не дублировать одно и то же. Выберите один вариант (radio).</p>' +
     '<p class="analog-orig">Исходное предложение: <b>' + escapeHtml(product.name) + '</b>' +
     (nutrientName ? (' · закрывает: ' + escapeHtml(nutrientName)) : '') +
     '</p><form class="analog-form"><div class="analog-list">';
@@ -2963,6 +2993,8 @@ async function main() {
 }
 
 main();
+
+
 
 
 
