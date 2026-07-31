@@ -11,6 +11,8 @@
 
 ---
 
+46. "Создать новый список" - переименуй в "Добавить в раскладку" And then upload the version number and post it in the repository.
+
 45. No, the button to download the layout should be on the left Opposite the words of your layout That's one thing And secondly, highlight the block of your layout So that people pay attention to it Let it be circled Let the lines be separated by lines And when you upload it to the main, you only raise the version It all remains 32, and I asked to raise
 
 44. I don't know if you've ever seen a log of your layout Maybe you've seen it in some color I like this style I don't want to spoil it But I want your layout to be visible And I want you to be able to download it I'll make a button on the top right And I'll download it in some form
