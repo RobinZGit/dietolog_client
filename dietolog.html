@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Снижает «залипание» старой версии в браузере; CDN GitHub Pages всё равно может держать ~10 мин. -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
   <title>Диетолог — простой v43</title>
   <style>
     :root {
@@ -1362,9 +1359,28 @@ function scoreMatch(queryRaw, entry) {
   const q = qLatin.length >= qCyr.length ? qLatin : qCyr;
   if (!q) return 0;
   if (entry.norm === q || entry.norm === qCyr || entry.slug === toLatinSlug(queryRaw)) return 1000;
+  const words = entry.norm.split(' ').filter(Boolean);
+  // Prefer whole-word / prefix hits (гречка → крупа гречневая, not треска).
+  for (const w of words) {
+    if (w === q || w === qCyr) return 950;
+    if (w.startsWith(q) || w.startsWith(qCyr)) return 900;
+    if (q.length >= 4 && w.startsWith(q.slice(0, -1))) return 860;
+    if (q.length >= 5 && w.startsWith(q.slice(0, -2))) return 840;
+    if (q.length >= 4 && (w.includes(q) || q.startsWith(w))) return 820;
+  }
   if (entry.norm.startsWith(q) || entry.norm.startsWith(qCyr)) return 800;
   if (entry.norm.includes(q) || entry.norm.includes(qCyr)) return 600;
   if (entry.slug.includes(toLatinSlug(queryRaw))) return 500;
+  // Short queries: only allow very close edit distance on a single word.
+  if (q.length <= 6) {
+    let bestD = 99;
+    for (const w of words) {
+      if (Math.abs(w.length - q.length) > 2) continue;
+      bestD = Math.min(bestD, levenshtein(w, q));
+    }
+    if (bestD <= 1) return 420 - bestD * 40;
+    return 0;
+  }
   const d1 = levenshtein(entry.norm.slice(0, Math.max(q.length + 4, 12)), q);
   const d2 = levenshtein(entry.norm.slice(0, Math.max(qCyr.length + 4, 12)), qCyr);
   const d = Math.min(d1, d2);
@@ -1383,11 +1399,14 @@ function findProductByName(rawName) {
   if (!matchIndex.length) buildMatchIndex();
   let best = null;
   let bestScore = 0;
+  let bestLen = Infinity;
   for (const entry of matchIndex) {
     const sc = scoreMatch(rawName, entry);
-    if (sc > bestScore) {
+    const len = entry.norm.length;
+    if (sc > bestScore || (sc === bestScore && sc > 0 && len < bestLen)) {
       bestScore = sc;
       best = entry.p;
+      bestLen = len;
     }
   }
   // threshold: require some similarity
