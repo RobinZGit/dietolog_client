@@ -393,16 +393,21 @@ function findProductByName(rawName) {
       : { product: null, score: 0, original: rawName };
   }
   if (!matchIndex.length) buildMatchIndex();
+  const qNorm = normalizeKey(String(rawName).replace(/_/g, ' '));
   let best = null;
   let bestScore = 0;
-  let bestLen = Infinity;
+  let bestRank = Infinity; // lower is better among equal scores
   for (const entry of matchIndex) {
     const sc = scoreMatch(rawName, entry);
-    const len = entry.norm.length;
-    if (sc > bestScore || (sc === bestScore && sc > 0 && len < bestLen)) {
+    if (sc <= 0) continue;
+    // Prefer: starts with query → first word exact → shorter name
+    let rank = entry.norm.length;
+    if (entry.norm.startsWith(qNorm + ' ') || entry.norm === qNorm) rank -= 1000;
+    else if (entry.norm.split(' ')[0] === qNorm) rank -= 500;
+    if (sc > bestScore || (sc === bestScore && rank < bestRank)) {
       bestScore = sc;
       best = entry.p;
-      bestLen = len;
+      bestRank = rank;
     }
   }
   // threshold: require some similarity
