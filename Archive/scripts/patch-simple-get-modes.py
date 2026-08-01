@@ -219,7 +219,8 @@ CSS_EXTRA = """
       cursor: pointer; user-select: none;
     }
     .rec-table th.col-product:hover { color: var(--accent); }
-    .rec-table .col-analog { width: 5.5rem; text-align: center; white-space: nowrap; }
+    .rec-table .col-analog,
+    .layout-table .col-analog { width: 5.5rem; text-align: center; white-space: nowrap; }
     .btn-analog {
       border: 1px solid var(--line); background: #fff; color: var(--accent);
       border-radius: 6px; padding: 0.2rem 0.45rem; cursor: pointer;

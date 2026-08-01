@@ -1850,9 +1850,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     '<h3 class="yours-layout-title">Ваша раскладка</h3>' +
     '</div>' +
     '<table class="mode-table layout-table"><thead><tr>' +
-    '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
+    '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th>' +
+    '<th class="col-analog"></th><th>Кол-во</th><th>совпад.</th></tr></thead><tbody>';
   if (!matched.length) {
-    html += '<tr class="layout-empty-row"><td colspan="5" class="layout-empty-cell">' +
+    html += '<tr class="layout-empty-row"><td colspan="6" class="layout-empty-cell">' +
       'Пока пусто — отметьте продукты в блоке «Рекомендуется добавить» ниже и нажмите «Добавить в раскладку».' +
       '</td></tr>';
   }
@@ -1860,6 +1861,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     const it = matched[i];
     const unit = it.product && it.product.section === 'bad' ? ' шт.' : ' г';
     const qtyNote = it.autoSized ? ' <span class="pill warn" title="Подобрано под срок">авто</span>' : '';
+    const analogCell = it.product
+      ? '<td class="col-analog"><button type="button" class="btn-analog btn-layout-analog" ' +
+        'title="Показать аналоги по составу">Аналоги</button></td>'
+      : '<td class="col-analog"></td>';
     html += '<tr data-layout-idx="' + i + '">' +
       '<td class="col-del"><button type="button" class="btn-trash btn-layout-trash" ' +
       'title="Удалить из раскладки и пересчитать" aria-label="Удалить">' + trashIconSvg() + '</button></td>' +
@@ -1867,7 +1872,8 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       (it.product
         ? escapeHtml(it.product.name) + (it.product.section === 'bad' ? ' <span class="badge-bad">БАД</span>' : '')
         : '<span class="miss">не найдено</span>') +
-      '</td><td class="num">' + (it.grams > 0 ? (it.grams + unit) : '—') + qtyNote +
+      '</td>' + analogCell +
+      '<td class="num">' + (it.grams > 0 ? (it.grams + unit) : '—') + qtyNote +
       '</td><td class="num">' + (it.product ? Math.round(it.score) : '—') + '</td></tr>';
   }
   html += '</tbody></table></div>';
@@ -1937,6 +1943,54 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       const next = matched.filter((_, i) => i !== idx);
       const items = buildLayoutItemsParamFromMatched(next);
       refreshLayout(items, targetDays, targetFast, targetTrail);
+    });
+  });
+
+  box.querySelectorAll('.btn-layout-analog').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tr = btn.closest('tr');
+      const idx = Number(tr && tr.getAttribute('data-layout-idx'));
+      if (!Number.isFinite(idx)) return;
+      const row = matched[idx];
+      if (!row || !row.product) return;
+      const layoutIds = matched
+        .filter((x, i) => i !== idx && x.product && x.grams > 0)
+        .map((x) => x.product.id);
+      const calorieN = findCalorieNutrient();
+      openAnalogModal({
+        product: row.product,
+        selectedId: row.product.id,
+        grams: row.grams,
+        nutrientName: calorieN ? calorieN.name : '',
+        nutrientId: calorieN ? calorieN.id : null,
+        fastdegree: targetFast,
+        trailOnly: targetTrail,
+        excludeIds: layoutIds,
+        onOk: (replacementId) => {
+          if (replacementId === row.product.id) return;
+          const replacement = productsCache.find((p) => p.id === replacementId);
+          if (!replacement) return;
+          const newGrams = gramsMatchingNutrient(
+            row.product,
+            row.grams,
+            replacement,
+            calorieN ? calorieN.id : null
+          );
+          const next = matched.map((it, i) => {
+            if (i !== idx) return it;
+            return {
+              original: 'id:' + replacement.id,
+              grams: newGrams,
+              auto: false,
+              product: replacement,
+              score: 100,
+              autoSized: false,
+            };
+          });
+          const items = buildLayoutItemsParamFromMatched(next);
+          refreshLayout(items, targetDays, targetFast, targetTrail);
+        },
+      });
     });
   });
 
@@ -2053,7 +2107,8 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       'Добавить в раскладку</button></div>';
       rhtml += '<p class="mode-note">«Добавить в раскладку» всегда приводит <b>калорийность за срок к норме</b> ' +
       '(даже без галочек). Отметьте продукты и при необходимости измените <b>количество</b>, чтобы добавить их в раскладку. ' +
-      'Кнопка <b>Аналоги</b> — выбрать близкий по составу продукт вместо предложенного. ' +
+      'Кнопка <b>Аналоги</b> — в рекомендациях и в «Ваша раскладка»: выбрать близкий по составу продукт. ' +
+      'В раскладке выбранный аналог сразу заменяет продукт, порция подгоняется по калорийности, нутриенты пересчитываются. ' +
       'Пересчёт <b>внутри страницы</b> (офлайн). Если после балансировки останется дефицит — снова появятся рекомендации. ' +
       'Корзина в рекомендациях — убрать предложение; корзина в «Ваша раскладка» — удалить продукт и пересчитать.</p>';
 

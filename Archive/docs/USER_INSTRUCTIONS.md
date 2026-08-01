@@ -11,6 +11,8 @@
 
 ---
 
+51. Add the Analog button also to the product of the layout itself. When we click, the same form is opened as by pressing the same button. Apply in products. A list of analogs opens, and when you select it, it is placed in the layout instead of the one we clicked on. And, of course, the nutrient is counted. Upload immediately to the master.
+
 50. I don't see an empty product list in this link. I need to make a list, even if it's empty. After that, I need to offer some products for a day. Accordingly, there should be a top block of 0% coverage. There should also be some kind of circle with a diagram. There should also be a selection of the time of post, the degree of postage, as usual, and the time of departure. The checkbox is not selected. https://robinzgit.github.io/dietolog_client/dietolog.html
 
 49. And at the end, after the product list, make a list of nutrients So that each nutrient unfolds, and the main products containing it come under it But not so much, but not so little, 20-30 products for each nutrient Also, in this list of products, as well as in the list of products above in the product list You need to make a button for each product and add it to the layout And by pressing it, it would be added with any amount at your discretion Upload it to the master right away.
