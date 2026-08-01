@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-01 — Pages: публикация через ветку gh-pages (v40 выложена)
+**Последнее обновление:** 2026-08-01 — v41: раскрытие симптомов с продуктами (+/удалить)
 
 ---
 
@@ -93,6 +93,11 @@
 ---
 
 ## Что сделано
+
+### 2026-08-01 (v41: раскрытие симптомов → продукты)
+- Справочник симптомов: при раскрытии у каждого нутриента (дефицит/избыток) топ **15** продуктов + **+ в раскладку**.
+- В анализе раскладки строки симптомов раскрываются: дефицит — главные источники (+ в раскладку); избыток — продукты из текущей раскладки по вкладу нутриента (корзина = удалить).
+- Seed **v41**. USER #53.
 
 ### 2026-08-01 (Pages: ветка gh-pages)
 - Выяснилось: live-сайт берёт файлы из **`gh-pages`**, а workflow с `actions/deploy-pages` падал (source ≠ GitHub Actions).
@@ -396,6 +401,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-01 | v41: expand symptoms → top products / layout add-delete; USER #53 |
 | 2026-08-01 | Pages: fix publish via gh-pages branch; deploy v40; workflow rewrite |
 | 2026-08-01 | v40: symptoms ref + def/exc links on nutrients; layout + catalog UI; USER #52 |
 | 2026-08-01 | v39: Analogues button in «Ваша раскладка» + replace + nutrient recalc; USER #51 |

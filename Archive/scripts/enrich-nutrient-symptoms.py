@@ -18,8 +18,8 @@ ARCHIVE = pathlib.Path(__file__).resolve().parents[1]
 REPO = ARCHIVE.parent
 SEED_PATH = ARCHIVE / "seed.json"
 HTML_PATH = REPO / "dietolog.html"
-VERSION = 40
-SOURCE = "dietolog_client · v40 nutrient deficiency/excess symptoms"
+VERSION = 41
+SOURCE = "dietolog_client · v41 nutrient deficiency/excess symptoms"
 CHUNK = 120000
 
 SEED_COMMENT = """\
