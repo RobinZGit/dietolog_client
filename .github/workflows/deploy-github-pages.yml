@@ -1,5 +1,9 @@
 name: Deploy GitHub Pages
 
+# Репозиторий публикует Pages из ветки gh-pages (Settings → Pages → Deploy from a branch).
+# actions/deploy-pages здесь не подходит — source = legacy branch, не GitHub Actions.
+# На push в master копируем dietolog.html в gh-pages.
+
 on:
   workflow_dispatch:
   push:
@@ -7,36 +11,44 @@ on:
       - master
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare Pages payload (dietolog.html at site root)
-        run: |
-          mkdir -p _site
-          cp dietolog.html _site/dietolog.html
-          cp .nojekyll _site/.nojekyll
-          test -f _site/dietolog.html
-          # Один файл: seed.json в корень сайта не копируем — БД уже внутри HTML.
-      - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          fetch-depth: 0
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish dietolog.html to gh-pages
+        run: |
+          set -euo pipefail
+          test -f dietolog.html
+          VER=$(python3 - <<'PY'
+          import re
+          t=open("dietolog.html",encoding="utf-8").read()
+          m=re.search(r'Диетолог — простой (v\d+)', t)
+          print(m.group(1) if m else "v?")
+          PY
+          )
+          WORK=$(mktemp -d)
+          git fetch origin gh-pages
+          git worktree add "$WORK" gh-pages
+          cp dietolog.html "$WORK/dietolog.html"
+          if [ -f .nojekyll ]; then cp .nojekyll "$WORK/.nojekyll"; fi
+          cd "$WORK"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dietolog.html .nojekyll 2>/dev/null || git add dietolog.html
+          if git diff --cached --quiet; then
+            echo "gh-pages already up to date ($VER)"
+          else
+            git commit -m "deploy: dietolog.html ${VER}"
+            git push origin HEAD:gh-pages
+            echo "published $VER to gh-pages"
+          fi

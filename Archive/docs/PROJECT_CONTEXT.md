@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-01 — v40: симптомы дефицита/избытка нутриентов
+**Последнее обновление:** 2026-08-01 — Pages: публикация через ветку gh-pages (v40 выложена)
 
 ---
 
@@ -57,7 +57,9 @@
 Длительность раскладки = покрытие сут.min по **макросам** (ккал/белки/жиры/углеводы); абсолютный max по микронутриентам показывается справочно. Дефицит остальных на практический срок; добор жадным алгоритмом (+~8%), без специй в рекомендациях.
 
 Папка `simple/` в `angular.json` assets. Ссылка строится от `document.baseURI` (корректно для Pages `base-href`).  
-**Деплой Pages:** `ng build --configuration production --base-href https://robinzgit.github.io/dietolog_client/` → содержимое `dist/dietolog_client` в ветку `gh-pages`.
+**Деплой Pages:** Settings → Pages → **Deploy from a branch `gh-pages`** (не GitHub Actions).  
+На push в `master` workflow `.github/workflows/deploy-github-pages.yml` копирует корневой `dietolog.html` в ветку `gh-pages`.  
+Вручную: скопировать `dietolog.html` (+ `.nojekyll`) в `gh-pages` и push.
 
 ---
 
@@ -91,6 +93,10 @@
 ---
 
 ## Что сделано
+
+### 2026-08-01 (Pages: ветка gh-pages)
+- Выяснилось: live-сайт берёт файлы из **`gh-pages`**, а workflow с `actions/deploy-pages` падал (source ≠ GitHub Actions).
+- v40 вручную выложен в `gh-pages`; workflow переписан: на push в `master` копирует `dietolog.html` → `gh-pages`.
 
 ### 2026-08-01 (v40: симптомы дефицита / избытка)
 - Справочник **symptoms** (80) в SEED; у каждого нутриента массивы **deficiency** / **excess** (ссылки на id симптомов).
@@ -390,6 +396,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-01 | Pages: fix publish via gh-pages branch; deploy v40; workflow rewrite |
 | 2026-08-01 | v40: symptoms ref + def/exc links on nutrients; layout + catalog UI; USER #52 |
 | 2026-08-01 | v39: Analogues button in «Ваша раскладка» + replace + nutrient recalc; USER #51 |
 | 2026-07-31 | v38: bare URL opens empty layout (0% + recs); USER #50 |
