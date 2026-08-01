@@ -1999,7 +1999,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     '<h3 class="yours-layout-title">Ваша раскладка</h3>' +
     '<input type="text" class="layout-quick-input" id="layoutQuickInput" ' +
     'placeholder="гречка 150, яйцо, молоко" ' +
-    'title="Продукты через запятую, точку с запятой или точку. Количество необязательно. Enter — применить." ' +
+    'title="Продукты через запятую, точку с запятой или точку. Количество необязательно. Enter — добавить к раскладке." ' +
     'autocomplete="off" spellcheck="false" />' +
     '</div>' +
     '<table class="mode-table layout-table"><thead><tr>' +
