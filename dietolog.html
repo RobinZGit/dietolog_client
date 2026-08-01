@@ -1515,16 +1515,35 @@ function parseFreeLayoutLine(raw) {
 }
 
 /**
- * Apply free-form product line to the layout (replace).
+ * Apply free-form product line to the layout (append to existing).
  * Fuzzy name match; missing qty → defaultAddPortion.
- * @returns {{items:string, found:number, missing:string[]}}
+ * If product already in layout — increase its quantity.
+ * @param {string} raw
+ * @param {number} days
+ * @param {Array} [existingMatched]
+ * @returns {{items:string, found:number, missing:string[], added:number}}
  */
-function applyFreeLayoutLine(raw, days) {
+function applyFreeLayoutLine(raw, days, existingMatched) {
   const parsed = parseFreeLayoutLine(raw);
-  if (!parsed.length) return { items: '', found: 0, missing: [] };
+  if (!parsed.length) {
+    return {
+      items: buildLayoutItemsParamFromMatched(existingMatched || []),
+      found: 0,
+      missing: [],
+      added: 0,
+    };
+  }
   if (!matchIndex.length) buildMatchIndex();
-  const matched = [];
+  const matched = (existingMatched || []).map((row) => ({
+    original: row.original,
+    grams: Number(row.grams) || 0,
+    auto: !!row.auto,
+    product: row.product || null,
+    score: row.score || 0,
+    autoSized: !!row.autoSized,
+  }));
   const missing = [];
+  let added = 0;
   for (const row of parsed) {
     const m = findProductByName(row.original);
     if (!m.product) {
@@ -1540,33 +1559,30 @@ function applyFreeLayoutLine(raw, days) {
       continue;
     }
     let grams = row.grams;
-    let auto = !!row.auto;
-    if (!(grams > 0)) {
-      grams = defaultAddPortion(m.product);
-      auto = false;
-    }
+    if (!(grams > 0)) grams = defaultAddPortion(m.product);
     const prev = matched.find((x) => x.product && x.product.id === m.product.id);
     if (prev) {
       prev.grams = (Number(prev.grams) || 0) + grams;
       prev.auto = false;
+      prev.autoSized = false;
+      added += 1;
       continue;
     }
     matched.push({
       original: row.original,
       grams,
-      auto,
+      auto: false,
       product: m.product,
       score: m.score,
       autoSized: false,
     });
+    added += 1;
   }
-  const sized = typeof autoSizeLayoutPortions === 'function'
-    ? autoSizeLayoutPortions(matched, days)
-    : matched;
   return {
-    items: buildLayoutItemsParamFromMatched(sized),
-    found: sized.filter((x) => x.product).length,
+    items: buildLayoutItemsParamFromMatched(matched),
+    found: added,
     missing,
+    added,
   };
 }
 
@@ -3444,7 +3460,7 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     '<h3 class="yours-layout-title">Ваша раскладка</h3>' +
     '<input type="text" class="layout-quick-input" id="layoutQuickInput" ' +
     'placeholder="гречка 150, яйцо, молоко" ' +
-    'title="Продукты через запятую, точку с запятой или точку. Количество необязательно. Enter — применить." ' +
+    'title="Продукты через запятую, точку с запятой или точку. Количество необязательно. Enter — добавить к раскладке." ' +
     'autocomplete="off" spellcheck="false" />' +
     '</div>' +
     '<table class="mode-table layout-table"><thead><tr>' +
@@ -3551,21 +3567,22 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
       ev.preventDefault();
       const line = String(quickInput.value || '').trim();
       if (!line) return;
-      const result = applyFreeLayoutLine(line, targetDays);
+      const result = applyFreeLayoutLine(line, targetDays, matched);
       const status = document.getElementById('status');
-      if (!result.found && result.missing.length) {
+      if (!result.added && result.missing.length) {
         if (status) {
           status.textContent = 'Не найдено в базе: ' + result.missing.slice(0, 5).join(', ') +
             (result.missing.length > 5 ? '…' : '');
         }
         return;
       }
-      let msg = 'Раскладка из строки: ' + result.found + ' продукт(ов)';
+      let msg = 'Добавлено из строки: ' + result.added + ' продукт(ов)';
       if (result.missing.length) {
         msg += '; не найдено: ' + result.missing.slice(0, 4).join(', ') +
           (result.missing.length > 4 ? '…' : '');
       }
       if (status) status.textContent = msg;
+      quickInput.value = '';
       refreshLayout(result.items, targetDays, targetFast, targetTrail);
     });
   }
