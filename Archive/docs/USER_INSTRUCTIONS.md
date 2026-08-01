@@ -11,6 +11,8 @@
 
 ---
 
+56. Если в раскладке уже были продукты то их не удалять а добавлять к ним из поиска по строке
+
 55. To implement such a control of the input field of the text, there should be in the same line where the button to download the word your layout, the following input field, to the right of the words your layout. It should be free enough to look for the line in which the name of the product and its quantity are indicated. Then again the name of the product and its quantity. Or maybe without quantity. There must be some kind of divider between the names of the products. Either a point, or a comma, or a point with a comma. Accordingly, these names of the products need to be freely searched. That is, in full coincidence, no one guarantees. And if the quantity is specified, then its quantity. And if the quantity is not specified, then some kind of quantity for your taste, for your choice of quantity. In this input field, there should be a placeholder that says that it can. It should be the same height as a small button. And a hint, respectively, should fit in it. A short enough hint. This is laid out immediately in the master, but in the release it is not necessary to lay it out.
 
 54. Do it in the Symptom Reader where the deficit of the product that is contained in this nutrient is unfolded It is not unfolded, it is immediately removed Do it in such a way that it is unfoldable We unfold the deficit or excess of the nutrient and we get a special product Initially, it is folded so that this Reader does not inflate We immediately put it in the Mine and replace it with the Releaser and the version of the Releaser
