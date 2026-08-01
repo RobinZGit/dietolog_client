@@ -7,7 +7,10 @@
 
 ## Online
 
-https://robinzgit.github.io/dietolog_client/dietolog.html
+https://robinzgit.github.io/dietolog_client/dietolog.html  
+
+Корень сайта (`…/dietolog_client/`) редиректит на этот файл.  
+Если в шапке «залипла» старая `vN` — подождите до ~10 мин (кэш CDN) или откройте raw-ссылку ниже / сделайте жёсткое обновление.
 
 ## Offline / Android tablet
 
