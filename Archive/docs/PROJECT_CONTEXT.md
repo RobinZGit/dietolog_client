@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-01 — v43: поле быстрого ввода продуктов в «Ваша раскладка»
+**Последнее обновление:** 2026-08-01 — проверка сборки Pages: live был v42 при gh-pages=v43; index.html + anti-cache
 
 ---
 
@@ -35,12 +35,13 @@
 **Доступ:** после первого сида продукты/нутриенты/`byProduct` читаются в память (~0.3 МБ) — раскрытие мгновенное; IDB — персистентность и версия снимка (`SEED.version`).
 
 **Открыть:**
-- Pages: https://robinzgit.github.io/dietolog_client/simple/dietolog.html  
-- Нутриенты → топ продуктов: `…/simple/dietolog.html?mode=nutrients`  
+- Pages: https://robinzgit.github.io/dietolog_client/dietolog.html (корень `/` → `index.html` → тот же файл)  
+- Нутриенты → топ продуктов: `…/dietolog.html?mode=nutrients`  
 - Анализ раскладки: `…/dietolog.html?mode=layout&items=slug:grams,…&days=1[&fastdegree=сухоядение]`  
   (без граммов: `items=slug,slug&days=3`; `fastdegree` по умолчанию не задан = всё)  
-- или через Angular: заголовок «ДИЕТОЛОГ» → **«простой просмотр»**  
-- локально: `simple/dietolog.html` / `ng serve` → `/simple/dietolog.html`
+- локально: корневой `dietolog.html`  
+
+**Кэш Pages:** CDN GitHub может отдавать предыдущую версию до ~10 мин (`cache-control: max-age=600`). Сверять с raw: `https://raw.githubusercontent.com/RobinZGit/dietolog_client/gh-pages/dietolog.html` (в `<title>` — `vN`).
 
 ### GET-режимы (`simple/dietolog.html`)
 
@@ -58,8 +59,8 @@
 
 Папка `simple/` в `angular.json` assets. Ссылка строится от `document.baseURI` (корректно для Pages `base-href`).  
 **Деплой Pages:** Settings → Pages → **Deploy from a branch `gh-pages`** (не GitHub Actions).  
-На push в `master` workflow `.github/workflows/deploy-github-pages.yml` копирует корневой `dietolog.html` в ветку `gh-pages`.  
-Вручную: скопировать `dietolog.html` (+ `.nojekyll`) в `gh-pages` и push.
+На push в `master` workflow `.github/workflows/deploy-github-pages.yml` копирует `dietolog.html` + `index.html` в ветку `gh-pages` и сверяет `vN` в title.  
+Вручную: скопировать `dietolog.html`, `index.html`, `.nojekyll` в `gh-pages` и push.
 
 ---
 
@@ -93,6 +94,11 @@
 ---
 
 ## Что сделано
+
+### 2026-08-01 (Pages assembly: v42 «залипание»)
+- Симптом USER #56: на сайте долго **v42**, хотя в `gh-pages`/`master` уже **v43** (поле быстрого ввода = «parser»).
+- Причина: legacy Pages из ветки `gh-pages` + CDN `max-age=600`; сразу после push live отстаёт от raw.
+- Сейчас live = **v43**. Добавлены `index.html` (редирект корня), meta no-cache, проверка версии в workflow.
 
 ### 2026-08-01 (v43: быстрый ввод раскладки)
 - В строке **«Ваша раскладка»** (справа от заголовка, рядом со «Скачать раскладку») — текстовое поле той же высоты.
@@ -411,6 +417,8 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-01 | Pages assembly check: live lag v42 vs gh-pages v43; index.html + anti-cache; USER #56 |
+| 2026-08-01 | v43: quick layout text input (parser) in «Ваша раскладка»; USER #55 |
 | 2026-08-01 | v42: nested fold nutrient rows inside symptoms; USER #54 |
 | 2026-08-01 | v41: expand symptoms → top products / layout add-delete; USER #53 |
 | 2026-08-01 | Pages: fix publish via gh-pages branch; deploy v40; workflow rewrite |
