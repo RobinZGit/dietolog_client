@@ -11,6 +11,8 @@
 
 ---
 
+57. Here, on the field, you pick up a layer on a new output, and right in the field, inside, you make a button with a thin and short one, which adds the products you find to the layer. Because I don't understand how to add them now. Pick up a triangle, like a frame, or a ring arrow. You can make a round button. You can write what it does, but the button itself is small, and only the icon is needed. And put it right into the master.
+
 56. Если в раскладке уже были продукты то их не удалять а добавлять к ним из поиска по строке
 
 55. To implement such a control of the input field of the text, there should be in the same line where the button to download the word your layout, the following input field, to the right of the words your layout. It should be free enough to look for the line in which the name of the product and its quantity are indicated. Then again the name of the product and its quantity. Or maybe without quantity. There must be some kind of divider between the names of the products. Either a point, or a comma, or a point with a comma. Accordingly, these names of the products need to be freely searched. That is, in full coincidence, no one guarantees. And if the quantity is specified, then its quantity. And if the quantity is not specified, then some kind of quantity for your taste, for your choice of quantity. In this input field, there should be a placeholder that says that it can. It should be the same height as a small button. And a hint, respectively, should fit in it. A short enough hint. This is laid out immediately in the master, but in the release it is not necessary to lay it out.
