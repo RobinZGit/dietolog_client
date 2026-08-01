@@ -11,6 +11,8 @@
 
 ---
 
+59. Stop. Cancel these changes. Let it be as it was. No need to make a divider. Everything is correct there.
+
 57. Here, on the field, you pick up a layer on a new output, and right in the field, inside, you make a button with a thin and short one, which adds the products you find to the layer. Because I don't understand how to add them now. Pick up a triangle, like a frame, or a ring arrow. You can make a round button. You can write what it does, but the button itself is small, and only the icon is needed. And put it right into the master.
 
 56. Если в раскладке уже были продукты то их не удалять а добавлять к ним из поиска по строке
