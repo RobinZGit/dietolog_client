@@ -417,6 +417,8 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-01 | Pages assembly check: live lag v42 vs gh-pages v43; index.html + anti-cache; USER #56 |
+| 2026-08-01 | v43: quick layout text input (parser) in «Ваша раскладка»; USER #55 |
 | 2026-08-01 | v42: nested fold nutrient rows inside symptoms; USER #54 |
 | 2026-08-01 | v41: expand symptoms → top products / layout add-delete; USER #53 |
 | 2026-08-01 | Pages: fix publish via gh-pages branch; deploy v40; workflow rewrite |
