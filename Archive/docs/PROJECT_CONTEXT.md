@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-01 — откат v45 (число-разделитель); снова v44
+**Последнее обновление:** 2026-08-01 — релиз products-nutrients-symptoms: файл заменён на v44
 
 ---
 
@@ -422,6 +422,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-01 | release products-nutrients-symptoms asset → v44; USER #60 |
 | 2026-08-01 | revert v45 number-divider; back to v44; USER #59 |
 | 2026-08-01 | v44: round ▶ button inside layout quick input; USER #57 |
 | 2026-08-01 | v42: nested fold nutrient rows inside symptoms; USER #54 |
