@@ -1597,8 +1597,8 @@ function buildLayoutSymptomsHtml(totals, duration) {
   html += '<h3>Возможные симптомы по текущей раскладке</h3>';
   html += '<p class="mode-note">Дефицит — ниже сут. <b>min</b> на срок (с лагом ' +
     Math.round(SYMPTOM_LAG * 100) + '%). Избыток — выше сут. <b>max</b> на срок ' +
-    '(если max задан; иначе избытка нет). Раскройте строку: при дефиците — главные продукты ' +
-    '(+ в раскладку), при избытке — продукты из вашей раскладки по вкладу (удалить).</p>';
+    '(если max задан; иначе избытка нет). Раскройте симптом → нутриент (сначала свёрнуто) → ' +
+    'продукты: дефицит — топ источников (+ в раскладку), избыток — из вашей раскладки (удалить).</p>';
   html += '<h4>Симптомы дефицита</h4>';
   html += buildLayoutSymptomRowsHtml(packs.deficiency, 'def');
   html += '<h4>Симптомы избытка</h4>';
@@ -1628,36 +1628,66 @@ function wireLayoutSymptomsSection(root, matched, onRemoveAtIdx) {
         .split(',')
         .map(Number)
         .filter((id) => id > 0);
-      let html = '';
+      body.innerHTML = '';
+      if (!ids.length) {
+        body.innerHTML = '<div class="empty">Нет связанных нутриентов</div>';
+        body.dataset.loaded = '1';
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'list mode-list';
       for (const nid of ids) {
         const n = nutrientById.get(nid);
         if (!n) continue;
-        html += '<div class="symptom-cause-block">';
-        html += '<div class="symptom-nutr-title">' + escapeHtml(n.name) +
-          (nutrientMin(n) ? (' · min ' + formatValue(nutrientMin(n), n.units)) : '') +
-          (nutrientMax(n) ? (' · max ' + formatValue(nutrientMax(n), n.units)) : '') +
-          '</div>';
-        if (kind === 'def') {
-          html += symptomTopProductsTableHtml(n, SYMPTOM_TOP_N, true);
-        } else {
-          html += symptomLayoutExcessTableHtml(matched, n);
-        }
-        html += '</div>';
-      }
-      if (!html) html = '<div class="empty">Нет связанных нутриентов</div>';
-      body.innerHTML = html;
-      body.dataset.loaded = '1';
-      if (kind === 'def') bindSymptomAddButtons(body);
-      body.querySelectorAll('.btn-sym-layout-del').forEach((delBtn) => {
-        delBtn.addEventListener('click', (ev) => {
+        const nWrap = document.createElement('div');
+        nWrap.className = 'group symptom-nutrient-row';
+        const nBtn = document.createElement('button');
+        nBtn.type = 'button';
+        nBtn.className = 'group-head';
+        nBtn.innerHTML =
+          '<span class="chev">▸</span><span class="gname"></span><span class="pmeta"></span>';
+        const pill = document.createElement('span');
+        pill.className = 'pill ' + (kind === 'def' ? 'def' : 'exc');
+        pill.textContent = kind === 'def' ? 'дефицит' : 'избыток';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = ' ' + n.name;
+        nBtn.querySelector('.gname').appendChild(pill);
+        nBtn.querySelector('.gname').appendChild(nameSpan);
+        nBtn.querySelector('.pmeta').textContent = kind === 'def'
+          ? ('топ ' + SYMPTOM_TOP_N)
+          : 'из раскладки';
+        const nBody = document.createElement('div');
+        nBody.className = 'group-body';
+        nBody.dataset.loaded = '0';
+        nBtn.addEventListener('click', (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
-          const tr = delBtn.closest('tr');
-          const idx = Number(tr && tr.getAttribute('data-layout-idx'));
-          if (!Number.isFinite(idx)) return;
-          onRemoveAtIdx(idx);
+          const nOpen = nWrap.classList.toggle('open');
+          if (!nOpen || nBody.dataset.loaded === '1') return;
+          if (kind === 'def') {
+            nBody.innerHTML = symptomTopProductsTableHtml(n, SYMPTOM_TOP_N, true);
+            bindSymptomAddButtons(nBody);
+          } else {
+            nBody.innerHTML = symptomLayoutExcessTableHtml(matched, n);
+            nBody.querySelectorAll('.btn-sym-layout-del').forEach((delBtn) => {
+              delBtn.addEventListener('click', (e2) => {
+                e2.preventDefault();
+                e2.stopPropagation();
+                const tr = delBtn.closest('tr');
+                const idx = Number(tr && tr.getAttribute('data-layout-idx'));
+                if (!Number.isFinite(idx)) return;
+                onRemoveAtIdx(idx);
+              });
+            });
+          }
+          nBody.dataset.loaded = '1';
         });
-      });
+        nWrap.appendChild(nBtn);
+        nWrap.appendChild(nBody);
+        list.appendChild(nWrap);
+      }
+      body.appendChild(list);
+      body.dataset.loaded = '1';
     });
   });
 }
@@ -1682,6 +1712,42 @@ function symptomCauseIndex() {
   return idx;
 }
 
+/** Строка нутриента внутри симптома: свёрнута, продукты подгружаются при раскрытии. */
+function appendSymptomNutrientFold(listEl, nutrient, kind) {
+  const wrap = document.createElement('div');
+  wrap.className = 'group symptom-nutrient-row';
+  wrap.dataset.nutrientId = String(nutrient.id);
+  wrap.dataset.kind = kind;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'group-head';
+  btn.innerHTML =
+    '<span class="chev">▸</span><span class="gname"></span><span class="pmeta"></span>';
+  const pill = document.createElement('span');
+  pill.className = 'pill ' + (kind === 'def' ? 'def' : 'exc');
+  pill.textContent = kind === 'def' ? 'дефицит' : 'избыток';
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = ' ' + nutrient.name;
+  btn.querySelector('.gname').appendChild(pill);
+  btn.querySelector('.gname').appendChild(nameSpan);
+  btn.querySelector('.pmeta').textContent = 'топ ' + SYMPTOM_TOP_N;
+  const nBody = document.createElement('div');
+  nBody.className = 'group-body';
+  nBody.dataset.loaded = '0';
+  btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const open = wrap.classList.toggle('open');
+    if (!open || nBody.dataset.loaded === '1') return;
+    nBody.innerHTML = symptomTopProductsTableHtml(nutrient, SYMPTOM_TOP_N, true);
+    nBody.dataset.loaded = '1';
+    bindSymptomAddButtons(nBody);
+  });
+  wrap.appendChild(btn);
+  wrap.appendChild(nBody);
+  listEl.appendChild(wrap);
+}
+
 function fillSymptomExpandBody(body, symptom, causes) {
   const defN = (causes && causes.deficiency) || [];
   const excN = (causes && causes.excess) || [];
@@ -1690,27 +1756,27 @@ function fillSymptomExpandBody(body, symptom, causes) {
     return;
   }
   const sortRu = (a, b) => String(a.name).localeCompare(String(b.name), 'ru');
-  let html = '';
+  body.innerHTML = '';
   if (defN.length) {
-    html += '<div class="symptom-cause-block"><h4>Дефицит нутриента</h4>';
-    for (const n of defN.slice().sort(sortRu)) {
-      html += '<div class="symptom-nutr-title"><span class="pill def">дефицит</span> ' +
-        escapeHtml(n.name) + ' · топ ' + SYMPTOM_TOP_N + '</div>';
-      html += symptomTopProductsTableHtml(n, SYMPTOM_TOP_N, true);
-    }
-    html += '</div>';
+    const block = document.createElement('div');
+    block.className = 'symptom-cause-block';
+    block.innerHTML = '<h4>Дефицит нутриента</h4>';
+    const list = document.createElement('div');
+    list.className = 'list mode-list';
+    for (const n of defN.slice().sort(sortRu)) appendSymptomNutrientFold(list, n, 'def');
+    block.appendChild(list);
+    body.appendChild(block);
   }
   if (excN.length) {
-    html += '<div class="symptom-cause-block"><h4>Избыток нутриента</h4>';
-    for (const n of excN.slice().sort(sortRu)) {
-      html += '<div class="symptom-nutr-title"><span class="pill exc">избыток</span> ' +
-        escapeHtml(n.name) + ' · топ ' + SYMPTOM_TOP_N + '</div>';
-      html += symptomTopProductsTableHtml(n, SYMPTOM_TOP_N, true);
-    }
-    html += '</div>';
+    const block = document.createElement('div');
+    block.className = 'symptom-cause-block';
+    block.innerHTML = '<h4>Избыток нутриента</h4>';
+    const list = document.createElement('div');
+    list.className = 'list mode-list';
+    for (const n of excN.slice().sort(sortRu)) appendSymptomNutrientFold(list, n, 'exc');
+    block.appendChild(list);
+    body.appendChild(block);
   }
-  body.innerHTML = html;
-  bindSymptomAddButtons(body);
 }
 
 function buildSymptomAccordion(title, note) {
@@ -1776,8 +1842,8 @@ function renderSymptomCatalog() {
   mount.innerHTML = '';
   mount.appendChild(buildSymptomAccordion(
     'Справочник симптомов',
-    'После справочников продуктов и нутриентов: раскройте симптом — нутриенты (дефицит/избыток) ' +
-    'и топ <b>' + SYMPTOM_TOP_N + '</b> продуктов с этим нутриентом; у каждого — <b>+ в раскладку</b>.'
+    'После справочников продуктов и нутриентов: раскройте симптом → строку дефицита/избытка нутриента ' +
+    '(сначала свёрнуто) → топ <b>' + SYMPTOM_TOP_N + '</b> продуктов; у каждого — <b>+ в раскладку</b>.'
   ));
 }
 
