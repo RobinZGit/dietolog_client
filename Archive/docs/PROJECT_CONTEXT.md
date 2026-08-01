@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-01 — v39: кнопка «Аналоги» в «Ваша раскладка»
+**Последнее обновление:** 2026-08-01 — v40: симптомы дефицита/избытка нутриентов
 
 ---
 
@@ -30,7 +30,7 @@
 | `simple/README.md` | Как открыть / пересобрать |
 | `scripts/build-simple-dietolog.py` | Пересборка SEED/HTML из `static.datasource.ts` |
 
-**IndexedDB stores:** `meta`, `nutrients`, `products` (+ index `nameLower`), `byProduct` (ключ = id продукта, `items: [[nutrientId, value], …]`).
+**IndexedDB stores:** `meta`, `nutrients`, `symptoms`, `products` (+ index `nameLower`), `byProduct` (ключ = id продукта, `items: [[nutrientId, value], …]`).
 
 **Доступ:** после первого сида продукты/нутриенты/`byProduct` читаются в память (~0.3 МБ) — раскрытие мгновенное; IDB — персистентность и версия снимка (`SEED.version`).
 
@@ -65,7 +65,8 @@
 
 | Таблица | Записей (снимок) | Поля (ключевые) |
 |---------|------------------|-----------------|
-| `nutrients` | **43** | id, name, units, min/max |
+| `nutrients` | **43** | id, name, units, min/max, **deficiency[]**, **excess[]** (id симптомов) |
+| `symptoms` | **80** | id, name — справочник симптомов |
 | `products` | **1334** (в т.ч. 52 БАД) | id, name, **fastdegree**, **group**, **istrail** |
 | `info` / `byProduct` | **~26k** ненулевых | product → [[nutrient, value], …] на 100 г |
 
@@ -90,6 +91,12 @@
 ---
 
 ## Что сделано
+
+### 2026-08-01 (v40: симптомы дефицита / избытка)
+- Справочник **symptoms** (80) в SEED; у каждого нутриента массивы **deficiency** / **excess** (ссылки на id симптомов).
+- В анализе раскладки внизу: симптомы дефицита (have &lt; min×срок с лагом 5%) и избытка (have &gt; max×срок с лагом; без max — избытка нет).
+- После справочников продуктов и нутриентов — раскрываемый **справочник симптомов** (какие нутриенты дают дефицит/избыток).
+- Скрипт: `Archive/scripts/enrich-nutrient-symptoms.py`. Seed **v40**. USER #52.
 
 ### 2026-08-01 (v39: аналоги в «Ваша раскладка»)
 - В таблице **«Ваша раскладка»** у каждого найденного продукта кнопка **Аналоги** — та же модалка, что в рекомендациях.
@@ -383,6 +390,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-01 | v40: symptoms ref + def/exc links on nutrients; layout + catalog UI; USER #52 |
 | 2026-08-01 | v39: Analogues button in «Ваша раскладка» + replace + nutrient recalc; USER #51 |
 | 2026-07-31 | v38: bare URL opens empty layout (0% + recs); USER #50 |
 | 2026-07-31 | v37: nutrient accordion + add-to-layout buttons; USER #49 |
