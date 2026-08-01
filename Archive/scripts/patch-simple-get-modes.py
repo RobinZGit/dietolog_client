@@ -36,6 +36,7 @@ CSS_EXTRA = """
     }
     .yours-layout-head .yours-layout-title {
       margin: 0; font-size: 0.95rem; color: var(--accent);
+      flex: 0 0 auto;
     }
     .btn-download-layout {
       border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
@@ -43,8 +44,33 @@ CSS_EXTRA = """
       font: inherit; font-weight: 700; font-size: 0.84rem;
       padding: 0.4rem 0.75rem; border-radius: 8px; white-space: nowrap;
       order: 0;
+      line-height: 1.2;
+      box-sizing: border-box;
     }
     .btn-download-layout:hover { background: #eef5f2; }
+    .layout-quick-input {
+      flex: 1 1 14rem;
+      min-width: 11rem;
+      max-width: 100%;
+      box-sizing: border-box;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 400;
+      line-height: 1.2;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid color-mix(in srgb, #2f5d50 35%, var(--line));
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text, #1a1a1a);
+    }
+    .layout-quick-input::placeholder {
+      color: var(--muted);
+      opacity: 0.9;
+    }
+    .layout-quick-input:focus {
+      outline: 2px solid color-mix(in srgb, #2f5d50 45%, transparent);
+      outline-offset: 1px;
+    }
     .yours-layout-block .layout-table {
       margin: 0; background: #fff;
       border: 1px solid color-mix(in srgb, #2f5d50 28%, var(--line));

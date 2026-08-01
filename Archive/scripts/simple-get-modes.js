@@ -433,6 +433,113 @@ function parseLayoutItems(raw) {
   }).filter(Boolean);
 }
 
+/**
+ * Free-form layout line from the «Ваша раскладка» input.
+ * Separators between products: comma, semicolon, or period (+ spaces).
+ * Quantity optional after the name (`гречка 150`, `яйцо:100`, `молоко`).
+ */
+function parseFreeLayoutLine(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return [];
+  const parts = text
+    .split(/\s*[,;]\s*|\s*\.\s+|\s*\.\s*$/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const rows = [];
+  for (const part of parts) {
+    let m = /^id[:#]?(\d+)[=:\s]+(\d+(?:[.,]\d+)?)\s*(?:г|гр|шт\.?|g)?$/i.exec(part);
+    if (m) {
+      rows.push({
+        original: 'id:' + m[1],
+        grams: Number(String(m[2]).replace(',', '.')),
+        auto: false,
+      });
+      continue;
+    }
+    m = /^id[:#]?(\d+)$/i.exec(part);
+    if (m) {
+      rows.push({ original: 'id:' + m[1], grams: 0, auto: true });
+      continue;
+    }
+    m = /^(.+?)\s*[=:]\s*(\d+(?:[.,]\d+)?)\s*(?:г|гр|шт\.?|g)?$/i.exec(part);
+    if (!m) {
+      m = /^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(?:г|гр|шт\.?|g)?$/i.exec(part);
+    }
+    if (m) {
+      const name = m[1].trim().replace(/[.,;]+$/, '').trim();
+      const grams = Number(String(m[2]).replace(',', '.'));
+      if (name) {
+        rows.push({
+          original: name,
+          grams: grams > 0 ? grams : 0,
+          auto: !(grams > 0),
+        });
+      }
+      continue;
+    }
+    const name = part.replace(/[.,;]+$/, '').trim();
+    if (name) rows.push({ original: name, grams: 0, auto: true });
+  }
+  return rows;
+}
+
+/**
+ * Apply free-form product line to the layout (replace).
+ * Fuzzy name match; missing qty → defaultAddPortion.
+ * @returns {{items:string, found:number, missing:string[]}}
+ */
+function applyFreeLayoutLine(raw, days) {
+  const parsed = parseFreeLayoutLine(raw);
+  if (!parsed.length) return { items: '', found: 0, missing: [] };
+  if (!matchIndex.length) buildMatchIndex();
+  const matched = [];
+  const missing = [];
+  for (const row of parsed) {
+    const m = findProductByName(row.original);
+    if (!m.product) {
+      missing.push(row.original);
+      matched.push({
+        original: row.original,
+        grams: row.auto ? 0 : row.grams,
+        auto: !!row.auto,
+        product: null,
+        score: m.score || 0,
+        autoSized: false,
+      });
+      continue;
+    }
+    let grams = row.grams;
+    let auto = !!row.auto;
+    if (!(grams > 0)) {
+      grams = defaultAddPortion(m.product);
+      auto = false;
+    }
+    const prev = matched.find((x) => x.product && x.product.id === m.product.id);
+    if (prev) {
+      prev.grams = (Number(prev.grams) || 0) + grams;
+      prev.auto = false;
+      continue;
+    }
+    matched.push({
+      original: row.original,
+      grams,
+      auto,
+      product: m.product,
+      score: m.score,
+      autoSized: false,
+    });
+  }
+  // Auto-size any remaining auto rows for the period (none expected after defaults).
+  const sized = typeof autoSizeLayoutPortions === 'function'
+    ? autoSizeLayoutPortions(matched, days)
+    : matched;
+  return {
+    items: buildLayoutItemsParamFromMatched(sized),
+    found: sized.filter((x) => x.product).length,
+    missing,
+  };
+}
+
 function nutrientMin(n) {
   const v = n && n.min != null ? Number(n.min) : 0;
   return v > 0 ? v : 0;
@@ -1848,6 +1955,10 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
     'title="Скачать снимок раскладки (HTML, тот же цветной стиль нутриентов)">' +
     'Скачать раскладку</button>' +
     '<h3 class="yours-layout-title">Ваша раскладка</h3>' +
+    '<input type="text" class="layout-quick-input" id="layoutQuickInput" ' +
+    'placeholder="гречка 150, яйцо, молоко" ' +
+    'title="Продукты через запятую, точку с запятой или точку. Количество необязательно. Enter — применить." ' +
+    'autocomplete="off" spellcheck="false" />' +
     '</div>' +
     '<table class="mode-table layout-table"><thead><tr>' +
     '<th class="col-del"></th><th>В ссылке</th><th>Найдено в базе</th>' +
@@ -1932,6 +2043,32 @@ function renderLayoutMode(panel, itemsRaw, daysFromQuery, fastFromQuery, trailFr
         shareUrl: layoutUrl(itemsRaw, targetDays, targetFast, targetTrail),
         coveragePct: coverage.totalPct,
       });
+    });
+  }
+
+  const quickInput = box.querySelector('#layoutQuickInput');
+  if (quickInput) {
+    quickInput.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      const line = String(quickInput.value || '').trim();
+      if (!line) return;
+      const result = applyFreeLayoutLine(line, targetDays);
+      const status = document.getElementById('status');
+      if (!result.found && result.missing.length) {
+        if (status) {
+          status.textContent = 'Не найдено в базе: ' + result.missing.slice(0, 5).join(', ') +
+            (result.missing.length > 5 ? '…' : '');
+        }
+        return;
+      }
+      let msg = 'Раскладка из строки: ' + result.found + ' продукт(ов)';
+      if (result.missing.length) {
+        msg += '; не найдено: ' + result.missing.slice(0, 4).join(', ') +
+          (result.missing.length > 4 ? '…' : '');
+      }
+      if (status) status.textContent = msg;
+      refreshLayout(result.items, targetDays, targetFast, targetTrail);
     });
   }
 
