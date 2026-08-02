@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-02 — v48: голосовой ввод (🎤) в поле раскладки
+**Последнее обновление:** 2026-08-02 — релиз products-nutrients-symptoms: файл → v48
 
 ---
 
@@ -93,6 +93,11 @@
 ---
 
 ## Что сделано
+
+### 2026-08-02 (релиз: asset → v48)
+- USER #64: в релизе `products-nutrients-symptoms` заменён HTML на актуальный **v48** (🎤, ▶, фикс B12…).
+- Файл: `dietolog-produkty-nutrienty-simptomy-v48.html` (v44 удалён).
+
 
 ### 2026-08-02 (v48: голосовой ввод в поле раскладки)
 - Справа от кнопки ▶ — круглая **🎤**; Web Speech API (`ru-RU`), Chrome/Android.
@@ -440,6 +445,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-02 | release products-nutrients-symptoms asset → v48; USER #64 |
 | 2026-08-02 | v48: mic voice input next to layout ▶ button; USER #63 |
 | 2026-08-02 | v47: fix grapefruit CA B12→B9 folate mislabel; B12 audit; USER #62 |
 | 2026-08-02 | v46: nutrient % of daily + heat color in product catalog; USER #61 |

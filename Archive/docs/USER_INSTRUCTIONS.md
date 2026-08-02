@@ -11,6 +11,8 @@
 
 ---
 
+64. You have already released this file, sorry. The file that you released. But you did not release it.
+
 63. Let's make this voice input in the field where the product line and the number of the selector are. It should be connected to the button with a round microphone icon, which is to the right of the product selection button.
 
 62. Check the grapefruit of a white Californian, there B12 is a vitamin, 400% of the norm. Is this true? Other grapefruits do not have it at all. Clarify this information. Also for other grapefruits. And for all vitamin B12, for all other products.
