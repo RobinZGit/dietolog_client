@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-02 — v47: грейпфрут CA B12→B9 (фолат); аудит B12
+**Последнее обновление:** 2026-08-02 — v48: голосовой ввод (🎤) в поле раскладки
 
 ---
 
@@ -93,6 +93,12 @@
 ---
 
 ## Что сделано
+
+### 2026-08-02 (v48: голосовой ввод в поле раскладки)
+- Справа от кнопки ▶ — круглая **🎤**; Web Speech API (`ru-RU`), Chrome/Android.
+- Распознанный текст попадает в поле быстрого ввода; добавить — ▶ или Enter.
+- Seed **v48**. USER #63. Сразу в master.
+
 
 ### 2026-08-02 (v47: B12 грейпфрута — ошибка фолата)
 - «Грейпфрут белый, Калифорнийский»: B12 12 мкг (**400%**) — **ложно**; USDA = 0; это был **фолат 12 мкг**.
@@ -434,6 +440,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-02 | v48: mic voice input next to layout ▶ button; USER #63 |
 | 2026-08-02 | v47: fix grapefruit CA B12→B9 folate mislabel; B12 audit; USER #62 |
 | 2026-08-02 | v46: nutrient % of daily + heat color in product catalog; USER #61 |
 | 2026-08-01 | release products-nutrients-symptoms asset → v44; USER #60 |
