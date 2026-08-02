@@ -94,6 +94,11 @@
 
 ## Что сделано
 
+### 2026-08-02 (релиз: asset → v49)
+- USER #65: в релизе `products-nutrients-symptoms` заменён HTML на актуальный **v49** (фикс B5 авокадо CA…).
+- Файл: `dietolog-produkty-nutrienty-simptomy-v49.html` (v48 удалён).
+
+
 ### 2026-08-02 (v49: авокадо CA B5 — это был витамин K)
 - «Авокадо, Калифорния»: B5 21 мг (**~420%**) — **ложно**; USDA B5=1.46 мг, vitamin K=21 мкг.
 - В `info` был дубль B5 `[21, 1.46]`; UI брал 21. Исправлено → **1.46**.
@@ -455,7 +460,8 @@
 
 | Дата | Суть |
 |------|------|
-| 2026-08-02 | v49: avocado CA B5 was vitamin K; 48 B5/K dups; release → v49; USER #65 |
+| 2026-08-02 | release products-nutrients-symptoms asset → v49; USER #65 |
+| 2026-08-02 | v49: avocado CA B5 was vitamin K; 48 B5/K dups; USER #65 |
 | 2026-08-02 | release products-nutrients-symptoms asset → v48; USER #64 |
 | 2026-08-02 | v48: mic voice input next to layout ▶ button; USER #63 |
 | 2026-08-02 | v47: fix grapefruit CA B12→B9 folate mislabel; B12 audit; USER #62 |
