@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-02 — v49: авокадо CA B5 (был витамин K); релиз asset → v49
+**Последнее обновление:** 2026-08-02 — релиз products-nutrients-symptoms: файл → v49
 
 ---
 
