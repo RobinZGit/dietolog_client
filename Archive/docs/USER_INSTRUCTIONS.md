@@ -11,6 +11,8 @@
 
 ---
 
+61. In the reference products, where the composition of the nutrient product is displayed, in each line of the nutrient put the percentage of the daily standard. And you also need to highlight the color. The more this percentage, the brighter. Push into master
+
 60. Replace the file in the release with the last one, the one that is now
 
 59. Stop. Cancel these changes. Let it be as it was. No need to make a divider. Everything is correct there.

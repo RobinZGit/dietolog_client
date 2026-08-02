@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-01 — релиз products-nutrients-symptoms: файл заменён на v44
+**Последнее обновление:** 2026-08-02 — v46: % сут. нормы и цвет в составе продукта (справочник)
 
 ---
 
@@ -93,6 +93,12 @@
 ---
 
 ## Что сделано
+
+### 2026-08-02 (v46: % сут. нормы в составе продукта)
+- Справочник продуктов: при раскрытии состава у каждого нутриента колонка **% сут.** (от min).
+- Строка подсвечивается зелёным: чем выше %, тем ярче фон.
+- Seed **v46**. USER #61. Сразу в master.
+
 
 ### 2026-08-01 (откат v45)
 - USER #59: отменить число как разделитель — вернуть как было (v44, разделители `,`/`;`/`.`).
@@ -422,6 +428,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-02 | v46: nutrient % of daily + heat color in product catalog; USER #61 |
 | 2026-08-01 | release products-nutrients-symptoms asset → v44; USER #60 |
 | 2026-08-01 | revert v45 number-divider; back to v44; USER #59 |
 | 2026-08-01 | v44: round ▶ button inside layout quick input; USER #57 |
