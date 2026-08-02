@@ -11,6 +11,8 @@
 
 ---
 
+65. Avocado California, Domain B5 for some reason 400%, probably again a typo. And look at everything related to California, because there is something ... Something is confused. Is there any California? Upload immediately to the master and replace the file in the release.
+
 64. You have already released this file, sorry. The file that you released. But you did not release it.
 
 63. Let's make this voice input in the field where the product line and the number of the selector are. It should be connected to the button with a round microphone icon, which is to the right of the product selection button.

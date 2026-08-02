@@ -6,7 +6,7 @@
 
 **Репозиторий:** https://github.com/RobinZGit/dietolog_client  
 **Сервер (Postgres):** https://github.com/RobinZGit/dietolog_server  
-**Последнее обновление:** 2026-08-02 — релиз products-nutrients-symptoms: файл → v48
+**Последнее обновление:** 2026-08-02 — v49: авокадо CA B5 (был витамин K); релиз asset → v49
 
 ---
 
@@ -93,6 +93,14 @@
 ---
 
 ## Что сделано
+
+### 2026-08-02 (v49: авокадо CA B5 — это был витамин K)
+- «Авокадо, Калифорния»: B5 21 мг (**~420%**) — **ложно**; USDA B5=1.46 мг, vitamin K=21 мкг.
+- В `info` был дубль B5 `[21, 1.46]`; UI брал 21. Исправлено → **1.46**.
+- Калифорния в базе есть (4 USDA-варианта): авокадо CA/апельсин CA/2 грейпфрута CA — кроме авокадо аномалий нет (грейпфрут B12 уже v47).
+- Заодно убраны **48** явных дублей B5≥10 (масштаб витамина K). Осталось ~184 спорных дубля ниже 10 мг — открыто.
+- Аудит: `Archive/docs/B5_AUDIT.md`. Seed **v49**. USER #65. Сразу в master + файл в релизе.
+
 
 ### 2026-08-02 (релиз: asset → v48)
 - USER #64: в релизе `products-nutrients-symptoms` заменён HTML на актуальный **v48** (🎤, ▶, фикс B12…).
@@ -438,6 +446,8 @@
 - [ ] При обновлении `static.datasource.ts` — `python3 scripts/build-simple-dietolog.py` и bump `SEED.version` при необходимости.
 - [ ] Судьба дубликата `static.datasource.arrays.ts`.
 - [x] Выложить обновлённый `simple/dietolog.html` в `gh-pages` (после проверки).
+- [ ] Дочистить оставшиеся ~184 дубля B5 (оба ниже 10 мг) — потоварно vs USDA vitamin K.
+- [ ] Специи с одним завышенным B5 без дубля (тимьян 1714 и т.п.) — вероятно «голый» витамин K.
 
 ---
 
@@ -445,6 +455,7 @@
 
 | Дата | Суть |
 |------|------|
+| 2026-08-02 | v49: avocado CA B5 was vitamin K; 48 B5/K dups; release → v49; USER #65 |
 | 2026-08-02 | release products-nutrients-symptoms asset → v48; USER #64 |
 | 2026-08-02 | v48: mic voice input next to layout ▶ button; USER #63 |
 | 2026-08-02 | v47: fix grapefruit CA B12→B9 folate mislabel; B12 audit; USER #62 |
