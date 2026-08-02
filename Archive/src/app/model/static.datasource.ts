@@ -18120,7 +18120,7 @@ private info: any = [
 {"_id":16123,"product":795,"nutrient":6,"value":"0.02","perc1on100gr":"0","rownumber":16123},
 {"_id":16124,"product":795,"nutrient":52,"value":"0.28","perc1on100gr":"0","rownumber":16124},
 {"_id":16125,"product":795,"nutrient":8,"value":"0.04","perc1on100gr":"0","rownumber":16125},
-{"_id":16126,"product":795,"nutrient":10,"value":"12","perc1on100gr":"0","rownumber":16126},
+{"_id":16126,"product":795,"nutrient":9,"value":"12","perc1on100gr":"0","rownumber":16126},
 {"_id":16127,"product":795,"nutrient":11,"value":"33.3","perc1on100gr":"0","rownumber":16127},
 {"_id":16128,"product":795,"nutrient":15,"value":"0.27","perc1on100gr":"0","rownumber":16128},
 {"_id":16129,"product":795,"nutrient":18,"value":"143","perc1on100gr":"0","rownumber":16129},

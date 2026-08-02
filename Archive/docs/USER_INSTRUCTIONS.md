@@ -11,6 +11,8 @@
 
 ---
 
+62. Check the grapefruit of a white Californian, there B12 is a vitamin, 400% of the norm. Is this true? Other grapefruits do not have it at all. Clarify this information. Also for other grapefruits. And for all vitamin B12, for all other products.
+
 61. In the reference products, where the composition of the nutrient product is displayed, in each line of the nutrient put the percentage of the daily standard. And you also need to highlight the color. The more this percentage, the brighter. Push into master
 
 60. Replace the file in the release with the last one, the one that is now
